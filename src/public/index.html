@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome - Recipe App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .hero-container {
+      background-color: white;
+      padding: 60px 40px;
+      border-radius: 10px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 700px;
+      animation: slideIn 0.5s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      color: #333;
+      font-size: 2.5em;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      color: #666;
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .features {
+      text-align: left;
+      background-color: #f8f9fa;
+      padding: 30px;
+      border-radius: 8px;
+      margin: 30px 0;
+    }
+
+    .features h2 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .feature-list {
+      list-style: none;
+    }
+
+    .feature-list li {
+      padding: 10px 0;
+      color: #555;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+    }
+
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+
+    .feature-list li::before {
+      content: "✓";
+      color: #667eea;
+      font-weight: bold;
+      margin-right: 15px;
+      font-size: 1.2em;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 40px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 15px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 1.1em;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(102, 126, 234, 0.6);
+    }
+
+    .btn-secondary {
+      background-color: white;
+      color: #667eea;
+      border: 2px solid #667eea;
+    }
+
+    .btn-secondary:hover {
+      background-color: #667eea;
+      color: white;
+      transform: translateY(-3px);
+    }
+
+    .info-box {
+      background-color: #e8f4f8;
+      border-left: 4px solid #667eea;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+      color: #555;
+    }
+
+    .tech-stack {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #eee;
+    }
+
+    .tech-stack h3 {
+      color: #333;
+      margin-bottom: 15px;
+    }
+
+    .tech-icons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .tech-icon {
+      background-color: #f0f0f0;
+      padding: 15px 20px;
+      border-radius: 5px;
+      color: #666;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    @media (max-width: 600px) {
+      .hero-container {
+        padding: 30px 20px;
+      }
+
+      h1 {
+        font-size: 1.8em;
+      }
+
+      .tagline {
+        font-size: 1em;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero-container">
+    <h1>🍳 Recipe App</h1>
+    <p class="tagline">Share and discover amazing recipes with our community</p>
+
+    <div class="info-box">
+      <strong>Welcome to IS113 Group Project</strong><br>
+      A scalable web application for managing and sharing recipes
+    </div>
+
+    <div class="features">
+      <h2>Features</h2>
+      <ul class="feature-list">
+        <li>User authentication with secure sessions</li>
+        <li>Create, read, update, and delete recipes</li>
+        <li>Browse recipes by category</li>
+        <li>Manage your personal recipe collection</li>
+        <li>Share recipes with the community</li>
+      </ul>
+    </div>
+
+    <div class="button-group">
+      <a href="/" class="btn btn-primary">Go to Application</a>
+      <a href="/recipes" class="btn btn-secondary">Browse Recipes</a>
+    </div>
+
+    <div class="tech-stack">
+      <h3>Built With</h3>
+      <div class="tech-icons">
+        <div class="tech-icon">Node.js</div>
+        <div class="tech-icon">Express.js</div>
+        <div class="tech-icon">MongoDB</div>
+        <div class="tech-icon">EJS</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Simple navigation
+    document.addEventListener('DOMContentLoaded', function() {
+      // Log that the page loaded successfully
+      console.log('Recipe App loaded successfully');
+
+      // You can add any front-end functionality here
+    });
+  </script>
+</body>
+</html>
