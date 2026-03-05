@@ -1,0 +1,29 @@
+const express = require("express");
+const router = express.Router();
+const User = require("../models/User");
+
+//Get route to show the edit page
+router.get("/profile/edit/:id", async (req, res) => {
+
+    const user = await User.findById(req.params.id);
+
+    res.render("editProfile", { user });
+
+});
+
+//post to update prfoile to mongodb
+
+
+router.post("/profile/update/:id", async (req, res) => {
+
+    const { username, email, bio } = req.body;
+
+    await User.findByIdAndUpdate(req.params.id, {
+        username,
+        email,
+        bio
+    });
+//sends back to the user profile page instead of showing text using res.send
+    res.redirect("/profile/" + req.params.id);
+
+});

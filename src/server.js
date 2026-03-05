@@ -72,6 +72,13 @@ app.get('/dashboard', (req, res) => {
 // Recipe Routes
 app.use('/recipes', recipeRoutes);
 
+// Profile Routes
+app.use(express.urlencoded({ extended: true }));
+
+const profileRoutes = require("./routes/profile");
+
+app.use("/", profileRoutes);
+
 // ============================================
 // ERROR HANDLING
 // ============================================
