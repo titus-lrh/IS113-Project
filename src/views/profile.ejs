@@ -1,5 +1,35 @@
-<h1><%= user.username %></h1>
-<p>Email: <%= user.email %></p>
-<p>Bio: <%= user.bio %></p>
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= user.username %>'s Profile</title>
+</head>
+<body>
 
-<a href="/profile/edit/<%= user._id %>">Edit Profile</a>
+    <h1><%= user.username %>'s Profile</h1>
+
+    <p><strong>Email:</strong> <%= user.email %></p>
+    <p><strong>Bio:</strong> <%= user.bio || "No bio yet" %></p>
+    <p><strong>Joined:</strong> <%= user.createdAt.toDateString() %></p>
+
+    <hr>
+
+    <h2>My Recipes</h2>
+
+    <% if (recipes.length === 0) { %>
+        <p>This user has not posted any recipes yet.</p>
+    <% } %>
+
+    <% recipes.forEach(recipe => { %>
+        <div style="margin-bottom:20px;">
+            <h3>
+                <a href="/recipes/<%= recipe._id %>">
+                    <%= recipe.title %>
+                </a>
+            </h3>
+
+            <p>Cook Time: <%= recipe.cookTime %> mins</p>
+        </div>
+    <% }) %>
+
+</body>
+</html>
