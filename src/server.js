@@ -4,11 +4,12 @@
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
-require('dotenv').config();
-
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const recipeRoutes = require('./routes/recipes');
+const profileRoutes = require("./routes/profile");
+
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -21,8 +22,7 @@ const PORT = process.env.PORT || 8000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Static Files
-app.use(express.static('public'));
+app.use(express.urlencoded({ extended: true }));
 
 // View Engine
 app.set('view engine', 'ejs');
@@ -45,9 +45,9 @@ app.use(session(sessionConfig));
 // ROUTES
 // ============================================
 
-// Home Page
+// Landing Page
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
+  res.render('index')
 });
 
 // Authentication Routes
@@ -59,8 +59,6 @@ app.get('/register', (req, res) => {
   res.render('register');
 });
 
-app.use('/auth', authRoutes);
-
 // Dashboard (Protected)
 app.get('/dashboard', (req, res) => {
   if (!req.session.userId) {
@@ -69,15 +67,10 @@ app.get('/dashboard', (req, res) => {
   res.render('dashboard', { user: req.session });
 });
 
-// Recipe Routes
-app.use('/recipes', recipeRoutes);
+app.use('/auth', authRoutes);
+app.use("/profile", profileRoutes);
+app.use("/recipes", recipeRoutes);
 
-// Profile Routes
-app.use(express.urlencoded({ extended: true }));
-
-const profileRoutes = require("./routes/profile");
-
-app.use("/", profileRoutes);
 
 // ============================================
 // ERROR HANDLING

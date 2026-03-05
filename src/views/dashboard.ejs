@@ -18,7 +18,7 @@
     }
 
     nav {
-      background-color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 1rem 2rem;
       color: white;
       display: flex;
@@ -28,12 +28,8 @@
 
     nav a {
       color: white;
-      text-decoration: none;
-      margin-left: 1.5rem;
-    }
-
-    nav a:hover {
       text-decoration: underline;
+      margin-left: 1.5rem;
     }
 
     .container {
@@ -46,33 +42,6 @@
       margin-bottom: 1.5rem;
     }
 
-    .welcome-card {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 2rem;
-    }
-
-    .actions {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    .actions a {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      background-color: #333;
-      color: white;
-      text-decoration: none;
-      border-radius: 0.25rem;
-    }
-
-    .actions a:hover {
-      background-color: #555;
-    }
-
     .quick-links {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -82,7 +51,7 @@
 
     .quick-link-card {
       background-color: white;
-      padding: 1.5rem;
+      padding: 1em;
       border-radius: 0.5rem;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       text-align: center;
@@ -104,46 +73,40 @@
     .quick-link-card a:hover {
       background-color: #5568d3;
     }
+
   </style>
 </head>
 <body>
   <nav>
-    <strong>Recipe App</strong>
+    <strong>Simple Joy</strong>
     <div>
-      <span>Welcome, <%= user.username %></span>
+      <a href="/auth/profile">My Profile</a>
       <a href="/auth/logout">Logout</a>
     </div>
   </nav>
 
   <div class="container">
-    <h1>Dashboard</h1>
-
-    <div class="welcome-card">
-      <h2>Welcome back, <%= user.username %>!</h2>
-      <p>Manage your recipes and explore the community</p>
-      <div class="actions">
-        <a href="/recipes/new">Create New Recipe</a>
-        <a href="/recipes">Browse All Recipes</a>
-      </div>
-    </div>
-
+    <h2>Welcome back, <%= user.username %>!</h2>
     <div class="quick-links">
       <div class="quick-link-card">
         <h3>📝 My Recipes</h3>
         <p>View and manage your recipes</p>
-        <a href="/recipes/my-recipes">View Recipes</a>
+        <br>
+        <a href="/recipes/my-recipes">View My Recipes</a>
       </div>
 
       <div class="quick-link-card">
         <h3>🔍 Browse Recipes</h3>
         <p>Discover recipes from the community</p>
-        <a href="/recipes">Browse</a>
+        <br>
+        <a href="/recipes">Browse Community</a>
       </div>
 
       <div class="quick-link-card">
-        <h3>➕ Create Recipe</h3>
+        <h3>➕ Upload Recipe</h3>
         <p>Share your favorite recipes</p>
-        <a href="/recipes/new">Create</a>
+        <br>
+        <a href="/recipes/new">Create New Recipe</a>
       </div>
     </div>
   </div>
