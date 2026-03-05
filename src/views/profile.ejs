@@ -31,5 +31,13 @@
         </div>
     <% }) %>
 
+    <hr>
+
+    <h2>Profile Actions</h2>
+
+    <form action="/profile/delete/<%= user._id %>" method="POST">
+        <button type="submit">Delete Profile</button>
+    </form>
+
 </body>
 </html>

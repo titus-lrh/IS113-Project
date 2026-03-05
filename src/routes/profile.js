@@ -55,4 +55,13 @@ router.get('/users/:id', async (req, res) => {
   }
 });
 
+//delete route
+router.post("/profile/delete/:id", async (req, res) => {
+
+    await User.findByIdAndDelete(req.params.id);
+
+    res.redirect("/");
+
+});
+
 module.exports = router;
