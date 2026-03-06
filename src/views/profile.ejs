@@ -1,51 +1,143 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title><%= user.username %>'s Profile</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= user.username %>'s Profile</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial, sans-serif;
+background-color:#f5f5f5;
+color:#333;
+}
+
+nav{
+background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+padding:1rem 2rem;
+color:white;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+nav a{
+color:white;
+text-decoration:none;
+margin-left:1.5rem;
+}
+
+.container{
+max-width:1000px;
+margin:2rem auto;
+padding:0 1rem;
+}
+
+.profile-card{
+background:white;
+padding:1.5rem;
+border-radius:0.5rem;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+margin-bottom:2rem;
+}
+
+.recipe-card{
+background:white;
+padding:1em;
+border-radius:0.5rem;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+margin-bottom:1rem;
+}
+
+button{
+padding:0.5rem 1rem;
+background-color:#667eea;
+color:white;
+border:none;
+border-radius:0.25rem;
+cursor:pointer;
+}
+
+button:hover{
+background-color:#5568d3;
+}
+
+.actions{
+margin-top:1rem;
+}
+
+.actions a{
+margin-right:10px;
+}
+
+</style>
+
 </head>
+
 <body>
 
-    <h1><%= user.username %>'s Profile</h1>
+<nav>
+<strong>Simple Joy</strong>
+<div>
+<a href="/dashboard">Dashboard</a>
+<a href="/">Logout</a>
+</div>
+</nav>
 
-    <p><strong>Email:</strong> <%= user.email %></p>
-    <p><strong>Bio:</strong> <%= user.bio || "No bio yet" %></p>
-    <p><strong>Joined:</strong> <%= user.createdAt.toDateString() %></p>
+<div class="container">
 
-    <hr>
+<div class="profile-card">
 
-    <h2>My Recipes</h2>
+<h1><%= user.username %>'s Profile</h1>
 
-    <% if (recipes.length === 0) { %>
-        <p>This user has not posted any recipes yet.</p>
-    <% } %>
+<p><strong>Email:</strong> <%= user.email %></p>
+<p><strong>Bio:</strong> <%= user.bio || "No bio yet" %></p>
+<p><strong>Joined:</strong> <%= user.createdAt.toDateString() %></p>
 
-    <% recipes.forEach(recipe => { %>
-        <div style="margin-bottom:20px;">
-            <h3>
-                <a href="/recipes/<%= recipe._id %>">
-                    <%= recipe.title %>
-                </a>
-            </h3>
+<div class="actions">
 
-            <p>Cook Time: <%= recipe.cookTime %> mins</p>
-        </div>
-    <% }) %>
+<a href="/profile/edit/<%= user._id %>">
+<button>Edit Profile</button>
+</a>
 
-    <hr>
+<form action="/profile/delete/<%= user._id %>" method="POST" style="display:inline;">
+<button type="submit">Delete Profile</button>
+</form>
 
-    <a href="/profile/edit/<%= user._id %>">
-    <button>Edit Profile</button>
-    </a>
-    <br><br>
+</div>
 
-    <form action="/profile/delete/<%= user._id %>" method="POST">
-        <button type="submit">Delete Profile</button>
-    </form>
+</div>
 
-    <br>
-    <a href="/dashboard">
-    <button>Back to dashboard</button>
-    </a>
+<h2>My Recipes</h2>
+
+<% if (recipes.length === 0) { %>
+<p>This user has not posted any recipes yet.</p>
+<% } %>
+
+<% recipes.forEach(recipe => { %>
+
+<div class="recipe-card">
+
+<h3>
+<a href="/recipes/<%= recipe._id %>">
+<%= recipe.title %>
+</a>
+</h3>
+
+<p>Cook Time: <%= recipe.cookTime %> mins</p>
+
+</div>
+
+<% }) %>
+
+</div>
 
 </body>
 </html>
