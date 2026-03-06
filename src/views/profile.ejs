@@ -33,14 +33,19 @@
 
     <hr>
 
-    <h2>Profile Actions</h2>
-
-    <a href="/profile/edit/<%= user._id %>">Edit Profile</a>
-
+    <a href="/profile/edit/<%= user._id %>">
+    <button>Edit Profile</button>
+    </a>
+    <br><br>
 
     <form action="/profile/delete/<%= user._id %>" method="POST">
         <button type="submit">Delete Profile</button>
     </form>
+
+    <br>
+    <a href="/dashboard">
+    <button>Back to dashboard</button>
+    </a>
 
 </body>
 </html>

@@ -11,17 +11,17 @@ router.get("/edit/:id", async (req, res) => {
 
 // UPDATE profile
 router.post("/update/:id", async (req, res) => {
+    console.log(req.body);
     const { username, email, bio } = req.body;
-
+// findbyidandupdate is a mongodb function, await is to wait for the db to update before continuing
     await User.findByIdAndUpdate(
-      req.params.id,
-  {
-    username,
-    email,
-    bio
-  },
-  { new: true }
-);
+      //get userid
+        req.params.id,
+        //$set is to only update these specific fields
+        { $set: { username, email, bio } },
+        //return updated document
+        { new: true }
+    );
 
     res.redirect("/profile/" + req.params.id);
 });
