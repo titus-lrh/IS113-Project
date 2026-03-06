@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit <%= recipe.title %> - Recipe App</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    nav {
+      background-color: #333;
+      padding: 1rem 2rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      color: #667eea;
+      text-decoration: none;
+    }
+
+    .back-link:hover { text-decoration: underline; }
+
+    .form-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 2rem;
+    }
+
+    .form-card h1 {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #667eea;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #ddd;
+      border-radius: 0.25rem;
+      font-size: 0.95rem;
+      font-family: Arial, sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    textarea { resize: vertical; min-height: 100px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-hint {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.3rem;
+    }
+
+    .error-list {
+      background-color: #fff5f5;
+      border: 1px solid #fc8181;
+      border-radius: 0.25rem;
+      padding: 1rem 1rem 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      color: #c53030;
+    }
+
+    .error-list li { margin-bottom: 0.25rem; }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.75rem;
+      border-radius: 0.25rem;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-primary {
+      background-color: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover { background-color: #5568d3; }
+
+    .btn-secondary {
+      background-color: #e2e8f0;
+      color: #444;
+    }
+
+    .btn-secondary:hover { background-color: #cbd5e0; }
+
+    .field-error {
+      color: #e53e3e;
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <strong>Recipe App</strong>
+    <div>
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+        <span><%= session.username %></span>
+        <a href="/recipes/new">Create Recipe</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/auth/logout">Logout</a>
+      <% } else { %>
+        <a href="/login">Login</a>
+        <a href="/register">Register</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container">
+    <a href="/recipes/<%= recipe._id %>" class="back-link">← Back to Recipe</a>
+
+    <div class="form-card">
+      <h1>Edit Recipe</h1>
+
+      <!-- Validation errors -->
+      <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <ul class="error-list">
+          <% errors.forEach(error => { %>
+            <li><%= error.msg %></li>
+          <% }) %>
+        </ul>
+      <% } %>
+
+      <!-- PUT method override since HTML forms only support GET/POST -->
+      <form action="/recipes/<%= recipe._id %>?_method=PUT" method="POST">
+
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" value="<%= recipe.title %>" required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="3"><%= recipe.description %></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="ingredients">Ingredients</label>
+          <textarea id="ingredients" name="ingredients" rows="4"><%= recipe.ingredients.join(', ') %></textarea>
+          <p class="form-hint">Separate ingredients with commas e.g. flour, sugar, eggs</p>
+        </div>
+
+        <div class="form-group">
+          <label for="instructions">Instructions</label>
+          <textarea id="instructions" name="instructions" rows="6"><%= recipe.instructions %></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="cookingTime">Cooking Time (minutes)</label>
+            <input type="number" id="cookingTime" name="cookingTime" value="<%= recipe.cookingTime %>" min="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="servings">Servings</label>
+            <input type="number" id="servings" name="servings" value="<%= recipe.servings %>" min="1" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="category">Category</label>
+          <select id="category" name="category">
+            <% ['vegan', 'dessert', 'quick-meals', 'breakfast', 'lunch', 'dinner', 'snack'].forEach(cat => { %>
+              <option value="<%= cat %>" <%= recipe.category === cat ? 'selected' : '' %>><%= cat %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <a href="/recipes/<%= recipe._id %>" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</body>
+</html>

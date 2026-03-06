@@ -208,6 +208,7 @@
           id="title"
           name="title"
           placeholder="e.g., Classic Chocolate Chip Cookies"
+          value="<%= typeof body !== 'undefined' ? body.title || '' : '' %>"
           required
         >
         <div class="form-hint">Give your recipe a clear, descriptive name</div>
@@ -220,7 +221,7 @@
           name="description"
           placeholder="Describe your recipe in a few sentences..."
           required
-        ></textarea>
+        ><%= typeof body !== 'undefined' ? body.description || '' : '' %></textarea>
         <div class="form-hint">Tell people what makes this recipe special</div>
       </div>
 
@@ -233,6 +234,7 @@
             name="cookingTime"
             min="1"
             placeholder="30"
+            value="<%= typeof body !== 'undefined' ? body.cookingTime || '' : '' %>"
             required
           >
         </div>
@@ -245,6 +247,7 @@
             name="servings"
             min="1"
             placeholder="4"
+            value="<%= typeof body !== 'undefined' ? body.servings || '' : '' %>"
             required
           >
         </div>
@@ -254,13 +257,13 @@
         <label for="category">Category</label>
         <select id="category" name="category" required>
           <option value="">Select a category</option>
-          <option value="vegan">Vegan</option>
-          <option value="dessert">Dessert</option>
-          <option value="quick-meals">Quick Meals</option>
-          <option value="breakfast">Breakfast</option>
-          <option value="lunch">Lunch</option>
-          <option value="dinner">Dinner</option>
-          <option value="snack">Snack</option>
+          <option value="vegan" <%= typeof body !== 'undefined' && body.category === 'vegan' ? 'selected' : '' %>>Vegan</option>
+          <option value="dessert" <%= typeof body !== 'undefined' && body.category === 'dessert' ? 'selected' : '' %>>Dessert</option>
+          <option value="quick-meals" <%= typeof body !== 'undefined' && body.category === 'quick-meals' ? 'selected' : '' %>>Quick Meals</option>
+          <option value="breakfast" <%= typeof body !== 'undefined' && body.category === 'breakfast' ? 'selected' : '' %>>Breakfast</option>
+          <option value="lunch" <%= typeof body !== 'undefined' && body.category === 'lunch' ? 'selected' : '' %>>Lunch</option>
+          <option value="dinner" <%= typeof body !== 'undefined' && body.category === 'dinner' ? 'selected' : '' %>>Dinner</option>
+          <option value="snack" <%= typeof body !== 'undefined' && body.category === 'snack' ? 'selected' : '' %>>Snack</option>
         </select>
         <div class="form-hint">Choose the best category for your recipe</div>
       </div>
@@ -272,7 +275,7 @@
           name="ingredients"
           placeholder="e.g., 2 cups flour, 1 cup sugar, 3 eggs, 1 tsp vanilla extract"
           required
-        ></textarea>
+        ><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
         <div class="form-hint">List each ingredient separated by commas. Include quantities!</div>
       </div>
 
@@ -283,7 +286,7 @@
           name="instructions"
           placeholder="Step 1: ...&#10;Step 2: ...&#10;Step 3: ..."
           required
-        ></textarea>
+        ><%= typeof body !== 'undefined' ? body.instructions || '' : '' %></textarea>
         <div class="form-hint">Write step-by-step instructions. Be as detailed as possible.</div>
       </div>
 

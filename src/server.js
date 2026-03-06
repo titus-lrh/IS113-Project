@@ -8,6 +8,8 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth');
 const recipeRoutes = require('./routes/recipes');
 const profileRoutes = require("./routes/profile");
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
 
 require('dotenv').config();
 

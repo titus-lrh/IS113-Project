@@ -283,7 +283,7 @@
       </div>
     </div>
 
-    <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
+    <% if (typeof session !== 'undefined' && session.userId && recipe.author._id === session.userId) { %>
       <div class="actions">
         <a href="/recipes/<%= recipe._id %>/edit" class="btn btn-primary">Edit Recipe</a>
         <button class="btn btn-danger" onclick="deleteRecipe('<%= recipe._id %>')">Delete Recipe</button>
