@@ -35,6 +35,9 @@
 
     <h2>Profile Actions</h2>
 
+    <a href="/profile/edit/<%= user._id %>">Edit Profile</a>
+
+
     <form action="/profile/delete/<%= user._id %>" method="POST">
         <button type="submit">Delete Profile</button>
     </form>

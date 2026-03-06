@@ -1,22 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile</title>
+</head>
+<body>
+
 <h1>Edit Profile</h1>
 
 <form action="/profile/update/<%= user._id %>" method="POST">
 
-<label>Username</label>
+<label>Username:</label>
 <input type="text" name="username" value="<%= user.username %>" required>
 
-<br>
+<br><br>
 
-<label>Email</label>
+<label>Email:</label>
 <input type="email" name="email" value="<%= user.email %>" required>
 
-<br>
+<br><br>
 
-<label>Bio</label>
-<input type="text" name="bio" value="<%= user.bio %>">
+<label>Bio:</label>
+<textarea name="bio"><%= user.bio %></textarea>
 
-<br>
+<br><br>
 
 <button type="submit">Update Profile</button>
 
 </form>
+
+</body>
+</html>
