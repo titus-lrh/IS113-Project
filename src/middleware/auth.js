@@ -5,12 +5,12 @@ const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
     return next();
   }
-  return res.redirect('/login');
+  return res.redirect('/auth/login');
 };
 
 const isNotAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
-    return res.redirect('/dashboard');
+    return res.redirect('/auth/dashboard');
   }
   return next();
 };

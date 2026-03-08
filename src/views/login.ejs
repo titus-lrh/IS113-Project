@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Recipe App</title>
+  <title>Login - Everyday Cooks</title>
   <style>
     * {
       margin: 0;
@@ -29,7 +29,7 @@
       max-width: 400px;
     }
 
-    h1 {
+    h2 {
       margin-bottom: 1.5rem;
       text-align: center;
     }
@@ -93,7 +93,7 @@
 </head>
 <body>
   <div class="login-container">
-    <h1>Login</h1>
+    <h2>Login to Happy Cooks</h2>
 
     <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
       <% errors.forEach(error => { %>
@@ -116,7 +116,7 @@
     </form>
 
     <div class="text-center">
-      Don't have an account? <a href="/register">Register here</a>
+      Don't have an account? <a href="/auth/register">Register here</a>
     </div>
   </div>
 </body>

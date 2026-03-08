@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title : 'Recipe App' %></title>
+  <title><%= typeof title !== 'undefined' ? title : 'Everyday Cooks' %></title>
   <style>
     * {
       margin: 0;
@@ -103,7 +103,7 @@
 </head>
 <body>
   <nav>
-    <strong>Recipe App</strong>
+    <strong>Everyday Cooks</strong>
     <span style="float: right;">
       <% if (typeof session !== 'undefined' && session.userId) { %>
         Welcome, <%= session.username %>

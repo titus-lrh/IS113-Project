@@ -18,6 +18,22 @@ const registerValidationRules = () => {
   ];
 };
 
+// Authentication Routes
+router.get('/login', (req, res) => {
+  res.render('login');
+});
+
+router.get('/register', (req, res) => {
+  res.render('register');
+});
+
+router.get('/dashboard', async (req, res) => {  
+  if (!req.session.userId) {
+    return res.redirect('/auth/login');
+  }
+  res.render('dashboard', { user: req.session });
+});
+
 // Register endpoint
 router.post('/register', isNotAuthenticated, registerValidationRules(), async (req, res) => {
   const errors = validationResult(req);
@@ -77,7 +93,7 @@ router.post('/login', isNotAuthenticated, async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/dashboard');
+    res.redirect('/auth/dashboard');
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).render('login', { errors: [{ msg: 'Server error' }] });

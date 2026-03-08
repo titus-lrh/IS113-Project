@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recipes - Recipe App</title>
+  <title>Recipes - Everyday Cooks</title>
   <style>
     * {
       margin: 0;
@@ -18,7 +18,7 @@
     }
 
     nav {
-      background-color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 1rem 2rem;
       color: white;
       display: flex;
@@ -186,22 +186,21 @@
 </head>
 <body>
   <nav>
-    <strong>Recipe App</strong>
+    <strong>Everyday Cooks</strong>
     <div>
       <% if (typeof session !== 'undefined' && session.userId) { %>
         <span><%= session.username %></span>
         <a href="/recipes/new">Create Recipe</a>
-        <a href="/dashboard">Dashboard</a>
+        <a href="/auth/dashboard">Dashboard</a>
         <a href="/auth/logout">Logout</a>
       <% } else { %>
-        <a href="/login">Login</a>
-        <a href="/register">Register</a>
+        <a href="/auth/login">Login</a>
       <% } %>
     </div>
   </nav>
 
   <div class="container">
-    <h1>Recipes</h1>
+    <h1>All Recipes</h1>
 
     <% if (typeof category !== 'undefined' && category) { %>
       <p>Showing recipes in category: <strong><%= category %></strong></p>

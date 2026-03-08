@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit <%= recipe.title %> - Recipe App</title>
+  <title>Edit <%= recipe.title %> - Everyday Cooks</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -156,12 +156,12 @@
 <body>
 
   <nav>
-    <strong>Recipe App</strong>
+    <strong>Everyday Cooks</strong>
     <div>
       <% if (typeof session !== 'undefined' && session.userId) { %>
         <span><%= session.username %></span>
         <a href="/recipes/new">Create Recipe</a>
-        <a href="/dashboard">Dashboard</a>
+        <a href="/auth/dashboard">Dashboard</a>
         <a href="/auth/logout">Logout</a>
       <% } else { %>
         <a href="/login">Login</a>
@@ -171,7 +171,7 @@
   </nav>
 
   <div class="container">
-    <a href="/recipes/<%= recipe._id %>" class="back-link">← Back to Recipe</a>
+    <a href="/recipes" class="back-link">← Back to Recipe</a>
 
     <div class="form-card">
       <h1>Edit Recipe</h1>

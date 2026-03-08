@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Recipe App</title>
+  <title>Dashboard - Everyday Cooks</title>
   <style>
     * {
       margin: 0;
@@ -28,8 +28,12 @@
 
     nav a {
       color: white;
-      text-decoration: underline;
+      text-decoration: none;
       margin-left: 1.5rem;
+    }
+    
+     nav a:hover {
+      text-decoration: underline;
     }
 
     .container {
@@ -78,7 +82,7 @@
 </head>
 <body>
   <nav>
-    <strong>Simple Joy</strong>
+    <strong>Everyday Cooks</strong>
     <div>
       <a href="/profile/<%= user.userId %>">My Profile</a>
       <a href="/">Logout</a>
@@ -92,14 +96,14 @@
         <h3>📝 My Recipes</h3>
         <p>View and manage your recipes</p>
         <br>
-        <a href="/recipes/my-recipes">View My Recipes</a>
+        <a href="/recipes/my-recipes/<%= user.userId %>">View My Recipes</a>
       </div>
 
       <div class="quick-link-card">
         <h3>🔍 Browse Recipes</h3>
         <p>Discover recipes from the community</p>
         <br>
-        <a href="/recipes">Browse Community</a>
+        <a href="/">Browse Community</a>
       </div>
 
       <div class="quick-link-card">

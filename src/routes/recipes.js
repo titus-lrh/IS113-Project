@@ -31,6 +31,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get("/my-recipes/:userId", async(req, res) => {
+  try {
+    const recipes = await Recipe.find({author: req.params.userId}).populate('author', 'username firstName lastName');
+    console.log(recipes);
+    res.render("recipes/userRecipe", {recipes})
+    
+  } catch (error) {
+    console.error('Error fetching uploaded recipes by user:', error);
+    res.status(500).send('Error fetching uploaded recipes by user');
+  }
+})
+
 // GET recipes by category
 router.get('/category/:category', async (req, res) => {
   // TODO: Team Member  - Implement GET recipes by category logic
@@ -90,7 +102,7 @@ router.get('/:id', async (req, res) => {
     const recipe = await Recipe.findById(req.params.id).populate('author', 'username firstName lastName');
     if (!recipe) {
       return res.status(404).send('Recipe not found');
-    }
+    }    
     
     // TODO: Team member - Once the show.ejs view is created, remove res.json and uncomment the line below:
     res.render('recipes/show', { recipe });

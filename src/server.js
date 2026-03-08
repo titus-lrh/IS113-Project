@@ -9,12 +9,14 @@ const authRoutes = require('./routes/auth');
 const recipeRoutes = require('./routes/recipes');
 const profileRoutes = require("./routes/profile");
 const methodOverride = require('method-override');
-app.use(methodOverride('_method'));
+
 
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
+
+app.use(methodOverride('_method'));
 
 // ============================================
 // MIDDLEWARE SETUP
@@ -48,30 +50,11 @@ app.use(session(sessionConfig));
 // ============================================
 
 // Landing Page
-app.get('/', (req, res) => {
-  res.render('index')
-});
-
-// Authentication Routes
-app.get('/login', (req, res) => {
-  res.render('login');
-});
-
-app.get('/register', (req, res) => {
-  res.render('register');
-});
-
-// Dashboard (Protected)
-app.get('/dashboard', (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login');
-  }
-  res.render('dashboard', { user: req.session });
-});
-
+app.use("/", recipeRoutes);
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);
+
 
 
 // ============================================
@@ -101,7 +84,7 @@ const startServer = async () => {
     // Start Express Server
     app.listen(PORT, () => {
       console.log(`\n✓ Server is running on http://localhost:${PORT}`);
-      console.log('✓ Navigate to http://localhost:8000/index.html to get started\n');
+      console.log('✓ Navigate to http://localhost:8000/ to get started\n');
     });
   } catch (error) {
     console.error('Failed to start server:', error);
