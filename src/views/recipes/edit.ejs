@@ -14,7 +14,7 @@
     }
 
     nav {
-      background-color: #333;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 1rem 2rem;
       color: white;
       display: flex;
@@ -159,8 +159,6 @@
     <strong>Everyday Cooks</strong>
     <div>
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span><%= session.username %></span>
-        <a href="/recipes/new">Create Recipe</a>
         <a href="/auth/dashboard">Dashboard</a>
         <a href="/auth/logout">Logout</a>
       <% } else { %>
@@ -171,8 +169,8 @@
   </nav>
 
   <div class="container">
-    <a href="/recipes" class="back-link">← Back to Recipe</a>
-
+    <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
+    <br><br>
     <div class="form-card">
       <h1>Edit Recipe</h1>
 
@@ -231,7 +229,7 @@
         </div>
 
         <div class="form-actions">
-          <a href="/recipes/<%= recipe._id %>" class="btn btn-secondary">Cancel</a>
+          <a href="#" onclick="history.back(); return false;" class="btn btn-secondary">Cancel</a>
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </div>
 

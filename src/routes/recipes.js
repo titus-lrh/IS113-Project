@@ -34,8 +34,7 @@ router.get('/', async (req, res) => {
 router.get("/my-recipes/:userId", async(req, res) => {
   try {
     const recipes = await Recipe.find({author: req.params.userId}).populate('author', 'username firstName lastName');
-    console.log(recipes);
-    res.render("recipes/userRecipe", {recipes})
+    res.render("recipes/userRecipe", {recipes, session: req.session})
     
   } catch (error) {
     console.error('Error fetching uploaded recipes by user:', error);
@@ -89,7 +88,8 @@ router.post('/', isAuthenticated, recipeValidationRules(), async (req, res) => {
     });
 
     await recipe.save();
-    res.redirect(`/recipes/${recipe._id}`);
+    const recipes = await Recipe.find({author: req.params.userId}).populate('author', 'username firstName lastName');
+    res.render("recipes/userRecipe", {recipes, session: req.session})
   } catch (error) {
     console.error('Error creating recipe:', error);
     res.status(500).render('recipes/new', { errors: [{ msg: 'Error creating recipe' }] });
@@ -125,7 +125,7 @@ router.get('/:id/edit', isAuthenticated, async (req, res) => {
     if (recipe.author.toString() !== req.session.userId) {
       return res.status(403).send('Unauthorized');
     }
-    res.render('recipes/edit', { recipe });
+    res.render('recipes/edit', { recipe, session: req.session });
   } catch (error) {
     console.error('Error fetching recipe for edit:', error);
     res.status(500).send('Error fetching recipe');
@@ -180,8 +180,19 @@ router.put('/:id', isAuthenticated, recipeValidationRules(), async (req, res) =>
 
 // DELETE recipe
 router.delete('/:id', isAuthenticated, async (req, res) => {
-  // TODO: Team Member - Implement DELETE recipe logic
-  res.send(`DELETE recipe ID: ${req.params.id} - To be implemented`);
+  try {
+    const recipe = await Recipe.deleteOne({_id: req.params.id})
+    if (!recipe) {
+      return res.status(404).send('Recipe not found');    
+    }
+    
+    res.json({ msg: 'Recipe deleted successfully' });
+  } catch(error) {
+     console.error('Error deleting recipe:', error);
+    res.status(500).send('Error deleting recipe');
+  }
+  
+
 });
 
 module.exports = router;

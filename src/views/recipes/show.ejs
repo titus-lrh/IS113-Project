@@ -206,14 +206,15 @@
         <a href="/auth/dashboard">Dashboard</a>
         <a href="/auth/logout">Logout</a>
       <% } else { %>
-        <a href="/login">Login</a>
+        <a href="/auth/login">Login</a>
       <% } %>
     </div>
   </nav>
 
   <div class="container">
+    <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
+    <br><br>
     <div class="recipe-header">
-      <a href="/recipes" style="color: #667eea; text-decoration: none;">← Back to Recipes</a>
       <h1><%= recipe.title %></h1>
 
       <% if (recipe.category) { %>

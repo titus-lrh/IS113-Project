@@ -74,18 +74,21 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       transition: transform 0.3s;
+      display: flex;           
+      flex-direction: column; 
+      height: 400px;        
     }
 
-    .recipe-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-    }
-
-    .recipe-header {
-      padding: 1.5rem;
-      background-color: #f9f9f9;
-      border-bottom: 1px solid #eee;
-    }
+    
+   .recipe-header {
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    height: 80px;           
+    display: flex;           
+    flex-direction: column;  
+    justify-content: center; 
+  }
 
     .recipe-header h3 {
       margin-bottom: 0.5rem;
@@ -98,6 +101,7 @@
 
     .recipe-body {
       padding: 1.5rem;
+      flex: 1;                     
     }
 
     .recipe-body p {
@@ -124,12 +128,14 @@
       color: #667eea;
     }
 
-    .recipe-footer {
-      padding: 1.5rem;
-      background-color: #f9f9f9;
-      display: flex;
-      gap: 1rem;
-    }
+  .recipe-footer {
+    padding: 1.5rem;
+    background-color: #f9f9f9;
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;          
+    margin-top: auto;        
+  }
 
     .recipe-footer a {
       flex: 1;
@@ -180,6 +186,10 @@
       font-size: 0.85rem;
     }
 
+    .recipe-description {
+      height: 60px;
+    }
+
 </style>
 </head>
 
@@ -189,7 +199,6 @@
     <strong>Everyday Cooks</strong>
     <div>
         <a href="/auth/dashboard">Dashboard</a>
-
         <a href="/">Logout</a>
     </div>
 </nav>
@@ -206,12 +215,13 @@
             </div>
 
             <div class="recipe-body">
-              <p><%= recipe.description.substring(0, 100) %>...</p>
-
+              <div class="recipe-description">
+                <p><%= recipe.description.substring(0, 100) %>...</p>
+              </div>
               <% if (recipe.category) { %>
                 <span class="category-badge"><%= recipe.category %></span>
               <% } %>
-
+            </div>
               <div class="recipe-info">
                 <div class="info-item">
                   <strong><%= recipe.cookingTime %></strong>
@@ -225,13 +235,13 @@
                   <strong><%= recipe.ingredients.length %></strong>
                   <small>ingredients</small>
                 </div>
-              </div>
             </div>
 
             <div class="recipe-footer">
               <a href="/recipes/<%= recipe._id %>">View</a>
               <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
                 <a href="/recipes/<%= recipe._id %>/edit">Edit</a>
+                 <a onclick="deleteRecipe('<%= recipe._id %>', '<%= session.userId %>')">Delete</a>
               <% } %>
             </div>
           </div>
@@ -251,4 +261,19 @@
   </div>
 
 </body>
+<script>
+    function deleteRecipe(id, userId) {
+      if (confirm('Are you sure you want to delete this recipe?')) {
+        fetch(`/recipes/${id}`, {
+          method: 'DELETE'
+        })
+        .then(res => res.json())
+        .then(data => {
+          alert(data.msg);
+          location.reload();
+        })
+        .catch(err => console.error(err));
+      }
+    }
+  </script>
 </html>
