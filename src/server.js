@@ -3,12 +3,10 @@
 
 const express = require('express');
 const session = require('express-session');
-const bodyParser = require('body-parser');
 const connectDB = require('./config/database');
-const authRoutes = require('./routes/auth');
-const recipeRoutes = require('./routes/recipes');
-const profileRoutes = require("./routes/profile");
-const methodOverride = require('method-override');
+const authRoutes = require('./routes/auth-routes');
+const recipeRoutes = require('./routes/recipes-routes');
+const profileRoutes = require("./routes/profile-routes");
 
 
 require('dotenv').config();
@@ -16,17 +14,12 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
-app.use(methodOverride('_method'));
-
 // ============================================
 // MIDDLEWARE SETUP
 // ============================================
 
-// Body Parser Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // View Engine
 app.set('view engine', 'ejs');

@@ -277,8 +277,8 @@
   <script>
     function deleteRecipe(id) {
       if (confirm('Are you sure you want to delete this recipe?')) {
-        fetch(`/recipes/${id}`, {
-          method: 'DELETE'
+        fetch(`/recipes/${id}/delete`, {
+          method: 'POST'
         })
         .then(res => res.json())
         .then(data => {
