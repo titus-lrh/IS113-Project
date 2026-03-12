@@ -7,6 +7,8 @@ const recipeController = require('../controllers/recipe-controller');
 const { isAuthenticated } = require('../middleware/auth');
 
 router.get('/', recipeController.getAllRecipes);
+router.get('/search', recipeController.searchRecipes);
+router.get('/mealdb/:id', recipeController.getMealDBRecipe);
 router.get('/my-recipes/:userId', recipeController.getMyRecipes);
 router.get('/category/:category', recipeController.getRecipesByCategory);
 router.get('/new', isAuthenticated, recipeController.getNewRecipeForm);

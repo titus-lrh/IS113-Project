@@ -45,24 +45,40 @@
       margin-bottom: 2rem;
     }
 
-    .filters {
-      margin-bottom: 2rem;
+    .search-bar {
       display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
     }
 
-    .filters a {
-      display: inline-block;
-      padding: 0.5rem 1rem;
+    .search-bar input {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: 1px solid #ddd;
+      border-radius: 0.25rem;
+      font-size: 1rem;
+    }
+
+    .search-bar button {
+      padding: 0.65rem 1.5rem;
       background-color: #667eea;
       color: white;
-      text-decoration: none;
+      border: none;
       border-radius: 0.25rem;
+      font-size: 1rem;
+      cursor: pointer;
     }
 
-    .filters a:hover {
+    .search-bar button:hover {
       background-color: #5568d3;
+    }
+
+    .section-title {
+      margin: 2rem 0 1rem;
+      font-size: 1.4rem;
+      color: #333;
+      border-left: 4px solid #667eea;
+      padding-left: 0.75rem;
     }
 
     .recipes-grid {
@@ -77,22 +93,20 @@
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       overflow: hidden;
       transition: transform 0.3s;
-      display: flex;           
-      flex-direction: column; 
-      height: 400px;        
+      display: flex;
+      flex-direction: column;
+      height: 400px;
     }
 
-    
    .recipe-header {
     padding: 1.5rem;
     background-color: #f9f9f9;
     border-bottom: 1px solid #eee;
-    height: 80px;           
-    display: flex;           
-    flex-direction: column;  
-    justify-content: center; 
+    height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
-
 
     .recipe-header h3 {
       margin-bottom: 0.5rem;
@@ -103,10 +117,11 @@
       color: #666;
     }
 
-     .recipe-body {
+    .recipe-body {
       padding: 1.5rem;
-      flex: 1;                     
+      flex: 1;
     }
+
     .recipe-body p {
       color: #666;
       margin-bottom: 1rem;
@@ -131,13 +146,13 @@
       color: #667eea;
     }
 
-   .recipe-footer {
+  .recipe-footer {
     padding: 1.5rem;
     background-color: #f9f9f9;
     display: flex;
     gap: 1rem;
-    flex-shrink: 0;          
-    margin-top: auto;        
+    flex-shrink: 0;
+    margin-top: auto;
   }
 
     .recipe-footer a {
@@ -188,8 +203,67 @@
       border-radius: 1rem;
       font-size: 0.85rem;
     }
+
     .recipe-description {
       height: 60px;
+    }
+
+    .mealdb-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mealdb-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .mealdb-thumb {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .mealdb-body {
+      padding: 1rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .mealdb-body h3 {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .mealdb-body a {
+      display: block;
+      padding: 0.5rem;
+      text-align: center;
+      background-color: #667eea;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .mealdb-body a:hover {
+      background-color: #5568d3;
+    }
+
+    .source-badge {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      background-color: #fef3c7;
+      color: #92400e;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      margin-bottom: 0.5rem;
     }
   </style>
 </head>
@@ -211,10 +285,12 @@
   <div class="container">
     <h1>All Recipes</h1>
 
-    <% if (typeof category !== 'undefined' && category) { %>
-      <p>Showing recipes in category: <strong><%= category %></strong></p>
-    <% } %>
+    <form class="search-bar" action="/recipes/search" method="GET">
+      <input type="text" name="q" placeholder="Search user and stock recipes...">
+      <button type="submit">Search</button>
+    </form>
 
+    <h2 class="section-title">User Recipes</h2>
     <% if (typeof recipes !== 'undefined' && recipes.length > 0) { %>
       <div class="recipes-grid">
         <% recipes.forEach(recipe => { %>
@@ -260,14 +336,33 @@
       </div>
     <% } else { %>
       <div class="empty-state">
-        <h2>No recipes found</h2>
-        <p>There are no recipes in this category yet.</p>
+        <h2>No user recipes yet</h2>
         <% if (typeof session !== 'undefined' && session.userId) { %>
           <a href="/recipes/new">Create the first recipe</a>
         <% } else { %>
-          <p><a href="/register">Register</a> to create a recipe</p>
+          <p><a href="/auth/register">Register</a> to create a recipe</p>
         <% } %>
       </div>
+    <% } %>
+
+    <h2 class="section-title">Stock Recipes</h2>
+    <% if (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0) { %>
+      <div class="recipes-grid">
+        <% mealdbRecipes.forEach(meal => { %>
+          <div class="mealdb-card">
+            <img class="mealdb-thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
+            <div class="mealdb-body">
+              <div>
+                <span class="source-badge">TheMealDB</span>
+                <h3><%= meal.strMeal %></h3>
+              </div>
+              <a href="/recipes/mealdb/<%= meal.idMeal %>">View Recipe</a>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <p style="color: #888;">No stock recipes available right now.</p>
     <% } %>
   </div>
 </body>

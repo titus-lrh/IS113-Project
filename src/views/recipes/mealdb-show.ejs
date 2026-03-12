@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= recipe.title %> - Everyday Cooks</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    nav {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 1rem 2rem;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 1.5rem;
+    }
+
+    nav a:hover { text-decoration: underline; }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .recipe-header {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .recipe-header h1 { margin-bottom: 1rem; }
+
+    .thumbnail {
+      width: 100%;
+      max-height: 350px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+
+    .category-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background-color: #e0e7ff;
+      color: #667eea;
+      border-radius: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .source-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background-color: #fef3c7;
+      color: #92400e;
+      border-radius: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .recipe-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin: 2rem 0;
+    }
+
+    .section {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .section h2 {
+      margin-bottom: 1.5rem;
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 0.5rem;
+    }
+
+    .ingredients-list { list-style: none; }
+
+    .ingredients-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .ingredients-list li::before {
+      content: "•";
+      color: #667eea;
+      position: absolute;
+      left: 0;
+    }
+
+    .ingredients-list li:last-child { border-bottom: none; }
+
+    .instructions {
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <strong>Everyday Cooks</strong>
+    <div>
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+        <span><%= session.username %></span>
+        <a href="/recipes">Recipes</a>
+        <a href="/auth/dashboard">Dashboard</a>
+        <a href="/auth/logout">Logout</a>
+      <% } else { %>
+        <a href="/auth/login">Login</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container">
+    <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
+    <br><br>
+
+    <div class="recipe-header">
+      <% if (recipe.thumbnail) { %>
+        <img class="thumbnail" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
+      <% } %>
+      <h1><%= recipe.title %></h1>
+      <div class="meta-row">
+        <% if (recipe.category) { %>
+          <span class="category-badge"><%= recipe.category %></span>
+        <% } %>
+        <% if (recipe.area) { %>
+          <span class="category-badge"><%= recipe.area %> cuisine</span>
+        <% } %>
+        <span class="source-badge">Stock Recipe — TheMealDB</span>
+      </div>
+    </div>
+
+    <div class="recipe-content">
+      <div class="section">
+        <h2>Ingredients</h2>
+        <ul class="ingredients-list">
+          <% recipe.ingredients.forEach(ingredient => { %>
+            <li><%= ingredient %></li>
+          <% }); %>
+        </ul>
+      </div>
+
+      <div class="section">
+        <h2>Instructions</h2>
+        <div class="instructions"><%= recipe.instructions %></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

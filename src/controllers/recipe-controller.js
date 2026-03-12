@@ -1,6 +1,33 @@
 const Recipe = require('../models/recipe-model');
 const { body, validationResult } = require('express-validator');
 
+// ---- TheMealDB helpers ----
+const fetchFromMealDB = async (url) => {
+  const response = await fetch(url);
+  const data = await response.json();
+  return data.meals || [];
+};
+
+const transformMealDetail = (meal) => {
+  const ingredients = [];
+  for (let i = 1; i <= 20; i++) {
+    const ing = meal[`strIngredient${i}`];
+    const measure = meal[`strMeasure${i}`];
+    if (ing && ing.trim()) {
+      ingredients.push(`${measure ? measure.trim() + ' ' : ''}${ing.trim()}`);
+    }
+  }
+  return {
+    id: meal.idMeal,
+    title: meal.strMeal,
+    category: meal.strCategory,
+    area: meal.strArea,
+    ingredients,
+    instructions: meal.strInstructions,
+    thumbnail: meal.strMealThumb,
+  };
+};
+
 const recipeValidationRules = () => {
   return [
     body('title').isLength({ min: 3 }).withMessage('Title must be at least 3 characters'),
@@ -14,7 +41,9 @@ const recipeValidationRules = () => {
 const getAllRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.find().populate('author', 'username firstName lastName');
-    res.render('recipes/index', { recipes, session: req.session });
+    const mealdbMeals = await fetchFromMealDB('https://www.themealdb.com/api/json/v1/1/filter.php?c=Chicken');
+    const mealdbRecipes = mealdbMeals.slice(0, 12);
+    res.render('recipes/index', { recipes, mealdbRecipes, session: req.session });
   } catch (error) {
     console.error('Error fetching recipes:', error);
     res.status(500).send('Error fetching recipes');
@@ -167,6 +196,42 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
+// GET search results (user recipes + MealDB)
+const searchRecipes = async (req, res) => {
+  const query = req.query.q || '';
+  try {
+    const userRecipes = await Recipe.find({
+      title: { $regex: query, $options: 'i' }
+    }).populate('author', 'username firstName lastName');
+
+    const mealdbMeals = await fetchFromMealDB(
+      `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`
+    );
+
+    res.render('recipes/search', { userRecipes, mealdbRecipes: mealdbMeals, query, session: req.session });
+  } catch (error) {
+    console.error('Error searching recipes:', error);
+    res.status(500).send('Error searching recipes');
+  }
+};
+
+// GET single MealDB recipe
+const getMealDBRecipe = async (req, res) => {
+  try {
+    const meals = await fetchFromMealDB(
+      `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.params.id}`
+    );
+    if (!meals.length) {
+      return res.status(404).send('Recipe not found');
+    }
+    const recipe = transformMealDetail(meals[0]);
+    res.render('recipes/mealdb-show', { recipe, session: req.session });
+  } catch (error) {
+    console.error('Error fetching MealDB recipe:', error);
+    res.status(500).send('Error fetching recipe');
+  }
+};
+
 module.exports = {
   recipeValidationRules,
   getAllRecipes,
@@ -178,4 +243,6 @@ module.exports = {
   getEditRecipeForm,
   updateRecipe,
   deleteRecipe,
+  searchRecipes,
+  getMealDBRecipe,
 };
