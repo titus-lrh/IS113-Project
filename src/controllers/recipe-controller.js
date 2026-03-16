@@ -40,7 +40,7 @@ const recipeValidationRules = () => {
 // GET all recipes
 const getAllRecipes = async (req, res) => {
   try {
-    const recipes = await Recipe.find().populate('author', 'username firstName lastName');
+    const recipes = await Recipe.getAllRecipes();
     const mealdbMeals = await fetchFromMealDB('https://www.themealdb.com/api/json/v1/1/filter.php?c=Chicken');
     const mealdbRecipes = mealdbMeals.slice(0, 12);
     res.render('recipes/index', { recipes, mealdbRecipes, session: req.session });
@@ -53,7 +53,7 @@ const getAllRecipes = async (req, res) => {
 // GET user's own recipes
 const getMyRecipes = async (req, res) => {
   try {
-    const recipes = await Recipe.find({ author: req.params.userId }).populate('author', 'username firstName lastName');
+    const recipes = await Recipe.getRecipesByUser(req.params.userId);
     res.render('recipes/userRecipe', { recipes, session: req.session });
   } catch (error) {
     console.error('Error fetching uploaded recipes by user:', error);
@@ -64,8 +64,7 @@ const getMyRecipes = async (req, res) => {
 // GET recipes by category
 const getRecipesByCategory = async (req, res) => {
   try {
-    const recipes = await Recipe.find({ category: req.params.category })
-                                .populate('author', 'username firstName lastName');
+    const recipes = await Recipe.getRecipesByCategory(req.params.category);
     res.render('recipes/index', { recipes, session: req.session });
   } catch (error) {
     console.error('Error fetching recipes by category:', error);
@@ -102,8 +101,8 @@ const createRecipe = async (req, res) => {
       author: req.session.userId,
     });
 
-    await recipe.save();
-    const recipes = await Recipe.find({ author: req.session.userId }).populate('author', 'username firstName lastName');
+    await Recipe.createRecipe();
+    const recipes = await Recipe.getRecipesByUser(req.session.userId);
     res.render('recipes/userRecipe', { recipes, session: req.session });
   } catch (error) {
     console.error('Error creating recipe:', error);
@@ -114,7 +113,7 @@ const createRecipe = async (req, res) => {
 // GET single recipe
 const getRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id).populate('author', 'username firstName lastName');
+    const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
@@ -128,11 +127,13 @@ const getRecipe = async (req, res) => {
 // GET edit form
 const getEditRecipeForm = async (req, res) => {
   try {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-    if (recipe.author.toString() !== req.session.userId) {
+    if (recipe.author._id.toString() !== req.session.userId) {
+      console.log(recipe.author.toString())
+      console.log(req.session.userId)
       return res.status(403).send('Unauthorized');
     }
     res.render('recipes/edit', { recipe, session: req.session });
@@ -146,16 +147,16 @@ const getEditRecipeForm = async (req, res) => {
 const updateRecipe = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipe = await Recipe.getRecipeById(req.params.id);
     return res.status(400).render('recipes/edit', { errors: errors.array(), recipe });
   }
 
   try {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-    if (recipe.author.toString() !== req.session.userId) {
+    if (recipe.author._id.toString() !== req.session.userId) {
       return res.status(403).send('Unauthorized');
     }
 
@@ -165,17 +166,17 @@ const updateRecipe = async (req, res) => {
       ? ingredients
       : ingredients.split(',').map(i => i.trim());
 
-    await Recipe.findByIdAndUpdate(req.params.id, {
+    const updateData = {
       title,
       description,
       ingredients: ingredientArray,
       instructions,
       cookingTime: parseInt(cookingTime),
       servings: parseInt(servings),
-      category,
-      updatedAt: Date.now()
-    });
+      category
+    };
 
+    await Recipe.updateRecipeById(req.params.id, updateData);
     res.redirect(`/recipes/${req.params.id}`);
   } catch (error) {
     console.error('Error updating recipe:', error);
@@ -186,7 +187,7 @@ const updateRecipe = async (req, res) => {
 // DELETE recipe
 const deleteRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.deleteOne({ _id: req.params.id });
+    const recipe = await Recipe.deleteRecipeById(req.params.id);
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
@@ -201,9 +202,7 @@ const deleteRecipe = async (req, res) => {
 const searchRecipes = async (req, res) => {
   const query = req.query.q || '';
   try {
-    const userRecipes = await Recipe.find({
-      title: { $regex: query, $options: 'i' }
-    }).populate('author', 'username firstName lastName');
+    const userRecipes = await Recipe.searchRecipesByTitle(query);
 
     const mealdbMeals = await fetchFromMealDB(
       `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`

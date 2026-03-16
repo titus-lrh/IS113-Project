@@ -146,6 +146,7 @@
       align-items: center;
       gap: 0.5rem
     }
+
   </style>
 </head>
 
@@ -173,7 +174,7 @@
     <% }); %>
     <% } %>
 
-    <form method="POST" action="/recipes">
+    <form method="POST" action="/recipes" enctype="multipart/form-data">
       <div class="form-group">
         <label for="title">Recipe Title</label>
         <input type="text" id="title" name="title" placeholder="e.g., Classic Chocolate Chip Cookies" value="<%= typeof body !== 'undefined' ? body.title || '' : '' %>" required>
@@ -246,9 +247,9 @@
         <textarea id="instructions" name="instructions" placeholder="Step 1: ...&#10;Step 2: ...&#10;Step 3: ..." required><%= typeof body !== 'undefined' ? body.instructions || '' : '' %></textarea>
         <div class="form-hint">Write step-by-step instructions. Be as detailed as possible.</div>
       </div>
-
+      
       <div class="button-group">
-        <a href="/recipes" class="btn-cancel">Cancel</a>
+        <a href="/" class="btn-cancel">Cancel</a>
         <button type="submit" class="btn-submit">Create Recipe</button>
       </div>
     </form>
