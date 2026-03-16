@@ -31,8 +31,7 @@ const recipeSchema = new mongoose.Schema({
     required: true,
   },
   category: {
-    type: String,
-    enum: ['vegan', 'dessert', 'quick-meals', 'breakfast', 'lunch', 'dinner', 'snack'],
+    type: [],
     default: 'meal',
   },
   author: {

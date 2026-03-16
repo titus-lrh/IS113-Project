@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -149,26 +150,14 @@
       color: white;
     }
 
-    .btn-primary:hover {
-      background-color: #5568d3;
-    }
-
     .btn-danger {
       background-color: #dc3545;
       color: white;
     }
 
-    .btn-danger:hover {
-      background-color: #c82333;
-    }
-
     .btn-secondary {
       background-color: #6c757d;
       color: white;
-    }
-
-    .btn-secondary:hover {
-      background-color: #5a6268;
     }
 
     .category-badge {
@@ -193,20 +182,20 @@
       color: #666;
       margin-bottom: 0.5rem;
     }
-
   </style>
 </head>
+
 <body>
   <nav>
     <strong>Everyday Cooks</strong>
     <div>
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span><%= session.username %></span>
-        <a href="/recipes">Recipes</a>
-        <a href="/auth/dashboard">Dashboard</a>
-        <a href="/auth/logout">Logout</a>
+      <span><%= session.username %></span>
+      <a href="/recipes">Recipes</a>
+      <a href="/auth/dashboard">Dashboard</a>
+      <a href="/auth/logout">Logout</a>
       <% } else { %>
-        <a href="/auth/login">Login</a>
+      <a href="/auth/login">Login</a>
       <% } %>
     </div>
   </nav>
@@ -218,7 +207,9 @@
       <h1><%= recipe.title %></h1>
 
       <% if (recipe.category) { %>
-        <span class="category-badge"><%= recipe.category %></span>
+      <% recipe.category.forEach(subCategory => { %>
+      <span class="category-badge"><%= subCategory %></span>
+      <% }) %>
       <% } %>
 
       <p style="color: #666; margin: 1rem 0;">
@@ -255,7 +246,7 @@
         <h2>Ingredients</h2>
         <ul class="ingredients-list">
           <% recipe.ingredients.forEach(ingredient => { %>
-            <li><%= ingredient %></li>
+          <li><%= ingredient %></li>
           <% }); %>
         </ul>
       </div>
@@ -267,10 +258,10 @@
     </div>
 
     <% if (typeof session !== 'undefined' && session.userId && recipe.author._id === session.userId) { %>
-      <div class="actions">
-        <a href="/recipes/<%= recipe._id %>/edit" class="btn btn-primary">Edit Recipe</a>
-        <button class="btn btn-danger" onclick="deleteRecipe('<%= recipe._id %>')">Delete Recipe</button>
-      </div>
+    <div class="actions">
+      <a href="/recipes/<%= recipe._id %>/edit" class="btn btn-primary">Edit Recipe</a>
+      <button class="btn btn-danger" onclick="deleteRecipe('<%= recipe._id %>')">Delete Recipe</button>
+    </div>
     <% } %>
   </div>
 
@@ -278,16 +269,17 @@
     function deleteRecipe(id) {
       if (confirm('Are you sure you want to delete this recipe?')) {
         fetch(`/recipes/${id}/delete`, {
-          method: 'POST'
-        })
-        .then(res => res.json())
-        .then(data => {
-          alert(data.msg);
-          window.location.href = '/recipes';
-        })
-        .catch(err => console.error(err));
+            method: 'POST'
+          })
+          .then(res => res.json())
+          .then(data => {
+            alert(data.msg);
+            window.location.href = '/recipes';
+          })
+          .catch(err => console.error(err));
       }
     }
   </script>
 </body>
+
 </html>

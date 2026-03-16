@@ -235,7 +235,7 @@
               <div class="recipe-meta">By <%= recipe.author.username %></div>
             </div>
             <div class="recipe-body">
-              <p><%= recipe.description.substring(0, 100) %>...</p>
+              <p><%= recipe.description.substring(0, 100) %></p>
               <% if (recipe.category) { %>
                 <span class="category-badge"><%= recipe.category %></span>
               <% } %>

@@ -196,8 +196,7 @@
     }
 
     .category-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
+      padding: 0.25rem;
       background-color: #e0e7ff;
       color: #667eea;
       border-radius: 1rem;
@@ -304,10 +303,12 @@
 
             <div class="recipe-body">
               <div class="recipe-description">
-                <p><%= recipe.description.substring(0, 100) %>...</p>
+                <p><%= recipe.description.substring(0, 100) %></p>
               </div>
               <% if (recipe.category) { %>
-                <span class="category-badge"><%= recipe.category %></span>
+                  <% recipe.category.forEach(subCategory => { %>
+                    <span class="category-badge"><%= subCategory %></span>
+                  <% }) %>
               <% } %>
             </div>
               <div class="recipe-info">

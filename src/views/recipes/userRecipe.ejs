@@ -216,10 +216,12 @@
 
             <div class="recipe-body">
               <div class="recipe-description">
-                <p><%= recipe.description.substring(0, 100) %>...</p>
+                <p><%= recipe.description.substring(0, 100) %></p>
               </div>
-              <% if (recipe.category) { %>
-                <span class="category-badge"><%= recipe.category %></span>
+               <% if (recipe.category) { %>
+                  <% recipe.category.forEach(subCategory => { %>
+                    <span class="category-badge"><%= subCategory %></span>
+                  <% }) %>
               <% } %>
             </div>
               <div class="recipe-info">

@@ -219,6 +219,43 @@
         </div>
 
         <div class="form-group">
+        <label for="category">Category (Select up to 3)</label>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Appetisers">
+          Appetisers/Sides
+        </div>
+        <% console.log(recipe.category) %>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Breakfast" <%= recipe.category.includes("Breakfast") ? 'checked' : '' %>>
+          Breakfast
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Lunch" <%= recipe.category.includes("Lunch") ? 'checked' : '' %>>
+          Lunch
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Dinner" <%= recipe.category.includes("Dinner") ? 'checked' : '' %>>
+          Dinner
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Dessert" <%= recipe.category.includes("Dessert") ? 'checked' : '' %>>
+          Dessert
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Healthy" <%= recipe.category.includes("Healthy") ? 'checked' : '' %>>
+          Healthy
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="Vegan" <%= recipe.category.includes("Vegan") ? 'checked' : '' %>>
+          Vegan
+        </div>
+        <div class="categories">
+          <input type="checkbox" name="category" value="20 Minutes" <%= recipe.category.includes("20 Minutes") ? 'checked' : '' %>>
+          20 Minutes or less
+        </div>
+      </div>
+      
+        <div class="form-group">
           <label for="category">Category</label>
           <select id="category" name="category">
             <% ['vegan', 'dessert', 'quick-meals', 'breakfast', 'lunch', 'dinner', 'snack'].forEach(cat => { %>
