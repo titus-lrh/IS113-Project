@@ -105,7 +105,6 @@ const getEditProfileForm = async (req, res) => {
 
 // POST update profile
 const updateProfile = async (req, res) => {
-  console.log(req.body);
   const { username, email, bio } = req.body;
   await User.findByIdAndUpdate(
     req.params.id,

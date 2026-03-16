@@ -132,8 +132,6 @@ const getEditRecipeForm = async (req, res) => {
       return res.status(404).send('Recipe not found');
     }
     if (recipe.author._id.toString() !== req.session.userId) {
-      console.log(recipe.author.toString())
-      console.log(req.session.userId)
       return res.status(403).send('Unauthorized');
     }
     res.render('recipes/edit', { recipe, session: req.session });
