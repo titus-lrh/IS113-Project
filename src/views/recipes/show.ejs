@@ -204,7 +204,65 @@
     <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
     <br><br>
     <div class="recipe-header">
-      <h1><%= recipe.title %></h1>
+  
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+
+  <h1><%= recipe.title %></h1>
+
+  <div>
+
+
+    <span style="color:#f4b400; font-weight:bold;">
+      Rating: ⭐ <%= recipe.rating ? recipe.rating.toFixed(1) : 0 %>
+      (<%= recipe.ratingCount || 0 %>)
+    </span>
+    
+    <% 
+      const hasRated = recipe.ratedUsers &&
+        recipe.ratedUsers.some(u => u.toString() === session.userId);
+    %>
+
+        <% if (hasRated) { %>
+          <p style="color:red;">You have already rated this recipe</p>
+        <% } %>
+
+        <% if (!hasRated) { %>
+
+        <% } else { %>
+
+          <p style="color:green;">Thanks for rating!</p>
+
+        <% } %>
+
+    
+     <% if (typeof session !== 'undefined' && session.userId) { %>
+      <form action="/recipes/<%= recipe._id %>/rate" method="POST" style="margin-top:10px;">
+
+        <div id="stars" style="font-size:28px; cursor:pointer;">
+          <span data-value="1">☆</span>
+          <span data-value="2">☆</span>
+          <span data-value="3">☆</span>
+          <span data-value="4">☆</span>
+          <span data-value="5">☆</span>
+        </div>
+
+        <input type="hidden" name="rating" id="ratingValue">
+
+        <br>
+
+        <button class="btn btn-primary" type="submit">Submit Rating</button>
+
+      </form>
+
+    <% } else { %>
+
+      <p style="font-size:0.8rem; color:#999;">Login to rate</p>
+
+    <% } %>
+
+  </div>
+
+</div>
 
       <% if (recipe.category) { %>
       <% recipe.category.forEach(subCategory => { %>
@@ -280,6 +338,35 @@
       }
     }
   </script>
+
+  <script>
+  const stars = document.querySelectorAll('#stars span');
+  const ratingInput = document.getElementById('ratingValue');
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', () => {
+      const val = star.getAttribute('data-value');
+      highlightStars(val);
+    });
+
+    star.addEventListener('click', () => {
+      const val = star.getAttribute('data-value');
+      ratingInput.value = val;
+    });
+  });
+
+  function highlightStars(val) {
+    stars.forEach(star => {
+      if (star.getAttribute('data-value') <= val) {
+        star.textContent = "⭐";
+      } else {
+        star.textContent = "☆";
+      }
+    });
+  }
+  </script>
+
+  
 </body>
 
 </html>

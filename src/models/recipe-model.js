@@ -38,6 +38,19 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
+
+  rating: {
+    type: Number,
+    default: 0
+  },
+  ratingCount: {
+    type: Number,
+    default: 0
+  },
+  ratedUsers: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User'
+  }],
   },
   createdAt: {
     type: Date,
@@ -104,3 +117,8 @@ exports.searchRecipesByTitle = async (query) =>{
   }).populate('author', 'username firstName lastName');
 }
 
+//Prevent duplicate ratings
+ratedUsers: [{
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User'
+}]

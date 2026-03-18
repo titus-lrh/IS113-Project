@@ -41,6 +41,7 @@ const recipeValidationRules = () => {
 const getAllRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.getAllRecipes();
+    recipes.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     const mealdbMeals = await fetchFromMealDB('https://www.themealdb.com/api/json/v1/1/filter.php?c=Chicken');
     const mealdbRecipes = mealdbMeals.slice(0, 12);
     res.render('recipes/index', { recipes, mealdbRecipes, session: req.session });
@@ -117,7 +118,10 @@ const getRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-    res.render('recipes/show', { recipe });
+    res.render('recipes/show', { 
+    recipe,
+    session: req.session
+});
   } catch (error) {
     console.error('Error fetching recipe:', error);
     res.status(500).send('Error fetching recipe');
@@ -213,6 +217,54 @@ const searchRecipes = async (req, res) => {
   }
 };
 
+//Get rating of recipe(Tim & Isaac)
+const rateRecipe = async (req, res) => {
+  try {
+    const recipeId = req.params.id;
+    const userId = req.session.userId;
+    const { rating } = req.body;
+
+    const recipe = await Recipe.getRecipeById(recipeId);
+
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    // 🚨 prevent duplicate rating (we add this next)
+    if (recipe.ratedUsers && recipe.ratedUsers.includes(userId)) {
+      return res.send("You have already rated this recipe");
+    }
+
+    // calculate new rating
+    const newRating =
+      ((recipe.rating || 0) * (recipe.ratingCount || 0) + parseInt(rating)) /
+      ((recipe.ratingCount || 0) + 1);
+
+    const newCount = (recipe.ratingCount || 0) + 1;
+
+    // update DB
+    await Recipe.updateRecipeById(recipeId, {
+      rating: newRating,
+      ratingCount: newCount,
+      $push: { ratedUsers: userId } // ⭐ track users
+    });
+
+    // 🔥 fetch updated recipe
+    const updatedRecipe = await Recipe.getRecipeById(recipeId);
+
+    res.render('recipes/show', {
+      recipe: updatedRecipe,
+      session: req.session
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error rating recipe");
+  }
+};
+
+
+
 // GET single MealDB recipe
 const getMealDBRecipe = async (req, res) => {
   try {
@@ -243,4 +295,5 @@ module.exports = {
   deleteRecipe,
   searchRecipes,
   getMealDBRecipe,
+  rateRecipe
 };
