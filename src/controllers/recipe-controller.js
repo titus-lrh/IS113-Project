@@ -220,9 +220,12 @@ const searchRecipes = async (req, res) => {
 //Get rating of recipe(Tim & Isaac)
 const rateRecipe = async (req, res) => {
   try {
+    console.log("RATE ROUTE HIT");
+    console.log("Rating received:", req.body.rating);
+
     const recipeId = req.params.id;
     const userId = req.session.userId;
-    const { rating } = req.body;
+    const rating = parseInt(req.body.rating);
 
     const recipe = await Recipe.getRecipeById(recipeId);
 
@@ -230,27 +233,25 @@ const rateRecipe = async (req, res) => {
       return res.status(404).send("Recipe not found");
     }
 
-    // 🚨 prevent duplicate rating (we add this next)
-    if (recipe.ratedUsers && recipe.ratedUsers.includes(userId)) {
-      return res.send("You have already rated this recipe");
+    // prevent duplicate rating
+    if (recipe.ratedUsers?.includes(userId)) {
+      return res.send("You already rated this recipe");
     }
 
-    // calculate new rating
-    const newRating =
-      ((recipe.rating || 0) * (recipe.ratingCount || 0) + parseInt(rating)) /
-      ((recipe.ratingCount || 0) + 1);
-
     const newCount = (recipe.ratingCount || 0) + 1;
+    const newRating =
+      ((recipe.rating || 0) * (recipe.ratingCount || 0) + rating) / newCount;
 
-    // update DB
-    await Recipe.updateRecipeById(recipeId, {
-      rating: newRating,
-      ratingCount: newCount,
-      $push: { ratedUsers: userId } // ⭐ track users
-    });
+    await Recipe.findByIdAndUpdate(recipeId, {
+        rating: newRating,
+        ratingCount: newCount
+      });
+    
+    await Recipe.addRatedUser(recipeId, userId);
 
-    // 🔥 fetch updated recipe
     const updatedRecipe = await Recipe.getRecipeById(recipeId);
+
+    console.log("UPDATED:", updatedRecipe.rating, updatedRecipe.ratingCount);
 
     res.render('recipes/show', {
       recipe: updatedRecipe,
@@ -258,7 +259,7 @@ const rateRecipe = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Error rating recipe:", error);
     res.status(500).send("Error rating recipe");
   }
 };

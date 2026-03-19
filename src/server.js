@@ -14,6 +14,8 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.get('/favicon.ico', (req, res) => res.status(204));
+
 // ============================================
 // MIDDLEWARE SETUP
 // ============================================

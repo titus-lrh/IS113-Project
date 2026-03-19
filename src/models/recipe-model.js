@@ -117,6 +117,13 @@ exports.searchRecipesByTitle = async (query) =>{
   }).populate('author', 'username firstName lastName');
 }
 
+// adds a user ino the list of people who rate
+exports.addRatedUser = async (id, userId) => {
+  return await Recipe.findByIdAndUpdate(id, {
+    $push: { ratedUsers: userId }
+  });
+};
+
 //Prevent duplicate ratings
 ratedUsers: [{
   type: mongoose.Schema.Types.ObjectId,

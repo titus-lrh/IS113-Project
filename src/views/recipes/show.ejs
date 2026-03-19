@@ -203,66 +203,65 @@
   <div class="container">
     <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
     <br><br>
-    <div class="recipe-header">
-  
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div class="recipe-header">
 
-  <h1><%= recipe.title %></h1>
+  <!-- TOP ROW -->
+  <div style="display:flex; justify-content:space-between; align-items:flex-start;">
 
-  <div>
+    <!-- LEFT: TITLE -->
+    <div>
+      <h1><%= recipe.title %></h1>
+    </div>
 
+    <!-- RIGHT: RATING -->
+    <div style="text-align:right;">
 
-    <span style="color:#f4b400; font-weight:bold;">
-      Rating: ⭐ <%= recipe.rating ? recipe.rating.toFixed(1) : 0 %>
-      (<%= recipe.ratingCount || 0 %>)
-    </span>
-    
-    <% 
-      const hasRated = recipe.ratedUsers &&
-        recipe.ratedUsers.some(u => u.toString() === session.userId);
-    %>
+      <p style="color:#f4b400; font-weight:bold; margin-bottom:5px;">
+        Rating: ⭐ <%= recipe.rating ? recipe.rating.toFixed(1) : 0 %>
+        (<%= recipe.ratingCount || 0 %>)
+      </p>
 
-        <% if (hasRated) { %>
-          <p style="color:red;">You have already rated this recipe</p>
-        <% } %>
+      <% 
+        let hasRated = false;
+        if (session && session.userId && recipe.ratedUsers) {
+          hasRated = recipe.ratedUsers.some(
+            u => u.toString() === session.userId
+          );
+        }
+      %>
 
-        <% if (!hasRated) { %>
+      <% if (!session || !session.userId) { %>
 
-        <% } else { %>
+        <p style="font-size:0.8rem; color:#999;">Login to rate</p>
 
-          <p style="color:green;">Thanks for rating!</p>
+      <% } else if (hasRated) { %>
 
-        <% } %>
+        <p style="color:green;">✔ Already rated</p>
 
-    
-     <% if (typeof session !== 'undefined' && session.userId) { %>
-      <form action="/recipes/<%= recipe._id %>/rate" method="POST" style="margin-top:10px;">
+      <% } else { %>
 
-        <div id="stars" style="font-size:28px; cursor:pointer;">
-          <span data-value="1">☆</span>
-          <span data-value="2">☆</span>
-          <span data-value="3">☆</span>
-          <span data-value="4">☆</span>
-          <span data-value="5">☆</span>
-        </div>
+        <form action="/recipes/<%= recipe._id %>/rate" method="POST">
 
-        <input type="hidden" name="rating" id="ratingValue">
+          <div id="stars" style="font-size:22px; cursor:pointer;">
+            <span data-value="1">☆</span>
+            <span data-value="2">☆</span>
+            <span data-value="3">☆</span>
+            <span data-value="4">☆</span>
+            <span data-value="5">☆</span>
+          </div>
 
-        <br>
+          <input type="hidden" name="rating" id="ratingValue" value="0">
 
-        <button class="btn btn-primary" type="submit">Submit Rating</button>
+          <button class="btn btn-primary" type="submit" style="margin-top:5px;">
+            Submit
+          </button>
 
-      </form>
+        </form>
 
-    <% } else { %>
+      <% } %>
 
-      <p style="font-size:0.8rem; color:#999;">Login to rate</p>
-
-    <% } %>
-
+    </div>
   </div>
-
-</div>
 
       <% if (recipe.category) { %>
       <% recipe.category.forEach(subCategory => { %>
@@ -338,7 +337,6 @@
       }
     }
   </script>
-
   <script>
   const stars = document.querySelectorAll('#stars span');
   const ratingInput = document.getElementById('ratingValue');
@@ -349,22 +347,29 @@
       highlightStars(val);
     });
 
+    star.addEventListener('mouseout', () => {
+      highlightStars(ratingInput.value || 0);
+    });
+
     star.addEventListener('click', () => {
       const val = star.getAttribute('data-value');
       ratingInput.value = val;
+      highlightStars(val);
     });
   });
 
   function highlightStars(val) {
     stars.forEach(star => {
-      if (star.getAttribute('data-value') <= val) {
+      if (parseInt(star.getAttribute('data-value')) <= val) {
         star.textContent = "⭐";
       } else {
         star.textContent = "☆";
       }
     });
   }
-  </script>
+</script>
+
+  
 
   
 </body>
