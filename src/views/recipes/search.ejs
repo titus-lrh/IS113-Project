@@ -3,276 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Search Results - Everyday Cooks</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-
-    nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1rem 2rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 1.5rem;
-    }
-
-    nav a:hover { text-decoration: underline; }
-
-    .container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .search-bar input {
-      flex: 1;
-      padding: 0.65rem 1rem;
-      border: 1px solid #ddd;
-      border-radius: 0.25rem;
-      font-size: 1rem;
-    }
-
-    .search-bar button {
-      padding: 0.65rem 1.5rem;
-      background-color: #667eea;
-      color: white;
-      border: none;
-      border-radius: 0.25rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .search-bar button:hover { background-color: #5568d3; }
-
-    .section-title {
-      margin: 2rem 0 1rem;
-      font-size: 1.4rem;
-      color: #333;
-      border-left: 4px solid #667eea;
-      padding-left: 0.75rem;
-    }
-
-    .recipes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 2rem;
-    }
-
-    /* User recipe cards */
-    .recipe-card {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      height: 360px;
-    }
-
-    .recipe-header {
-      padding: 1.25rem;
-      background-color: #f9f9f9;
-      border-bottom: 1px solid #eee;
-    }
-
-    .recipe-header h3 { margin-bottom: 0.25rem; }
-
-    .recipe-meta { font-size: 0.9rem; color: #666; }
-
-    .recipe-body {
-      padding: 1.25rem;
-      flex: 1;
-    }
-
-    .recipe-body p { color: #666; line-height: 1.5; margin-bottom: 0.75rem; }
-
-    .recipe-footer {
-      padding: 1rem 1.25rem;
-      background-color: #f9f9f9;
-      display: flex;
-      gap: 0.75rem;
-      margin-top: auto;
-    }
-
-    .recipe-footer a {
-      flex: 1;
-      display: block;
-      padding: 0.6rem;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 0.25rem;
-      background-color: #667eea;
-      color: white;
-      font-size: 0.9rem;
-    }
-
-    .recipe-footer a:hover { background-color: #5568d3; }
-
-    /* MealDB cards */
-    .mealdb-card {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.3s;
-    }
-
-    .mealdb-card:hover { transform: translateY(-4px); }
-
-    .mealdb-thumb {
-      width: 100%;
-      height: 160px;
-      object-fit: cover;
-    }
-
-    .mealdb-body {
-      padding: 1rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .mealdb-body h3 { font-size: 0.95rem; margin-bottom: 0.5rem; }
-
-    .mealdb-body a {
-      display: block;
-      padding: 0.5rem;
-      text-align: center;
-      background-color: #667eea;
-      color: white;
-      text-decoration: none;
-      border-radius: 0.25rem;
-      font-size: 0.9rem;
-      margin-top: 0.75rem;
-    }
-
-    .mealdb-body a:hover { background-color: #5568d3; }
-
-    .category-badge {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      background-color: #e0e7ff;
-      color: #667eea;
-      border-radius: 1rem;
-      font-size: 0.8rem;
-      margin-bottom: 0.4rem;
-    }
-
-    .source-badge {
-      display: inline-block;
-      padding: 0.2rem 0.6rem;
-      background-color: #fef3c7;
-      color: #92400e;
-      border-radius: 1rem;
-      font-size: 0.8rem;
-      margin-bottom: 0.4rem;
-    }
-
-    .no-results {
-      padding: 1.5rem;
-      color: #888;
-      background-color: white;
-      border-radius: 0.5rem;
-    }
-  </style>
+  <title>Search Results — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav>
-    <strong>Everyday Cooks</strong>
-    <div>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span><%= session.username %></span>
-        <a href="/recipes">Recipes</a>
-        <a href="/auth/dashboard">Dashboard</a>
-        <a href="/auth/logout">Logout</a>
+        <span class="nav__user"><%= session.username %></span>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login">Login</a>
+        <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
-  <div class="container">
-    <h1>Search Recipes</h1>
+  <div class="container container--2xl">
+    <div class="page-header">
+      <h1>Search Results</h1>
+      <% if (typeof query !== 'undefined' && query) { %>
+        <p>Showing results for "<strong><%= query %></strong>"</p>
+      <% } %>
+    </div>
 
     <form class="search-bar" action="/recipes/search" method="GET">
-      <input type="text" name="q" value="<%= query %>" placeholder="Search user and stock recipes...">
-      <button type="submit">Search</button>
+      <input type="text" name="q" value="<%= typeof query !== 'undefined' ? query : '' %>"
+        placeholder="Search recipes...">
+      <button type="submit" class="btn btn--primary">Search</button>
     </form>
 
-    <% if (query) { %>
-      <p style="margin-bottom: 1rem; color: #666;">
-        Results for: <strong>"<%= query %>"</strong>
-      </p>
-    <% } %>
-
-    <h2 class="section-title">User Recipes</h2>
-    <% if (userRecipes && userRecipes.length > 0) { %>
+    <% if (typeof recipes !== 'undefined' && recipes.length > 0) { %>
+      <h2 class="section-title">Community Recipes</h2>
       <div class="recipes-grid">
-        <% userRecipes.forEach(recipe => { %>
+        <% recipes.forEach(recipe => { %>
           <div class="recipe-card">
-            <div class="recipe-header">
+            <div class="recipe-card__header">
               <h3><%= recipe.title %></h3>
-              <div class="recipe-meta">By <%= recipe.author.username %></div>
+              <div class="recipe-card__meta">By <%= recipe.author.username %></div>
             </div>
-            <div class="recipe-body">
-              <p><%= recipe.description.substring(0, 100) %></p>
-              <% if (recipe.category) { %>
-                <span class="category-badge"><%= recipe.category %></span>
+            <div class="recipe-card__body">
+              <p class="recipe-card__desc"><%= recipe.description %></p>
+              <div class="recipe-card__badges">
+                <% if (recipe.category) { %>
+                  <% recipe.category.forEach(sub => { %>
+                    <span class="badge badge--category"><%= sub %></span>
+                  <% }) %>
+                <% } %>
+              </div>
+            </div>
+            <div class="recipe-card__stats">
+              <div class="stat-item"><strong><%= recipe.cookingTime %></strong><small>min</small></div>
+              <div class="stat-item"><strong><%= recipe.servings %></strong><small>servings</small></div>
+              <div class="stat-item"><strong><%= recipe.ingredients.length %></strong><small>ingredients</small></div>
+            </div>
+            <div class="recipe-card__footer">
+              <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View Recipe</a>
+              <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
+                <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
               <% } %>
-            </div>
-            <div class="recipe-footer">
-              <a href="/recipes/<%= recipe._id %>">View</a>
             </div>
           </div>
         <% }); %>
       </div>
-    <% } else { %>
-      <div class="no-results">No user recipes found.</div>
     <% } %>
 
-    <h2 class="section-title">Stock Recipes</h2>
-    <% if (mealdbRecipes && mealdbRecipes.length > 0) { %>
+    <% if (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0) { %>
+      <h2 class="section-title">Stock Recipes</h2>
       <div class="recipes-grid">
         <% mealdbRecipes.forEach(meal => { %>
           <div class="mealdb-card">
-            <% if (meal.strMealThumb) { %>
-              <img class="mealdb-thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
-            <% } %>
-            <div class="mealdb-body">
+            <img class="mealdb-card__thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
+            <div class="mealdb-card__body">
               <div>
-                <span class="source-badge">TheMealDB</span>
-                <% if (meal.strCategory) { %>
-                  <span class="category-badge"><%= meal.strCategory %></span>
-                <% } %>
+                <span class="badge badge--source">TheMealDB</span>
                 <h3><%= meal.strMeal %></h3>
               </div>
-              <a href="/recipes/mealdb/<%= meal.idMeal %>">View Recipe</a>
+              <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
             </div>
           </div>
         <% }); %>
       </div>
-    <% } else { %>
-      <div class="no-results">No stock recipes found.</div>
+    <% } %>
+
+    <% const hasResults = (typeof recipes !== 'undefined' && recipes.length > 0) || (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0); %>
+    <% if (!hasResults) { %>
+      <div class="empty-state">
+        <div class="empty-state__icon">🔍</div>
+        <h2>No results found</h2>
+        <p>Try a different search term or browse all recipes.</p>
+        <a href="/recipes" class="btn btn--primary">Browse All Recipes</a>
+      </div>
     <% } %>
   </div>
 </body>

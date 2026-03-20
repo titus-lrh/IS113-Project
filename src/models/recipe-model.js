@@ -38,20 +38,19 @@ const recipeSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-
+  },
   rating: {
     type: Number,
-    default: 0
+    default: 0,
   },
   ratingCount: {
     type: Number,
-    default: 0
+    default: 0,
   },
   ratedUsers: [{
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User'
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   }],
-  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -68,64 +67,52 @@ recipeSchema.index({ author: 1, category: 1 });
 const Recipe = mongoose.model('Recipe', recipeSchema);
 
 // GET All Recipe
-exports.getAllRecipes = async () =>{
+exports.getAllRecipes = async () => {
   return await Recipe.find().populate('author', 'username firstName lastName');
-}
-
+};
 
 // GET User's Recipe
-exports.getRecipesByUser = async (userId)=>{
-  return await Recipe.find({ author: userId}).populate('author', 'username firstName lastName');
+exports.getRecipesByUser = async (userId) => {
+  return await Recipe.find({ author: userId }).populate('author', 'username firstName lastName');
 };
 
 // GET Recipe by Category
-exports.getRecipesByCategory = async (category)=>{
+exports.getRecipesByCategory = async (category) => {
   return await Recipe.find({ category }).populate('author', 'username firstName lastName');
 };
 
-
 // Create a new recipe
-exports.createRecipe = async (recipeData) =>{
+exports.createRecipe = async (recipeData) => {
   const recipe = new Recipe(recipeData);
   await recipe.save();
   return recipe;
-}
-
+};
 
 // GET a single recipe by ID
-exports.getRecipeById = async (id) =>{
+exports.getRecipeById = async (id) => {
   return await Recipe.findById(id).populate('author', 'username firstName lastName');
 };
 
-
 // UPDATE Recipe by ID
-exports.updateRecipeById = async (id, updateData) =>{
-  return await Recipe.findByIdAndUpdate(id, {...updateData, updatedAt: Date.now() }, { new: true });
+exports.updateRecipeById = async (id, updateData) => {
+  return await Recipe.findByIdAndUpdate(id, { ...updateData, updatedAt: Date.now() }, { new: true });
 };
 
-
-//DELETE Recipe by ID
-exports.deleteRecipeById = async (id) =>{
+// DELETE Recipe by ID
+exports.deleteRecipeById = async (id) => {
   return await Recipe.findByIdAndDelete(id);
 };
 
-
 // Search recipes by title (case-insensitive)
-exports.searchRecipesByTitle = async (query) =>{
+exports.searchRecipesByTitle = async (query) => {
   return await Recipe.find({
     title: { $regex: query, $options: 'i' }
   }).populate('author', 'username firstName lastName');
-}
+};
 
-// adds a user ino the list of people who rate
+// Add a user to the list of people who rated
 exports.addRatedUser = async (id, userId) => {
   return await Recipe.findByIdAndUpdate(id, {
     $push: { ratedUsers: userId }
   });
 };
-
-//Prevent duplicate ratings
-ratedUsers: [{
-  type: mongoose.Schema.Types.ObjectId,
-  ref: 'User'
-}]

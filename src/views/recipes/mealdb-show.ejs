@@ -3,163 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= recipe.title %> - Everyday Cooks</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-
-    nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1rem 2rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 1.5rem;
-    }
-
-    nav a:hover { text-decoration: underline; }
-
-    .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .recipe-header {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .recipe-header h1 { margin-bottom: 1rem; }
-
-    .thumbnail {
-      width: 100%;
-      max-height: 350px;
-      object-fit: cover;
-      border-radius: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .meta-row {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-top: 1rem;
-    }
-
-    .category-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      background-color: #e0e7ff;
-      color: #667eea;
-      border-radius: 1rem;
-      font-size: 0.85rem;
-    }
-
-    .source-badge {
-      display: inline-block;
-      padding: 0.25rem 0.75rem;
-      background-color: #fef3c7;
-      color: #92400e;
-      border-radius: 1rem;
-      font-size: 0.85rem;
-    }
-
-    .recipe-content {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-      margin: 2rem 0;
-    }
-
-    .section {
-      background-color: white;
-      padding: 2rem;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    .section h2 {
-      margin-bottom: 1.5rem;
-      color: #333;
-      border-bottom: 2px solid #667eea;
-      padding-bottom: 0.5rem;
-    }
-
-    .ingredients-list { list-style: none; }
-
-    .ingredients-list li {
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #eee;
-      padding-left: 1.5rem;
-      position: relative;
-    }
-
-    .ingredients-list li::before {
-      content: "•";
-      color: #667eea;
-      position: absolute;
-      left: 0;
-    }
-
-    .ingredients-list li:last-child { border-bottom: none; }
-
-    .instructions {
-      line-height: 1.8;
-      white-space: pre-wrap;
-    }
-  </style>
+  <title><%= recipe.title %> — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav>
-    <strong>Everyday Cooks</strong>
-    <div>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span><%= session.username %></span>
-        <a href="/recipes">Recipes</a>
-        <a href="/auth/dashboard">Dashboard</a>
-        <a href="/auth/logout">Logout</a>
+        <span class="nav__user"><%= session.username %></span>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login">Login</a>
+        <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
-  <div class="container">
-    <a href="#" onclick="history.back(); return false;" style="color: #667eea; text-decoration: none;">← Back</a>
-    <br><br>
+  <div class="container container--lg">
+    <a href="javascript:history.back()" class="back-link">← Back</a>
 
-    <div class="recipe-header">
+    <div class="recipe-hero">
       <% if (recipe.thumbnail) { %>
-        <img class="thumbnail" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
+        <img class="recipe-hero__img" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
       <% } %>
-      <h1><%= recipe.title %></h1>
-      <div class="meta-row">
+
+      <div class="recipe-hero__badges">
+        <span class="badge badge--source">Stock Recipe — TheMealDB</span>
         <% if (recipe.category) { %>
-          <span class="category-badge"><%= recipe.category %></span>
+          <span class="badge badge--category"><%= recipe.category %></span>
         <% } %>
         <% if (recipe.area) { %>
-          <span class="category-badge"><%= recipe.area %> cuisine</span>
+          <span class="badge badge--category"><%= recipe.area %> cuisine</span>
         <% } %>
-        <span class="source-badge">Stock Recipe — TheMealDB</span>
+      </div>
+
+      <h1><%= recipe.title %></h1>
+    </div>
+
+    <div class="about-card">
+      <h3>About this recipe</h3>
+      <p>A <%= recipe.area ? recipe.area + ' ' : '' %>classic<%= recipe.category ? ' from the ' + recipe.category + ' category' : '' %>.</p>
+      <div style="margin-top: var(--sp-5);">
+        <button id="summarize-btn" class="btn btn--ghost btn--sm" onclick="summarizeRecipe()">
+          ✨ AI Summary
+        </button>
+      </div>
+      <div id="summary-panel" style="display:none; margin-top:var(--sp-4); padding:var(--sp-4); background:var(--color-bg-light); border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        <p style="font-size:var(--text-xs); font-weight:600; color:var(--color-primary-dark); letter-spacing:1px; text-transform:uppercase; margin-bottom:var(--sp-2);">AI Summary</p>
+        <p id="summary-text" style="font-size:var(--text-sm); color:var(--color-text-gray); line-height:1.7;"></p>
       </div>
     </div>
 
-    <div class="recipe-content">
-      <div class="section">
+    <div class="recipe-content-grid">
+      <div class="recipe-section">
         <h2>Ingredients</h2>
         <ul class="ingredients-list">
           <% recipe.ingredients.forEach(ingredient => { %>
@@ -168,11 +66,49 @@
         </ul>
       </div>
 
-      <div class="section">
+      <div class="recipe-section">
         <h2>Instructions</h2>
         <div class="instructions"><%= recipe.instructions %></div>
       </div>
     </div>
   </div>
+
+  <script>
+    async function summarizeRecipe() {
+      const btn = document.getElementById('summarize-btn');
+      const panel = document.getElementById('summary-panel');
+      const text = document.getElementById('summary-text');
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Summarizing…';
+
+      try {
+        const res = await fetch('/recipes/<%= recipe.id %>/summarize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: '<%= recipe.title.replace(/'/g, "\\'") %>',
+            ingredients: <%- JSON.stringify(recipe.ingredients) %>,
+            instructions: <%- JSON.stringify(recipe.instructions) %>,
+          }),
+        });
+
+        const data = await res.json();
+        if (data.error) {
+          text.textContent = 'Could not generate summary. Please try again.';
+        } else {
+          text.textContent = data.summary;
+          btn.textContent = '✨ Regenerate Summary';
+          btn.disabled = false;
+        }
+        panel.style.display = 'block';
+      } catch (err) {
+        text.textContent = 'Something went wrong. Please try again.';
+        panel.style.display = 'block';
+        btn.textContent = '✨ AI Summary';
+        btn.disabled = false;
+      }
+    }
+  </script>
 </body>
 </html>

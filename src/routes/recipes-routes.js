@@ -18,6 +18,7 @@ router.get('/:id', recipeController.getRecipe);
 router.get('/:id/edit', isAuthenticated, recipeController.getEditRecipeForm);
 router.post('/:id/update', isAuthenticated, recipeController.recipeValidationRules(), recipeController.updateRecipe);
 router.post('/:id/delete', isAuthenticated, recipeController.deleteRecipe);
+router.post('/:id/summarize', recipeController.summarizeRecipe);
 
 
 module.exports = router;

@@ -66,7 +66,7 @@ const getMyRecipes = async (req, res) => {
 const getRecipesByCategory = async (req, res) => {
   try {
     const recipes = await Recipe.getRecipesByCategory(req.params.category);
-    res.render('recipes/index', { recipes, session: req.session });
+    res.render('recipes/index', { recipes, mealdbRecipes: [], session: req.session });
   } catch (error) {
     console.error('Error fetching recipes by category:', error);
     res.status(500).send('Error fetching recipes by category');
@@ -75,7 +75,7 @@ const getRecipesByCategory = async (req, res) => {
 
 // GET recipe creation form
 const getNewRecipeForm = (req, res) => {
-  res.render('recipes/new', { errors: [] });
+  res.render('recipes/new', { errors: [], body: {} });
 };
 
 // POST create recipe
@@ -91,7 +91,7 @@ const createRecipe = async (req, res) => {
 
     const ingredientArray = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
 
-    const recipe = new Recipe({
+    await Recipe.createRecipe({
       title,
       description,
       ingredients: ingredientArray,
@@ -101,8 +101,6 @@ const createRecipe = async (req, res) => {
       category: formatCategory,
       author: req.session.userId,
     });
-
-    await Recipe.createRecipe();
     const recipes = await Recipe.getRecipesByUser(req.session.userId);
     res.render('recipes/userRecipe', { recipes, session: req.session });
   } catch (error) {
@@ -242,10 +240,10 @@ const rateRecipe = async (req, res) => {
     const newRating =
       ((recipe.rating || 0) * (recipe.ratingCount || 0) + rating) / newCount;
 
-    await Recipe.findByIdAndUpdate(recipeId, {
-        rating: newRating,
-        ratingCount: newCount
-      });
+    await Recipe.updateRecipeById(recipeId, {
+      rating: newRating,
+      ratingCount: newCount,
+    });
     
     await Recipe.addRatedUser(recipeId, userId);
 
@@ -283,6 +281,66 @@ const getMealDBRecipe = async (req, res) => {
   }
 };
 
+// POST summarize recipe via OpenAI (pure fetch, no library)
+// Works for both community recipes (lookup by DB id) and stock recipes (data sent in body)
+const summarizeRecipe = async (req, res) => {
+  try {
+    let recipeData;
+
+    if (req.body.title) {
+      // MealDB stock recipe: data comes directly from the client body
+      recipeData = req.body;
+    } else {
+      // Community recipe: look up from DB
+      const recipe = await Recipe.getRecipeById(req.params.id);
+      if (!recipe) {
+        return res.status(404).json({ error: 'Recipe not found' });
+      }
+      recipeData = recipe;
+    }
+
+    const ingredients = Array.isArray(recipeData.ingredients)
+      ? recipeData.ingredients.join(', ')
+      : recipeData.ingredients;
+
+    const prompt = `Summarize this recipe in 3–4 friendly sentences. Mention the key ingredients, cooking time (if known), and what makes it special.
+
+Recipe: ${recipeData.title}
+${recipeData.description ? `Description: ${recipeData.description}` : ''}
+${recipeData.cookingTime ? `Cooking time: ${recipeData.cookingTime} minutes` : ''}
+${recipeData.servings ? `Servings: ${recipeData.servings}` : ''}
+Ingredients: ${ingredients}
+Instructions: ${recipeData.instructions}`;
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env['GPT-SECRET']}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 200,
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      console.error('OpenAI error:', err);
+      return res.status(502).json({ error: 'Failed to get summary from AI' });
+    }
+
+    const data = await response.json();
+    const summary = data.choices[0].message.content.trim();
+    res.json({ summary });
+  } catch (error) {
+    console.error('Error summarizing recipe:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   recipeValidationRules,
   getAllRecipes,
@@ -296,5 +354,6 @@ module.exports = {
   deleteRecipe,
   searchRecipes,
   getMealDBRecipe,
-  rateRecipe
+  rateRecipe,
+  summarizeRecipe,
 };

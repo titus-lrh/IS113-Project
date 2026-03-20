@@ -80,7 +80,9 @@ const login = async (req, res) => {
     req.session.userId = user._id;
     req.session.username = user.username;
 
-    res.redirect('/auth/dashboard');
+    const redirectTo = req.session.returnTo || '/auth/dashboard';
+    delete req.session.returnTo;
+    res.redirect(redirectTo);
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).render('login', { errors: [{ msg: 'Server error' }] });
@@ -118,17 +120,19 @@ const updateProfile = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId);
+    console.log('Fetching profile for userId:', userId);
 
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).send('User not found');
     }
 
-    const recipes = await Recipe.find({ authorId: userId }).sort({ createdAt: -1 });
+    const recipes = await Recipe.getRecipesByUser(userId);
+    console.log('Found recipes:', recipes.length);
 
     res.render('profile', { user, recipes });
   } catch (err) {
-    console.error(err);
+    console.error('Profile error:', err);
     res.status(500).send('Server error');
   }
 };

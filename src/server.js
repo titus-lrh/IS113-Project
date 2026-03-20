@@ -3,6 +3,7 @@
 
 const express = require('express');
 const session = require('express-session');
+const path = require('path');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth-routes');
 const recipeRoutes = require('./routes/recipes-routes');
@@ -22,6 +23,7 @@ app.get('/favicon.ico', (req, res) => res.status(204));
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 // View Engine
 app.set('view engine', 'ejs');
@@ -45,7 +47,7 @@ app.use(session(sessionConfig));
 // ============================================
 
 // Landing Page
-app.use("/", recipeRoutes);
+app.get('/', (_req, res) => res.redirect('/recipes'));
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);

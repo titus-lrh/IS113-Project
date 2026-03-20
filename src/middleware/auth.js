@@ -5,6 +5,10 @@ const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.userId) {
     return next();
   }
+  // Save the intended destination so login can redirect back
+  if (req.method === 'GET') {
+    req.session.returnTo = req.originalUrl;
+  }
   return res.redirect('/auth/login');
 };
 

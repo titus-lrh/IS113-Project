@@ -3,116 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard - Everyday Cooks</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-
-    nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1rem 2rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 1.5rem;
-    }
-    
-     nav a:hover {
-      text-decoration: underline;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    h1 {
-      margin-bottom: 1.5rem;
-    }
-
-    .quick-links {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-top: 2rem;
-    }
-
-    .quick-link-card {
-      background-color: white;
-      padding: 1em;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    .quick-link-card h3 {
-      margin-bottom: 1rem;
-    }
-
-    .quick-link-card a {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      background-color: #667eea;
-      color: white;
-      text-decoration: none;
-      border-radius: 0.25rem;
-    }
-
-    .quick-link-card a:hover {
-      background-color: #5568d3;
-    }
-
-  </style>
+  <title>Dashboard — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav>
-    <strong>Everyday Cooks</strong>
-    <div>
-      <a href="/profile/<%= user.userId %>">My Profile</a>
-      <a href="/">Logout</a>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <a href="/recipes" class="nav__link">Browse</a>
+      <a href="/profile/<%= user.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
     </div>
   </nav>
 
-  <div class="container">
-    <h2>Welcome back, <%= user.username %>!</h2>
-    <div class="quick-links">
-      <div class="quick-link-card">
-        <h3>📝 My Recipes</h3>
-        <p>View and manage your recipes</p>
-        <br>
-        <a href="/recipes/my-recipes/<%= user.userId %>">View My Recipes</a>
-      </div>
+  <div class="container container--xl">
 
-      <div class="quick-link-card">
-        <h3>🔍 Browse Recipes</h3>
-        <p>Discover recipes from the community</p>
-        <br>
-        <a href="/">Browse Community</a>
+    <!-- EDITORIAL WELCOME -->
+    <div class="dash-editorial animate-fade-up">
+      <div>
+        <h1 class="dash-editorial__greeting">
+          Good to see you,<br><em><%= user.username %></em>.
+        </h1>
+        <p class="dash-editorial__sub">Your kitchen, your canvas. Share a new dish, browse what the community is cooking, or revisit your creations.</p>
+        <div class="dash-editorial__cta">
+          <a href="/recipes/new" class="btn btn--primary">+ New Recipe</a>
+          <a href="/recipes" class="btn btn--ghost">Browse All</a>
+        </div>
       </div>
-
-      <div class="quick-link-card">
-        <h3>➕ Upload Recipe</h3>
-        <p>Share your favorite recipes</p>
-        <br>
-        <a href="/recipes/new">Create New Recipe</a>
+      <div class="dash-editorial__visual">
+        <div class="dash-stat-pill">
+          <span class="dash-stat-pill__icon">📝</span>
+          <div>
+            <div class="dash-stat-pill__label">Your recipes</div>
+            <div class="dash-stat-pill__value">View your collection →</div>
+          </div>
+        </div>
+        <div class="dash-stat-pill">
+          <span class="dash-stat-pill__icon">🌍</span>
+          <div>
+            <div class="dash-stat-pill__label">Community</div>
+            <div class="dash-stat-pill__value">Explore what others cook →</div>
+          </div>
+        </div>
+        <div class="dash-stat-pill">
+          <span class="dash-stat-pill__icon">✨</span>
+          <div>
+            <div class="dash-stat-pill__label">Inspiration</div>
+            <div class="dash-stat-pill__value">Stock recipes from MealDB →</div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- QUICK LINKS (editorial cards with numbers) -->
+    <div class="quick-links--editorial">
+      <div class="quick-link-card--editorial animate-fade-up" style="transition-delay:0ms;">
+        <span class="card-number">01</span>
+        <h3>My Recipes</h3>
+        <p>View, edit, and manage all the dishes you've shared with the community.</p>
+        <a href="/recipes/my-recipes/<%= user.userId %>" class="card-cta">View my recipes →</a>
+      </div>
+
+      <div class="quick-link-card--editorial animate-fade-up" style="transition-delay:80ms;">
+        <span class="card-number">02</span>
+        <h3>Browse</h3>
+        <p>Discover new dishes from the community and get inspired by what others are making.</p>
+        <a href="/recipes" class="card-cta">Explore all recipes →</a>
+      </div>
+
+      <div class="quick-link-card--editorial animate-fade-up" style="transition-delay:160ms;">
+        <span class="card-number">03</span>
+        <h3>Create</h3>
+        <p>Have a recipe to share? Add it here and let the whole community enjoy it.</p>
+        <a href="/recipes/new" class="card-cta">Start creating →</a>
+      </div>
+    </div>
+
   </div>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>

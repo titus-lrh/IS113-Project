@@ -3,368 +3,189 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recipes - Everyday Cooks</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      color: #333;
-    }
-
-    nav {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 1rem 2rem;
-      color: white;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin-left: 1.5rem;
-    }
-
-    nav a:hover {
-      text-decoration: underline;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    h1 {
-      margin-bottom: 2rem;
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .search-bar input {
-      flex: 1;
-      padding: 0.65rem 1rem;
-      border: 1px solid #ddd;
-      border-radius: 0.25rem;
-      font-size: 1rem;
-    }
-
-    .search-bar button {
-      padding: 0.65rem 1.5rem;
-      background-color: #667eea;
-      color: white;
-      border: none;
-      border-radius: 0.25rem;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    .search-bar button:hover {
-      background-color: #5568d3;
-    }
-
-    .section-title {
-      margin: 2rem 0 1rem;
-      font-size: 1.4rem;
-      color: #333;
-      border-left: 4px solid #667eea;
-      padding-left: 0.75rem;
-    }
-
-    .recipes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 2rem;
-    }
-
-    .recipe-card {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      transition: transform 0.3s;
-      display: flex;
-      flex-direction: column;
-      height: 400px;
-    }
-
-   .recipe-header {
-    padding: 1.5rem;
-    background-color: #f9f9f9;
-    border-bottom: 1px solid #eee;
-    height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-    .recipe-header h3 {
-      margin-bottom: 0.5rem;
-    }
-
-    .recipe-meta {
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .recipe-body {
-      padding: 1.5rem;
-      flex: 1;
-    }
-
-    .recipe-body p {
-      color: #666;
-      margin-bottom: 1rem;
-      line-height: 1.5;
-    }
-
-    .recipe-info {
-      display: flex;
-      justify-content: space-around;
-      margin: 1rem 0;
-      padding: 1rem 0;
-      border-top: 1px solid #eee;
-      border-bottom: 1px solid #eee;
-    }
-
-    .info-item {
-      text-align: center;
-    }
-
-    .info-item strong {
-      display: block;
-      color: #667eea;
-    }
-
-  .recipe-footer {
-    padding: 1.5rem;
-    background-color: #f9f9f9;
-    display: flex;
-    gap: 1rem;
-    flex-shrink: 0;
-    margin-top: auto;
-  }
-
-    .recipe-footer a {
-      flex: 1;
-      display: block;
-      padding: 0.75rem;
-      text-align: center;
-      text-decoration: none;
-      border-radius: 0.25rem;
-      background-color: #667eea;
-      color: white;
-    }
-
-    .recipe-footer a:hover {
-      background-color: #5568d3;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 3rem;
-      background-color: white;
-      border-radius: 0.5rem;
-    }
-
-    .empty-state h2 {
-      margin-bottom: 1rem;
-    }
-
-    .empty-state a {
-      display: inline-block;
-      padding: 0.75rem 1.5rem;
-      background-color: #667eea;
-      color: white;
-      text-decoration: none;
-      border-radius: 0.25rem;
-      margin-top: 1rem;
-    }
-
-    .empty-state a:hover {
-      background-color: #5568d3;
-    }
-
-    .category-badge {
-      padding: 0.25rem;
-      background-color: #e0e7ff;
-      color: #667eea;
-      border-radius: 1rem;
-      font-size: 0.85rem;
-    }
-
-    .recipe-description {
-      height: 60px;
-    }
-
-    .mealdb-card {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-      transition: transform 0.3s;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .mealdb-card:hover {
-      transform: translateY(-4px);
-    }
-
-    .mealdb-thumb {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-
-    .mealdb-body {
-      padding: 1rem;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .mealdb-body h3 {
-      font-size: 1rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .mealdb-body a {
-      display: block;
-      padding: 0.5rem;
-      text-align: center;
-      background-color: #667eea;
-      color: white;
-      text-decoration: none;
-      border-radius: 0.25rem;
-      font-size: 0.9rem;
-    }
-
-    .mealdb-body a:hover {
-      background-color: #5568d3;
-    }
-
-    .source-badge {
-      display: inline-block;
-      padding: 0.15rem 0.6rem;
-      background-color: #fef3c7;
-      color: #92400e;
-      border-radius: 1rem;
-      font-size: 0.8rem;
-      margin-bottom: 0.5rem;
-    }
-  </style>
+  <title>Recipes — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <nav>
-    <strong>Everyday Cooks</strong>
-    <div>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span><%= session.username %></span>
-        <a href="/recipes/new">Create Recipe</a>
-        <a href="/auth/dashboard">Dashboard</a>
-        <a href="/auth/logout">Logout</a>
+        <span class="nav__user"><%= session.username %></span>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login">Login</a>
+        <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
-  <div class="container">
-    <h1>All Recipes</h1>
-
+  <!-- HERO -->
+  <div class="index-hero animate-fade-up">
+    <p class="index-hero__eyebrow">Community · Recipes · Inspiration</p>
+    <h1 class="index-hero__title">Every meal<br>has a story.</h1>
+    <p class="index-hero__sub">Discover home-cooked dishes shared by real cooks — or find your next inspiration from a world of recipes.</p>
     <form class="search-bar" action="/recipes/search" method="GET">
-      <input type="text" name="q" placeholder="Search user and stock recipes...">
-      <button type="submit">Search</button>
+      <input type="text" name="q" placeholder="Search by name, ingredient…">
+      <button type="submit" class="btn btn--primary">Search</button>
     </form>
+  </div>
 
-    <h2 class="section-title">User Recipes</h2>
+  <div class="container container--2xl">
+
+    <!-- COMMUNITY RECIPES -->
     <% if (typeof recipes !== 'undefined' && recipes.length > 0) { %>
-      <div class="recipes-grid">
-        <% recipes.forEach(recipe => { %>
-          <div class="recipe-card">
-            <div class="recipe-header">
-              <h3><%= recipe.title %></h3>
-              <div class="recipe-meta">
-                By <%= recipe.author.username %>
-              </div>
-            </div>
+      <%
+        const categoryEmojis = {
+          Breakfast: '🥞', Lunch: '🥗', Dinner: '🍝', Dessert: '🍰',
+          Snack: '🥨', Vegan: '🌿', Vegetarian: '🥦', Default: '🍽️'
+        };
+        function getEmoji(cats) {
+          if (!cats || !cats.length) return '🍽️';
+          return categoryEmojis[cats[0]] || '🍽️';
+        }
+      %>
 
-            <div class="recipe-body">
-              <div class="recipe-description">
-                <p><%= recipe.description.substring(0, 100) %></p>
+      <div class="section-header animate-fade-up">
+        <h2 class="section-header__title">Community Recipes</h2>
+        <span class="section-header__count"><%= recipes.length %> dish<%= recipes.length !== 1 ? 'es' : '' %></span>
+      </div>
+
+      <!-- FEATURED: first recipe -->
+      <% const featured = recipes[0]; %>
+      <a href="/recipes/<%= featured._id %>" class="recipe-card--featured animate-fade-up" style="text-decoration:none;color:inherit;">
+        <div class="featured__left">
+          <div>
+            <p class="featured__tag">Featured</p>
+            <h2 class="featured__title"><%= featured.title %></h2>
+            <p class="featured__author">By <%= featured.author.username %></p>
+            <p class="featured__desc"><%= featured.description %></p>
+          </div>
+          <div>
+            <div class="featured__stats">
+              <div class="featured__stat">
+                <strong><%= featured.cookingTime %></strong>
+                <small>min</small>
               </div>
-              <% if (recipe.category) { %>
-                  <% recipe.category.forEach(subCategory => { %>
-                    <span class="category-badge"><%= subCategory %></span>
-                  <% }) %>
-              <% } %>
+              <div class="featured__stat">
+                <strong><%= featured.servings %></strong>
+                <small>servings</small>
+              </div>
+              <div class="featured__stat">
+                <strong><%= featured.ingredients.length %></strong>
+                <small>ingredients</small>
+              </div>
             </div>
-              <div class="recipe-info">
-                <div class="info-item">
-                  <strong><%= recipe.cookingTime %></strong>
-                  <small>minutes</small>
+            <div class="recipe-card__badges">
+              <% if (featured.category) { (Array.isArray(featured.category) ? featured.category : [featured.category]).forEach(c => { %>
+                <span class="badge badge--category"><%= c %></span>
+              <% }); } %>
+            </div>
+          </div>
+        </div>
+        <div class="featured__right">
+          <div class="featured__visual">
+            <span class="featured__emoji"><%= getEmoji(featured.category) %></span>
+            <p class="featured__visual-label">Community favourite</p>
+          </div>
+        </div>
+      </a>
+
+      <!-- REST OF GRID -->
+      <% if (recipes.length > 1) { %>
+        <div class="recipes-grid">
+          <% recipes.slice(1).forEach((recipe, i) => { %>
+            <div class="recipe-card animate-fade-up" style="transition-delay: <%= (i % 3) * 80 %>ms">
+              <div class="recipe-card__header">
+                <h3><%= recipe.title %></h3>
+                <div class="recipe-card__meta">By <%= recipe.author.username %></div>
+              </div>
+              <div class="recipe-card__body">
+                <p class="recipe-card__desc"><%= recipe.description %></p>
+                <div class="recipe-card__badges">
+                  <% if (recipe.category) { (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(c => { %>
+                    <span class="badge badge--category"><%= c %></span>
+                  <% }); } %>
                 </div>
-                <div class="info-item">
+              </div>
+              <div class="recipe-card__stats">
+                <div class="stat-item">
+                  <strong><%= recipe.cookingTime %></strong>
+                  <small>min</small>
+                </div>
+                <div class="stat-item">
                   <strong><%= recipe.servings %></strong>
                   <small>servings</small>
                 </div>
-                <div class="info-item">
+                <div class="stat-item">
                   <strong><%= recipe.ingredients.length %></strong>
                   <small>ingredients</small>
                 </div>
               </div>
-
-            <div class="recipe-footer">
-              <a href="/recipes/<%= recipe._id %>">View</a>
-              <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
-                <a href="/recipes/<%= recipe._id %>/edit">Edit</a>
-              <% } %>
+              <div class="recipe-card__footer">
+                <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View Recipe</a>
+                <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
+                  <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
+                <% } %>
+              </div>
             </div>
-          </div>
-        <% }); %>
-      </div>
+          <% }); %>
+        </div>
+      <% } %>
     <% } else { %>
-      <div class="empty-state">
-        <h2>No user recipes yet</h2>
+      <div class="empty-state animate-fade-up">
+        <div class="empty-state__icon">🍽️</div>
+        <h2>No community recipes yet</h2>
+        <p>Be the first to share a recipe with everyone!</p>
         <% if (typeof session !== 'undefined' && session.userId) { %>
-          <a href="/recipes/new">Create the first recipe</a>
+          <a href="/recipes/new" class="btn btn--primary">Create the First Recipe</a>
         <% } else { %>
-          <p><a href="/auth/register">Register</a> to create a recipe</p>
+          <a href="/auth/register" class="btn btn--primary">Join to Create a Recipe</a>
         <% } %>
       </div>
     <% } %>
 
-    <h2 class="section-title">Stock Recipes</h2>
+    <!-- MEALDB SECTION -->
     <% if (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0) { %>
-      <div class="recipes-grid">
-        <% mealdbRecipes.forEach(meal => { %>
-          <div class="mealdb-card">
-            <img class="mealdb-thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
-            <div class="mealdb-body">
-              <div>
-                <span class="source-badge">TheMealDB</span>
-                <h3><%= meal.strMeal %></h3>
+      <div class="mealdb-section animate-fade-up">
+        <div class="section-header" style="margin:0 0 var(--sp-2);">
+          <h2 class="section-header__title">Stock Recipes</h2>
+          <span class="badge badge--source">TheMealDB</span>
+        </div>
+        <p style="font-size:var(--text-sm);color:var(--color-text-gray);margin-bottom:var(--sp-6);">Curated from around the world</p>
+        <div class="mealdb-grid">
+          <% mealdbRecipes.forEach((meal, i) => { %>
+            <div class="mealdb-card animate-fade-up" style="transition-delay: <%= (i % 4) * 60 %>ms">
+              <img class="mealdb-card__thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
+              <div class="mealdb-card__body">
+                <div>
+                  <h3><%= meal.strMeal %></h3>
+                </div>
+                <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
               </div>
-              <a href="/recipes/mealdb/<%= meal.idMeal %>">View Recipe</a>
             </div>
-          </div>
-        <% }); %>
+          <% }); %>
+        </div>
       </div>
     <% } else { %>
-      <p style="color: #888;">No stock recipes available right now.</p>
+      <p class="text-subtle" style="margin-top:var(--sp-8)">No stock recipes available right now.</p>
     <% } %>
+
   </div>
+
+  <script>
+    // Scroll-triggered fade-up animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>
