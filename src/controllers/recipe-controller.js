@@ -1,5 +1,6 @@
 const Recipe = require('../models/recipe-model');
 const { body, validationResult } = require('express-validator');
+const nutritionService = require('../services/nutritionService');
 
 // ---- TheMealDB helpers ----
 const fetchFromMealDB = async (url) => {
@@ -91,7 +92,7 @@ const createRecipe = async (req, res) => {
 
     const ingredientArray = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
 
-    await Recipe.createRecipe({
+    const newRecipe = await Recipe.createRecipe({
       title,
       description,
       ingredients: ingredientArray,
@@ -101,6 +102,15 @@ const createRecipe = async (req, res) => {
       category: formatCategory,
       author: req.session.userId,
     });
+
+    // Fire-and-forget: index nutrition in background so future food log lookups hit cache
+    nutritionService.getNutrition(
+      'user_recipe',
+      newRecipe._id.toString(),
+      title,
+      `Ingredients: ${ingredientArray.join(', ')}`
+    ).catch((err) => console.error('Nutrition index failed:', err));
+
     const recipes = await Recipe.getRecipesByUser(req.session.userId);
     res.render('recipes/userRecipe', { recipes, session: req.session });
   } catch (error) {
@@ -176,7 +186,18 @@ const updateRecipe = async (req, res) => {
       category
     };
 
-    await Recipe.updateRecipeById(req.params.id, updateData);
+    const updatedRecipe = await Recipe.updateRecipeById(req.params.id, updateData);
+
+    // Fire-and-forget: re-index nutrition after update
+    if (updatedRecipe) {
+      nutritionService.getNutrition(
+        'user_recipe',
+        updatedRecipe._id.toString(),
+        updatedRecipe.title,
+        `Ingredients: ${updatedRecipe.ingredients.join(', ')}`
+      ).catch((err) => console.error('Nutrition re-index failed:', err));
+    }
+
     res.redirect(`/recipes/${req.params.id}`);
   } catch (error) {
     console.error('Error updating recipe:', error);

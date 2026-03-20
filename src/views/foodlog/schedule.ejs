@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schedule — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link nav__link--active">Schedule</a>
+      <% if (session && session.userId) { %>
+        <span class="nav__user"><%= session.username %></span>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--xl">
+
+    <!-- MACRO BAR -->
+    <div id="macrobar-region">
+      <%- include('./_macrobar', { dailyTotals: log.dailyTotals }) %>
+    </div>
+
+    <!-- DATE NAVIGATOR -->
+    <%
+      const today     = new Date().toISOString().slice(0, 10);
+      const current   = new Date(dateString + 'T00:00:00Z');
+      const prevDate  = new Date(current); prevDate.setUTCDate(prevDate.getUTCDate() - 1);
+      const nextDate  = new Date(current); nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+      const prevStr   = prevDate.toISOString().slice(0, 10);
+      const nextStr   = nextDate.toISOString().slice(0, 10);
+      const isToday   = dateString === today;
+      const displayLabel = isToday
+        ? 'Today'
+        : current.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+    %>
+    <div class="date-nav">
+      <a href="/schedule/<%= prevStr %>" class="date-nav__arrow" aria-label="Previous day">&#8249;</a>
+      <span class="date-nav__label"><%= displayLabel %></span>
+      <a href="/schedule/<%= nextStr %>" class="date-nav__arrow" aria-label="Next day">&#8250;</a>
+    </div>
+
+    <!-- TIMELINE -->
+    <div id="timeline-region">
+      <%
+        const MEAL_ORDER = ['Breakfast','Morning Snack','Lunch','Afternoon Snack','Dinner','Evening Snack','Other'];
+        const grouped = {};
+        MEAL_ORDER.forEach(m => { grouped[m] = []; });
+        (log.entries || []).forEach(e => {
+          const key = e.mealType || 'Other';
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(e);
+        });
+      %>
+
+      <% MEAL_ORDER.forEach(mealType => { %>
+        <div class="meal-group" data-meal="<%= mealType %>">
+          <div class="meal-group__header">
+            <span class="meal-group__title"><%= mealType %></span>
+            <%
+              const groupTotals = grouped[mealType].reduce((acc, e) => {
+                if (e.computed) {
+                  acc.calories += e.computed.calories || 0;
+                }
+                return acc;
+              }, { calories: 0 });
+            %>
+            <% if (grouped[mealType].length > 0) { %>
+              <span class="meal-group__cal"><%= Math.round(groupTotals.calories) %> kcal</span>
+            <% } %>
+          </div>
+
+          <div class="meal-group__entries">
+            <% grouped[mealType].forEach(entry => { %>
+              <%- include('./_entry', { entry, dateString }) %>
+            <% }); %>
+          </div>
+
+          <!-- Add food inline -->
+          <div class="add-food-row" data-meal="<%= mealType %>">
+            <button class="add-food-btn btn btn--ghost btn--sm" data-meal="<%= mealType %>">
+              + Add food to <%= mealType %>
+            </button>
+            <div class="add-food-panel" style="display:none;" data-meal="<%= mealType %>">
+              <div class="add-food-search">
+                <input
+                  type="text"
+                  class="add-food-input input"
+                  placeholder="Search food…"
+                  data-meal="<%= mealType %>"
+                  autocomplete="off"
+                >
+                <div class="add-food-results" data-meal="<%= mealType %>"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+  </div>
+
+  <!-- PORTION PICKER MODAL -->
+  <div id="portion-modal" class="modal" style="display:none;" aria-modal="true" role="dialog">
+    <div class="modal__backdrop"></div>
+    <div class="modal__box">
+      <button class="modal__close" id="modal-close" aria-label="Close">&times;</button>
+      <h3 class="modal__title" id="modal-food-name"></h3>
+      <p class="modal__source" id="modal-food-source"></p>
+
+      <div class="modal__field">
+        <label class="modal__label" for="modal-servings">Servings</label>
+        <input type="number" id="modal-servings" class="input" min="0.25" step="0.25" value="1">
+      </div>
+      <div class="modal__field">
+        <label class="modal__label" for="modal-time">Time (optional)</label>
+        <input type="text" id="modal-time" class="input" placeholder="08:00">
+      </div>
+      <div class="modal__field">
+        <label class="modal__label" for="modal-meal">Meal</label>
+        <select id="modal-meal" class="input">
+          <option>Breakfast</option>
+          <option>Morning Snack</option>
+          <option>Lunch</option>
+          <option>Afternoon Snack</option>
+          <option>Dinner</option>
+          <option>Evening Snack</option>
+          <option selected>Other</option>
+        </select>
+      </div>
+
+      <p class="modal__preview" id="modal-nutrition-preview">Fetching nutrition…</p>
+
+      <button class="btn btn--primary modal__submit" id="modal-submit">Add to Log</button>
+    </div>
+  </div>
+
+  <script>
+    window.SCHEDULE_DATE = '<%= dateString %>';
+  </script>
+  <script src="/js/foodlog.js"></script>
+</body>
+</html>

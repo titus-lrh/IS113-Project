@@ -8,6 +8,7 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth-routes');
 const recipeRoutes = require('./routes/recipes-routes');
 const profileRoutes = require("./routes/profile-routes");
+const foodlogRoutes = require('./routes/foodlog');
 
 
 require('dotenv').config();
@@ -51,6 +52,7 @@ app.get('/', (_req, res) => res.redirect('/recipes'));
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);
+app.use("/schedule", foodlogRoutes);
 
 
 

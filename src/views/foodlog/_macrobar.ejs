@@ -1,0 +1,35 @@
+<%
+  // _macrobar.ejs — daily macro summary bar
+  // Expects: dailyTotals = { calories, protein, carbs, fat }
+  // Optional: goals = { calories: 2000 }
+  const totals = dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  const calorieGoal = 2000;
+  const calPct = Math.min(Math.round((totals.calories / calorieGoal) * 100), 100);
+%>
+<div class="macrobar">
+  <div class="macrobar__header">
+    <span class="macrobar__label">Daily Calories</span>
+    <span class="macrobar__values">
+      <strong><%= Math.round(totals.calories) %></strong>
+      <span class="macrobar__sep">/</span>
+      <span class="macrobar__goal"><%= calorieGoal %> kcal</span>
+    </span>
+  </div>
+  <div class="macrobar__track">
+    <div class="macrobar__fill" style="width:<%= calPct %>%"></div>
+  </div>
+  <div class="macrobar__macros">
+    <div class="macro-pill macro-pill--protein">
+      <span class="macro-pill__letter">P</span>
+      <span class="macro-pill__value"><%= Math.round(totals.protein) %>g</span>
+    </div>
+    <div class="macro-pill macro-pill--carbs">
+      <span class="macro-pill__letter">C</span>
+      <span class="macro-pill__value"><%= Math.round(totals.carbs) %>g</span>
+    </div>
+    <div class="macro-pill macro-pill--fat">
+      <span class="macro-pill__letter">F</span>
+      <span class="macro-pill__value"><%= Math.round(totals.fat) %>g</span>
+    </div>
+  </div>
+</div>

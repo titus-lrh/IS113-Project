@@ -13,6 +13,7 @@
       <% if (typeof session !== 'undefined' && session.userId) { %>
         <span class="nav__user"><%= session.username %></span>
         <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
         <a href="/auth/dashboard" class="nav__link">Dashboard</a>
         <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>

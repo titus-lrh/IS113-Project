@@ -1,0 +1,36 @@
+<%
+  // _entry.ejs — single food log entry row
+  // Expects: entry = FoodLog entry subdocument, dateString
+  const cal  = entry.computed && entry.computed.calories != null ? Math.round(entry.computed.calories) : null;
+  const pro  = entry.computed && entry.computed.protein  != null ? Math.round(entry.computed.protein)  : null;
+  const carb = entry.computed && entry.computed.carbs    != null ? Math.round(entry.computed.carbs)    : null;
+  const fat  = entry.computed && entry.computed.fat      != null ? Math.round(entry.computed.fat)      : null;
+  const hasNutrition = cal !== null;
+%>
+<div class="log-entry" data-entry-id="<%= entry._id %>">
+  <div class="log-entry__left">
+    <% if (entry.timeLabel) { %>
+      <span class="log-entry__time"><%= entry.timeLabel %></span>
+    <% } %>
+    <span class="log-entry__name"><%= entry.food && entry.food.name ? entry.food.name : 'Unknown food' %></span>
+    <span class="log-entry__servings"><%= entry.servings %>&times; serving</span>
+  </div>
+  <div class="log-entry__right">
+    <% if (hasNutrition) { %>
+      <span class="log-entry__cal"><strong><%= cal %></strong> kcal</span>
+      <span class="log-entry__macros">
+        <span class="macro-tag macro-tag--p"><%= pro %>P</span>
+        <span class="macro-tag macro-tag--c"><%= carb %>C</span>
+        <span class="macro-tag macro-tag--f"><%= fat %>F</span>
+      </span>
+    <% } else { %>
+      <span class="log-entry__pending">Nutrition pending</span>
+    <% } %>
+    <button
+      class="log-entry__remove btn btn--ghost btn--sm"
+      data-entry-id="<%= entry._id %>"
+      data-date="<%= dateString %>"
+      aria-label="Remove entry"
+    >×</button>
+  </div>
+</div>
