@@ -4,25 +4,10 @@ const mongoose = require('mongoose');
 const FoodLog = require('../models/FoodLog');
 const Recipe = require('../models/recipe-model');
 const { getNutrition } = require('../services/nutritionService');
+const { getOrCreateLog, addFoodEntry, removeFoodEntry } = require('../services/foodLogService');
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-/** Returns midnight UTC for a given Date or YYYY-MM-DD string. */
-function toMidnightUTC(dateInput) {
-  const d = dateInput instanceof Date ? dateInput : new Date(`${dateInput}T00:00:00.000Z`);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-}
-
-/** Fetch or create today's FoodLog for the logged-in user. */
-async function getOrCreateLog(userId, date) {
-  const midnight = toMidnightUTC(date);
-  const existing = await FoodLog.findOne({ userId, date: midnight });
-  if (existing) return existing;
-  return FoodLog.create({ userId, date: midnight, entries: [] });
-}
-
-// ── TheMealDB helper (mirrors recipe-controller) ───────────────────────────
 async function fetchFromMealDB(url) {
   const response = await fetch(url);
   const data = await response.json();
@@ -122,32 +107,7 @@ const addEntry = async (req, res) => {
     }
 
     const log = await getOrCreateLog(userId, date);
-
-    const entry = {
-      timeLabel,
-      mealType,
-      food: {
-        nutritionId: nutritionDoc ? nutritionDoc._id : undefined,
-        name: foodName,
-        sourceType: sourceType || 'custom',
-        sourceId: sourceId || undefined,
-      },
-      servings: Number(servings) || 1,
-    };
-
-    // Denormalize nutrition onto entry for self-contained calculation
-    if (nutritionDoc) {
-      entry.nutrition = nutritionDoc.nutrition;
-      entry.defaultServing = nutritionDoc.defaultServing;
-    }
-
-    log.entries.push(entry);
-
-    if (nutritionDoc) {
-      await log.calculateTotals();
-    } else {
-      await log.save();
-    }
+    await addFoodEntry(log, { foodName, sourceType, sourceId, nutrition: nutritionDoc, servings, mealType, timeLabel });
 
     const updated = await FoodLog.findById(log._id);
     res.json({ log: updated });
@@ -165,7 +125,6 @@ const removeEntry = async (req, res) => {
   const { entryId } = req.params;
 
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const log = await FoodLog.findOne({
       userId,
       entries: { $elemMatch: { _id: new mongoose.Types.ObjectId(entryId) } },
@@ -175,8 +134,7 @@ const removeEntry = async (req, res) => {
       return res.status(404).json({ error: 'Entry not found' });
     }
 
-    log.entries = log.entries.filter((e) => e._id.toString() !== entryId);
-    await log.calculateTotals();
+    await removeFoodEntry(log, entryId);
 
     res.json({ log });
   } catch (error) {

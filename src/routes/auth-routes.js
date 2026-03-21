@@ -9,7 +9,7 @@ const { isAuthenticated, isNotAuthenticated } = require('../middleware/auth');
 router.get('/login', userController.getLoginForm);
 router.get('/register', userController.getRegisterForm);
 router.get('/dashboard', userController.getDashboard);
-router.post('/register', isNotAuthenticated, userController.registerValidationRules(), userController.register);
+router.post('/register', isNotAuthenticated, userController.register);
 router.post('/login', isNotAuthenticated, userController.login);
 router.get('/logout', isAuthenticated, userController.logout);
 

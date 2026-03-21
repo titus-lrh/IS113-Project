@@ -42,4 +42,17 @@ foodNutritionSchema.index({ sourceType: 1, sourceId: 1 }, { unique: true, sparse
 // Text index for food search
 foodNutritionSchema.index({ foodKey: 'text' });
 
+// Static methods for DB operations
+foodNutritionSchema.statics.findBySourceId = async function(sourceType, sourceId) {
+  return this.findOne({ sourceType, sourceId });
+};
+
+foodNutritionSchema.statics.deleteBySourceId = async function(sourceType, sourceId) {
+  return this.deleteOne({ sourceType, sourceId });
+};
+
+foodNutritionSchema.statics.createNutrition = async function(data) {
+  return this.create(data);
+};
+
 module.exports = mongoose.model('FoodNutrition', foodNutritionSchema);

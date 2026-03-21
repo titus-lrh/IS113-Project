@@ -93,17 +93,14 @@ async function fetchNutritionFromGPT(foodName, context = '') {
 async function getNutrition(sourceType, sourceId, foodName, context = '') {
   const foodKey = buildFoodKey(sourceType, sourceId, foodName);
 
-  // Cache check
-  const query = sourceType && sourceId
-    ? { sourceType, sourceId }
-    : { foodKey };
-  const cached = await FoodNutrition.findOne(query);
-  if (cached) return cached;
+  // Check if nutrition already exists for this source
+  const existing = await FoodNutrition.findBySourceId(sourceType, sourceId);
+  if (existing) return existing;
 
-  // Cache miss — fetch from GPT
+  // Not found — fetch from GPT and save
   const nutrition = await fetchNutritionFromGPT(foodName, context);
 
-  const doc = await FoodNutrition.create({
+  const doc = await FoodNutrition.createNutrition({
     foodKey,
     name: foodName.trim(),
     sourceType: sourceType || 'custom',

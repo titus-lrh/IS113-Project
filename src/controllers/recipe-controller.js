@@ -1,6 +1,22 @@
 const Recipe = require('../models/recipe-model');
-const { body, validationResult } = require('express-validator');
+const FoodNutrition = require('../models/FoodNutrition');
 const nutritionService = require('../services/nutritionService');
+
+// Validation helper
+function validateRecipeBody(body) {
+  const errors = [];
+  if (!body.title || body.title.trim().length < 3)
+    errors.push({ msg: 'Title must be at least 3 characters' });
+  if (!body.description || !body.description.trim())
+    errors.push({ msg: 'Description is required' });
+  const ct = parseInt(body.cookingTime);
+  if (!ct || ct < 1)
+    errors.push({ msg: 'Cooking time must be a positive number' });
+  const sv = parseInt(body.servings);
+  if (!sv || sv < 1)
+    errors.push({ msg: 'Servings must be a positive number' });
+  return errors;
+}
 
 // ---- TheMealDB helpers ----
 const fetchFromMealDB = async (url) => {
@@ -29,14 +45,6 @@ const transformMealDetail = (meal) => {
   };
 };
 
-const recipeValidationRules = () => {
-  return [
-    body('title').isLength({ min: 3 }).withMessage('Title must be at least 3 characters'),
-    body('description').notEmpty().withMessage('Description is required'),
-    body('cookingTime').isInt({ min: 1 }).withMessage('Cooking time must be a positive number'),
-    body('servings').isInt({ min: 1 }).withMessage('Servings must be a positive number'),
-  ];
-};
 
 // GET all recipes
 const getAllRecipes = async (req, res) => {
@@ -81,9 +89,9 @@ const getNewRecipeForm = (req, res) => {
 
 // POST create recipe
 const createRecipe = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).render('recipes/new', { errors: errors.array(), body: req.body });
+  const errors = validateRecipeBody(req.body);
+  if (errors.length > 0) {
+    return res.status(400).render('recipes/new', { errors, body: req.body });
   }
 
   try {
@@ -155,10 +163,10 @@ const getEditRecipeForm = async (req, res) => {
 
 // PUT update recipe
 const updateRecipe = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
+  const errors = validateRecipeBody(req.body);
+  if (errors.length > 0) {
     const recipe = await Recipe.getRecipeById(req.params.id);
-    return res.status(400).render('recipes/edit', { errors: errors.array(), recipe });
+    return res.status(400).render('recipes/edit', { errors, recipe });
   }
 
   try {
@@ -188,14 +196,23 @@ const updateRecipe = async (req, res) => {
 
     const updatedRecipe = await Recipe.updateRecipeById(req.params.id, updateData);
 
-    // Fire-and-forget: re-index nutrition after update
+    // Fire-and-forget: delete old nutrition and re-index with fresh data
     if (updatedRecipe) {
-      nutritionService.getNutrition(
-        'user_recipe',
-        updatedRecipe._id.toString(),
-        updatedRecipe.title,
-        `Ingredients: ${updatedRecipe.ingredients.join(', ')}`
-      ).catch((err) => console.error('Nutrition re-index failed:', err));
+      (async () => {
+        try {
+          // Delete old nutrition record for this recipe
+          await FoodNutrition.deleteBySourceId('user_recipe', updatedRecipe._id.toString());
+          // Fetch fresh nutrition based on updated ingredients
+          await nutritionService.getNutrition(
+            'user_recipe',
+            updatedRecipe._id.toString(),
+            updatedRecipe.title,
+            `Ingredients: ${updatedRecipe.ingredients.join(', ')}`
+          );
+        } catch (err) {
+          console.error('Nutrition re-index failed:', err);
+        }
+      })();
     }
 
     res.redirect(`/recipes/${req.params.id}`);
@@ -363,7 +380,6 @@ Instructions: ${recipeData.instructions}`;
 };
 
 module.exports = {
-  recipeValidationRules,
   getAllRecipes,
   getMyRecipes,
   getRecipesByCategory,

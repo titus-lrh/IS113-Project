@@ -1,16 +1,5 @@
 const User = require('../models/user-model');
 const Recipe = require('../models/recipe-model');
-const { body, validationResult } = require('express-validator');
-
-const registerValidationRules = () => {
-  return [
-    body('username').isLength({ min: 3 }).withMessage('Username must be at least 3 characters'),
-    body('email').isEmail().withMessage('Invalid email format'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('firstName').notEmpty().withMessage('First name is required'),
-    body('lastName').notEmpty().withMessage('Last name is required'),
-  ];
-};
 
 // GET login form
 const getLoginForm = (req, res) => {
@@ -32,9 +21,22 @@ const getDashboard = (req, res) => {
 
 // POST register
 const register = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).render('register', { errors: errors.array() });
+  const { username, email, password, firstName, lastName } = req.body;
+  const errors = [];
+
+  if (!username || username.trim().length < 3)
+    errors.push({ msg: 'Username must be at least 3 characters' });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+    errors.push({ msg: 'Invalid email format' });
+  if (!password || password.length < 6)
+    errors.push({ msg: 'Password must be at least 6 characters' });
+  if (!firstName || !firstName.trim())
+    errors.push({ msg: 'First name is required' });
+  if (!lastName || !lastName.trim())
+    errors.push({ msg: 'Last name is required' });
+
+  if (errors.length > 0) {
+    return res.status(400).render('register', { errors });
   }
 
   try {
@@ -144,7 +146,6 @@ const deleteProfile = async (req, res) => {
 };
 
 module.exports = {
-  registerValidationRules,
   getLoginForm,
   getRegisterForm,
   getDashboard,
