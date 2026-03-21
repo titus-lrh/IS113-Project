@@ -362,10 +362,6 @@ Instructions: ${recipeData.instructions}`;
   }
 };
 
-const getFavourite = async (req, res) => {
-  res.send("test")
-};
-
 
 module.exports = {
   recipeValidationRules,
@@ -382,5 +378,4 @@ module.exports = {
   getMealDBRecipe,
   rateRecipe,
   summarizeRecipe,
-  getFavourite
 };

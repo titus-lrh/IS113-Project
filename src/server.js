@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth-routes');
 const recipeRoutes = require('./routes/recipes-routes');
 const profileRoutes = require("./routes/profile-routes");
 const foodlogRoutes = require('./routes/foodlog');
+const favouriteRoutes = require('./routes/favourite-routes');
 
 
 require('dotenv').config();
@@ -55,6 +56,7 @@ app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);
 app.use("/schedule", foodlogRoutes);
+app.use("/favourites", favouriteRoutes);
 
 
 

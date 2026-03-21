@@ -126,7 +126,9 @@
               </div>
               <div class="recipe-card__footer">
                 <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View Recipe</a>
-                <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
+                <% if (typeof session !== 'undefined'){ %>
+                  <button onclick="saveFavourite('<%= recipe._id %>', '<%= recipe.title %>', '<%= recipe.author.username %>')" class="btn btn--ghost btn--sm">💚 Save</button>
+                <% } if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
                   <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
                 <% } %>
               </div>
@@ -164,6 +166,9 @@
                   <h3><%= meal.strMeal %></h3>
                 </div>
                 <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
+                <% if (typeof session !== 'undefined'){ %>
+                  <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb')" class="btn btn--ghost btn--sm">💚 Save</button>
+                <%}%>
               </div>
             </div>
           <% }); %>
@@ -187,6 +192,20 @@
     }, { threshold: 0.08 });
 
     document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
+  
+    function saveFavourite(recipeId, recipeTitle, recipeType) {
+      fetch('/favourites/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipeId, recipeTitle, recipeType })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);
+      })
+      .catch(err => alert('Error saving favourite'));
+    };
+
   </script>
 </body>
 </html>

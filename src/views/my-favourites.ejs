@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Favourites</title>
+</head>
+<body>
+
+<h1>My Favourite Recipes</h1>
+
+<% if (favourites.length === 0) { %>
+  <p>No favourites yet.</p>
+  <a href="/recipes">Browse recipes</a>
+<% } else { %>
+  <p>Total: <%= favourites.length %></p>
+
+  <% favourites.forEach(fav => { %>
+    <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
+      <h3><%= fav.recipeTitle %></h3>
+      <p>By: <%= fav.recipeType %></p>
+      <p>Saved: <%= fav.savedAt.toLocaleDateString() %></p>
+      
+      <% if (fav.recipeType === 'user') { %>
+        <a href="/recipes/<%= fav.recipeId %>">View Recipe</a>
+      <% } else { %>
+        <a href="/recipes/mealdb/<%= fav.recipeId %>">View Recipe</a>
+      <% } %>
+      
+      <button onclick="editFavourite('<%= fav._id %>', '<%= fav.recipeTitle %>')">Edit Name</button>
+      <button onclick="removeFavourite('<%= fav.recipeId %>')">Remove</button>
+      <button onclick="deleteFavourite('<%= fav._id %>')">Delete</button>
+    </div>
+  <% }); %>
+<% } %>
+
+<a href="/">Back to Dashboard</a>
+
+<script>
+// Remove recipe from favorites
+function removeFavourite(recipeId) {
+  if (confirm('Remove from favourites?')) {
+    fetch('/favourites/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipeId })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      location.reload();
+    });
+  }
+}
+
+// Delete favorite by ID
+function deleteFavourite(favouriteId) {
+  if (confirm('Delete this favourite?')) {
+    fetch(`/favourites/${favouriteId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      location.reload();
+    });
+  }
+}
+
+// Edit favorite name
+function editFavourite(favouriteId, currentName) {
+  const newName = prompt('Enter new name:', currentName);
+  
+  if (newName && newName !== currentName) {
+    fetch(`/favourites/${favouriteId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipeTitle: newName })
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert(data.message);
+      location.reload();
+    });
+  }
+}
+</script>
+
+</body>
+</html>
