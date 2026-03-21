@@ -21,4 +21,5 @@ router.post('/:id/delete', isAuthenticated, recipeController.deleteRecipe);
 router.post('/:id/summarize', recipeController.summarizeRecipe);
 
 
+
 module.exports = router;

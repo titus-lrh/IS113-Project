@@ -117,13 +117,6 @@
         <div class="instructions"><%= recipe.instructions %></div>
       </div>
     </div>
-
-    <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
-      <div class="actions">
-        <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary">✏️ Edit Recipe</a>
-        <button class="btn btn--danger" onclick="deleteRecipe('<%= recipe._id %>')">🗑 Delete Recipe</button>
-      </div>
-    <% } %>
   </div>
 
   <script>
@@ -144,15 +137,7 @@
         s.textContent = parseInt(s.dataset.value) <= val ? '⭐' : '☆';
       });
     }
-
-    function deleteRecipe(id) {
-      if (confirm('Are you sure you want to delete this recipe?')) {
-        fetch(`/recipes/${id}/delete`, { method: 'POST' })
-          .then(res => res.json())
-          .then(data => { alert(data.msg); window.location.href = '/recipes'; })
-          .catch(err => console.error(err));
-      }
-    }
+    
 
     async function summarizeRecipe(id) {
       const btn = document.getElementById('summarize-btn');
