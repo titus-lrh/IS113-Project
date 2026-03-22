@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery Shopping List</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <a href="/recipes" class="nav__link">Browse</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <a href="/auth/dashboard" class="back-link">← Back to Dashboard</a>
+
+    <!-- ========== CREATE / UPDATE FORM ========== -->
+    <h2><%= editItem ? "Edit Item" : "Add New Item" %></h2>
+
+    <% if (editItem) { %>
+      <form action="/groceries/<%= editItem._id %>?_method=PUT" method="POST">
+    <% } else { %>
+      <form action="/groceries" method="POST">
+    <% } %>
+
+      <% if (error) { %>
+        <p style="color:red;"><%= error %></p>
+      <% } %>
+
+      <label>Name</label>
+      <input type="text" name="name" value="<%= editItem ? editItem.name : '' %>" placeholder="e.g. Milk" required>
+
+      <label>Quantity</label>
+      <input type="number" name="quantity" value="<%= editItem ? editItem.quantity : '' %>" placeholder="e.g. 2" required>
+
+      <label>Category</label>
+      <select name="category">
+        <% ['Dairy','Meat','Vegetables','Fruits','Beverages','Snacks','Others'].forEach(cat => { %>
+          <option value="<%= cat %>" <%= editItem && editItem.category === cat ? 'selected' : '' %>>
+            <%= cat %>
+          </option>
+        <% }) %>
+      </select>
+
+      <label>Notes</label>
+      <textarea name="notes" placeholder="e.g. Get the low-fat version"><%= editItem ? editItem.notes : '' %></textarea>
+
+      <br><br>
+      <button type="submit" class="btn btn-primary">
+        <%= editItem ? "Update Item" : "Add Item" %>
+      </button>
+      <% if (editItem) { %>
+        <a href="/groceries" class="btn btn-secondary">Cancel</a>
+      <% } %>
+
+    </form>
+
+    <br>
+    <hr><br>
+
+    <!-- ========== READ - LIST ALL ITEMS ========== -->
+    <h2>My Grocery List (<%= groceryList.length %> items)</h2>
+
+    <% if (groceryList.length === 0) { %>
+      <p>No items yet. Add one above!</p>
+    <% } else { %>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Category</th>
+            <th>Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% groceryList.forEach(item => { %>
+            <tr>
+              <td><%= item.name %></td>
+              <td><%= item.quantity %></td>
+              <td><%= item.category %></td>
+              <td><%= item.notes || "-" %></td>
+              <td>
+                <!-- UPDATE button -->
+                <form action="/groceries/<%= item._id %>/edit" method="GET" style="display:inline;">
+                  <button type="submit" class="btn btn-danger">Edit</button>
+                </form>
+
+                <!-- DELETE button -->
+                <button class="btn btn-danger" onclick="deleteItem('<%= item._id %>')">Delete</button>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+
+    <script>
+      function deleteItem(id) {
+        if (confirm("Are you sure you want to delete this item?")) {
+          fetch(`/groceries/${id}`, { method: "DELETE" })
+            .then(res => res.json())
+            .then(data => {
+              alert(data.msg);
+              window.location.href = "/groceries";
+            })
+            .catch(err => console.error(err));
+        }
+      }
+    </script>
+
+  </div>    
+</body>
+</html>
