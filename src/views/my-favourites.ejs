@@ -19,15 +19,14 @@
       <p>By: <%= fav.recipeType %></p>
       <p>Saved: <%= fav.savedAt.toLocaleDateString() %></p>
       
-      <% if (fav.recipeType === 'user') { %>
-        <a href="/recipes/<%= fav.recipeId %>">View Recipe</a>
-      <% } else { %>
+      <% if (fav.recipeType === 'mealdb') { %>
         <a href="/recipes/mealdb/<%= fav.recipeId %>">View Recipe</a>
+      <% } else { %>
+        <a href="/recipes/<%= fav.recipeId %>">View Recipe</a>
       <% } %>
       
       <button onclick="editFavourite('<%= fav._id %>', '<%= fav.recipeTitle %>')">Edit Name</button>
-      <button onclick="removeFavourite('<%= fav.recipeId %>')">Remove</button>
-      <button onclick="deleteFavourite('<%= fav._id %>')">Delete</button>
+      <button onclick="deleteFavourite('<%= fav._id %>')">Remove</button>
     </div>
   <% }); %>
 <% } %>
@@ -35,22 +34,6 @@
 <a href="/">Back to Dashboard</a>
 
 <script>
-// Remove recipe from favorites
-function removeFavourite(recipeId) {
-  if (confirm('Remove from favourites?')) {
-    fetch('/favourites/remove', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipeId })
-    })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      location.reload();
-    });
-  }
-}
-
 // Delete favorite by ID
 function deleteFavourite(favouriteId) {
   if (confirm('Delete this favourite?')) {

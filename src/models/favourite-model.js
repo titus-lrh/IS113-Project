@@ -3,21 +3,19 @@ const mongoose = require('mongoose');
 const favouriteSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
     required: true,
   },
   recipeId: {
     type: String,
-    required: true,
+    required: [true, "Favourite recipe must have an ID"]
   },
   recipeTitle: {
     type: String,
-    required: true,
+    required: [true, "Favourite recipe must have a Title"]
   },
   recipeType: {
     type: String,
-    enum: ['user', 'mealdb'],
-    required: true,
+    required: [true, "Recipe must have an author/by meal DB"]
   },
   savedAt: {
     type: Date,
@@ -47,19 +45,9 @@ exports.getFavourites = async (userId) => {
   return await Favourite.find({ userId }).sort({ savedAt: -1 });
 };
 
-// READ - Get single favorite
-exports.getFavouriteById = async (favouriteId) => {
-  return await Favourite.findById(favouriteId);
-};
-
 // UPDATE - Update a favorite (e.g., update recipeTitle)
 exports.updateFavourite = async (favouriteId, updateData) => {
   return await Favourite.findByIdAndUpdate(favouriteId, updateData, { new: true });
-};
-
-// DELETE - Remove a recipe from favorites
-exports.removeFavourite = async (userId, recipeId) => {
-  return await Favourite.deleteOne({ userId, recipeId });
 };
 
 // DELETE - Remove favorite by ID

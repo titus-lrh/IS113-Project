@@ -72,19 +72,6 @@ exports.updateFavouriteName = async (req, res) => {
   }
 };
 
-// DELETE - Remove recipe from favorites by recipeId
-exports.removeFavourite = async (req, res) => {
-  try {
-    const userId = req.session.userId;
-    const { recipeId } = req.body;
-
-    await Favourite.removeFavourite(userId, recipeId);
-    res.json({ success: true, message: 'Removed from favourites' });
-  } catch (error) {
-    console.error('Error removing favourite:', error);
-    res.status(500).json({ success: false, message: 'Error removing' });
-  }
-};
 
 // DELETE - Remove favorite by ID
 exports.deleteFavouriteById = async (req, res) => {
@@ -97,9 +84,9 @@ exports.deleteFavouriteById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Favourite not found' });
     }
 
-    res.json({ success: true, message: 'Favourite deleted' });
+    res.json({ success: true, message: 'Favourite removed' });
   } catch (error) {
-    console.error('Error deleting favourite:', error);
-    res.status(500).json({ success: false, message: 'Error deleting favourite' });
+    console.error('Error removing favourite:', error);
+    res.status(500).json({ success: false, message: 'Error removing favourite' });
   }
 };
