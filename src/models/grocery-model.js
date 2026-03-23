@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const grocerySchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
     name: {
         type: String,
         required: [true, 'Item must have a name']
@@ -22,9 +27,9 @@ const grocerySchema = new mongoose.Schema({
 
 const Grocery = mongoose.model('Grocery', grocerySchema, 'groceries');
 
-// GET all items
-exports.getAll = function () {
-    return Grocery.find();
+// GET all items for a user
+exports.getAll = function (userId) {
+    return Grocery.find({ userId });
 };
 
 // GET one item by ID

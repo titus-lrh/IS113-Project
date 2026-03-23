@@ -26,11 +26,13 @@
     <% } else { %>
       <span class="log-entry__pending">Nutrition pending</span>
     <% } %>
-    <button
-      class="log-entry__remove btn btn--ghost btn--sm"
-      data-entry-id="<%= entry._id %>"
-      data-date="<%= dateString %>"
-      aria-label="Remove entry"
-    >×</button>
+    <form method="POST" action="/schedule/delete-entry/<%= entry._id %>" style="display:inline;">
+      <button
+        type="submit"
+        class="log-entry__remove btn btn--ghost btn--sm"
+        aria-label="Remove entry"
+        onclick="return confirm('Delete this entry?');"
+      >×</button>
+    </form>
   </div>
 </div>

@@ -3,11 +3,11 @@ const Grocery = require('../models/grocery-model');
 // GET /groceries — show all items + empty form
 exports.showAll = async (req, res) => {
     try {
-        const groceryList = await Grocery.getAll();
+        const groceryList = await Grocery.getAll(req.session.userId);
         res.render('groceries', { groceryList, editItem: null, error: null });
     } catch (error) {
-        console.error(error);
-        res.send("Error fetching grocery list");
+        console.error('Error fetching grocery list:', error);
+        res.status(500).render('error', { message: 'Error fetching grocery list' });
     }
 };
  
@@ -15,11 +15,11 @@ exports.showAll = async (req, res) => {
 exports.showEditForm = async (req, res) => {
     try {
         const editItem = await Grocery.getById(req.params.id);
-        const groceryList = await Grocery.getAll();
+        const groceryList = await Grocery.getAll(req.session.userId);
         res.render('groceries', { groceryList, editItem, error: null });
     } catch (error) {
-        console.error(error);
-        res.send("Error fetching item");
+        console.error('Error fetching grocery item:', error);
+        res.status(500).render('error', { message: 'Error fetching item' });
     }
 };
  
@@ -38,11 +38,11 @@ exports.createItem = async (req, res) => {
     }
  
     try {
-        await Grocery.createItem({ name, quantity, category, notes });
+        await Grocery.createItem({ userId: req.session.userId, name, quantity, category, notes });
         res.redirect('/groceries');
     } catch (error) {
-        console.error(error);
-        res.send("Error creating item");
+        console.error('Error creating grocery item:', error);
+        res.status(500).render('error', { message: 'Error creating item' });
     }
 };
  
@@ -65,8 +65,8 @@ exports.updateItem = async (req, res) => {
         await Grocery.updateItem(req.params.id, { name, quantity, category, notes });
         res.redirect('/groceries');
     } catch (error) {
-        console.error(error);
-        res.send("Error updating item");
+        console.error('Error updating grocery item:', error);
+        res.status(500).render('error', { message: 'Error updating item' });
     }
 };
  

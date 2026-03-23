@@ -83,23 +83,20 @@
             <% }); %>
           </div>
 
-          <!-- Add food inline -->
+          <!-- Add food form -->
           <div class="add-food-row" data-meal="<%= mealType %>">
-            <button class="add-food-btn btn btn--ghost btn--sm" data-meal="<%= mealType %>">
-              + Add food to <%= mealType %>
-            </button>
-            <div class="add-food-panel" style="display:none;" data-meal="<%= mealType %>">
-              <div class="add-food-search">
-                <input
-                  type="text"
-                  class="add-food-input input"
-                  placeholder="Search food…"
-                  data-meal="<%= mealType %>"
-                  autocomplete="off"
-                >
-                <div class="add-food-results" data-meal="<%= mealType %>"></div>
-              </div>
-            </div>
+            <form method="POST" action="/schedule/search-food" class="add-food-form" style="display: block;">
+              <input
+                type="text"
+                name="query"
+                class="input input--sm"
+                placeholder="Search and add food…"
+                required
+                style="display: block; width: 100%; margin-bottom: 8px;"
+              >
+              <input type="hidden" name="mealType" value="<%= mealType %>">
+              <button type="submit" class="btn btn--ghost btn--sm">+ Add to <%= mealType %></button>
+            </form>
           </div>
         </div>
       <% }); %>
@@ -107,44 +104,5 @@
 
   </div>
 
-  <!-- PORTION PICKER MODAL -->
-  <div id="portion-modal" class="modal" style="display:none;" aria-modal="true" role="dialog">
-    <div class="modal__backdrop"></div>
-    <div class="modal__box">
-      <button class="modal__close" id="modal-close" aria-label="Close">&times;</button>
-      <h3 class="modal__title" id="modal-food-name"></h3>
-      <p class="modal__source" id="modal-food-source"></p>
-
-      <div class="modal__field">
-        <label class="modal__label" for="modal-servings">Servings</label>
-        <input type="number" id="modal-servings" class="input" min="0.25" step="0.25" value="1">
-      </div>
-      <div class="modal__field">
-        <label class="modal__label" for="modal-time">Time (optional)</label>
-        <input type="text" id="modal-time" class="input" placeholder="08:00">
-      </div>
-      <div class="modal__field">
-        <label class="modal__label" for="modal-meal">Meal</label>
-        <select id="modal-meal" class="input">
-          <option>Breakfast</option>
-          <option>Morning Snack</option>
-          <option>Lunch</option>
-          <option>Afternoon Snack</option>
-          <option>Dinner</option>
-          <option>Evening Snack</option>
-          <option selected>Other</option>
-        </select>
-      </div>
-
-      <p class="modal__preview" id="modal-nutrition-preview">Fetching nutrition…</p>
-
-      <button class="btn btn--primary modal__submit" id="modal-submit">Add to Log</button>
-    </div>
-  </div>
-
-  <script>
-    window.SCHEDULE_DATE = '<%= dateString %>';
-  </script>
-  <script src="/js/foodlog.js"></script>
 </body>
 </html>

@@ -164,4 +164,209 @@ const getNutritionData = async (req, res) => {
   }
 };
 
-module.exports = { getSchedule, searchFood, addEntry, removeEntry, getNutritionData };
+/**
+ * ── Form-based endpoints (backend-first, serves HTML) ──
+ */
+
+/**
+ * POST /schedule/search-food
+ * Body: { query, mealType }
+ * Renders search results form with matching foods
+ */
+const searchFoodForm = async (req, res) => {
+  const { query, mealType = 'Other' } = req.body;
+  const errors = [];
+
+  if (!query || !query.trim()) {
+    errors.push('Enter a food name');
+    const dateString = new Date().toISOString().slice(0, 10);
+    const log = await getOrCreateLog(req.session.userId, dateString);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+
+  try {
+    // Search both user recipes and TheMealDB
+    const [userRecipes, mealdbMeals] = await Promise.all([
+      Recipe.searchRecipesByTitle(query.trim()),
+      fetchFromMealDB(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`),
+    ]);
+
+    // Build results array with all needed fields
+    const results = [
+      ...userRecipes.map((r) => ({
+        id: r._id.toString(),
+        name: r.title,
+        source: 'My Recipe',
+        sourceType: 'user_recipe',
+        sourceId: r._id.toString(),
+      })),
+      ...mealdbMeals.map((m) => ({
+        id: m.idMeal,
+        name: m.strMeal,
+        source: 'TheMealDB',
+        sourceType: 'themealdb',
+        sourceId: m.idMeal,
+      })),
+    ];
+
+    // If no results, show message
+    if (results.length === 0) {
+      return res.render('foodlog/search-results', {
+        results: [],
+        query: query.trim(),
+        mealType,
+        session: req.session,
+      });
+    }
+
+    res.render('foodlog/search-results', { results, query: query.trim(), mealType, session: req.session });
+  } catch (error) {
+    console.error('Error searching food:', error);
+    errors.push('Search failed. Try again.');
+    const dateString = new Date().toISOString().slice(0, 10);
+    const log = await getOrCreateLog(req.session.userId, dateString);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+};
+
+/**
+ * POST /schedule/select-food
+ * Body: { results, selectedIndex, mealType }
+ * Renders portion/nutrition form
+ */
+const selectFoodForm = async (req, res) => {
+  const { results, selectedIndex, mealType = 'Other' } = req.body;
+  const errors = [];
+
+  if (!results || !selectedIndex) {
+    errors.push('No food selected');
+    const dateString = new Date().toISOString().slice(0, 10);
+    const log = await getOrCreateLog(req.session.userId, dateString);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+
+  try {
+    // Parse the results array and get the selected food
+    const resultsArray = typeof results === 'string' ? JSON.parse(results) : results;
+    const selectedFood = resultsArray[parseInt(selectedIndex)];
+
+    if (!selectedFood) {
+      throw new Error('Food not found in results');
+    }
+
+    // Get nutrition data
+    let nutrition = null;
+    try {
+      nutrition = await getNutrition(selectedFood.sourceType, selectedFood.sourceId, selectedFood.name, '');
+    } catch (err) {
+      console.error('Nutrition fetch failed:', err);
+    }
+
+    // Build nutrition preview (default serving is 100g for 1x)
+    const nutritionPreview = nutrition
+      ? `~${Math.round(nutrition.nutrition?.calories || 0)} kcal · ${Math.round(nutrition.nutrition?.protein || 0)}g P`
+      : 'Nutrition pending';
+
+    res.render('foodlog/portion-form', {
+      selectedFood,
+      nutrition,
+      mealType,
+      nutritionPreview,
+      session: req.session,
+    });
+  } catch (error) {
+    console.error('Error selecting food:', error);
+    errors.push('Food not found');
+    const dateString = new Date().toISOString().slice(0, 10);
+    const log = await getOrCreateLog(req.session.userId, dateString);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+};
+
+/**
+ * POST /schedule/add-food
+ * Body: { foodId, foodName, sourceType, sourceId, servings, mealType, timeLabel }
+ * Adds entry and redirects to schedule
+ */
+const addFoodPost = async (req, res) => {
+  const { foodId, foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '' } = req.body;
+  const userId = req.session.userId;
+  const dateString = new Date().toISOString().slice(0, 10);
+  const errors = [];
+
+  if (!foodName || !foodName.trim()) errors.push('Food required');
+  if (!servings || isNaN(servings) || servings <= 0) errors.push('Valid servings required');
+
+  if (errors.length > 0) {
+    const log = await getOrCreateLog(userId, dateString);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+
+  try {
+    const log = await getOrCreateLog(userId, dateString);
+
+    // Fetch nutrition
+    let nutritionDoc = null;
+    try {
+      nutritionDoc = await getNutrition(sourceType || null, sourceId || null, foodName.trim(), '');
+    } catch (err) {
+      console.error('Nutrition fetch failed:', err);
+    }
+
+    await addFoodEntry(log, {
+      foodName: foodName.trim(),
+      sourceType: sourceType || 'custom',
+      sourceId: sourceId || '',
+      nutrition: nutritionDoc,
+      servings: Number(servings),
+      mealType,
+      timeLabel,
+    });
+
+    res.redirect(`/schedule/${dateString}`);
+  } catch (error) {
+    console.error('Error adding entry:', error);
+    errors.push('Failed to add entry');
+    const log = await getOrCreateLog(userId, dateString);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+  }
+};
+
+/**
+ * POST /schedule/delete-entry/:entryId
+ * Deletes entry and redirects to schedule
+ */
+const deleteEntryPost = async (req, res) => {
+  const userId = req.session.userId;
+  const { entryId } = req.params;
+  const dateString = new Date().toISOString().slice(0, 10);
+
+  try {
+    const log = await FoodLog.findOne({
+      userId,
+      entries: { $elemMatch: { _id: new mongoose.Types.ObjectId(entryId) } },
+    });
+
+    if (!log) {
+      return res.status(404).send('Entry not found');
+    }
+
+    await removeFoodEntry(log, entryId);
+    res.redirect(`/schedule/${dateString}`);
+  } catch (error) {
+    console.error('Error deleting entry:', error);
+    res.status(500).send('Failed to delete entry');
+  }
+};
+
+module.exports = {
+  getSchedule,
+  searchFood,
+  addEntry,
+  removeEntry,
+  getNutritionData,
+  searchFoodForm,
+  selectFoodForm,
+  addFoodPost,
+  deleteEntryPost,
+};
