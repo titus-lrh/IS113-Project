@@ -65,8 +65,8 @@ exports.updateItem = async (req, res) => {
         await Grocery.updateItem(req.params.id, { name, quantity, category, notes });
         res.redirect('/groceries');
     } catch (error) {
-        console.error('Error updating grocery item:', error);
-        res.status(500).render('error', { message: 'Error updating item' });
+        console.error(error);
+        res.send("Error updating item");
     }
 };
  

@@ -44,10 +44,10 @@ exports.createItem = function (data) {
 
 // UPDATE item by ID
 exports.updateItem = function (id, data) {
-    return Grocery.findByIdAndUpdate(id, data, { new: true });
+    return Grocery.updateOne({_id: id}, { $set: data });
 };
 
 // DELETE item by ID
 exports.deleteItem = function (id) {
-    return Grocery.findByIdAndDelete(id);
+    return Grocery.deleteOne({_id: id});
 };

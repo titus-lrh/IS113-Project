@@ -13,9 +13,9 @@ router.get('/:id/edit', isAuthenticated, groceryController.showEditForm);
 router.post('/', isAuthenticated, groceryController.createItem);
 
 // UPDATE - submit edited item
-router.put('/:id', isAuthenticated, groceryController.updateItem);
+router.post('/:id/update', isAuthenticated, groceryController.updateItem);
 
 // DELETE - delete item
-router.delete('/:id', isAuthenticated, groceryController.deleteItem);
+router.post('/:id/delete', isAuthenticated, groceryController.deleteItem);
 
 module.exports = router;
