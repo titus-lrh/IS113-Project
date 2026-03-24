@@ -42,7 +42,7 @@
           </div>
           <h1><%= recipe.title %></h1>
           <p class="recipe-hero__author">
-            By <strong><%= recipe.author.firstName %> <%= recipe.author.lastName %></strong> &middot;
+            By <strong><%= recipe.author.username %></strong> &middot;
             <span class="text-subtle"><%= new Date(recipe.createdAt).toLocaleDateString() %></span>
           </p>
         </div>
