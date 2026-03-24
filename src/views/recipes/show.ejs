@@ -1,37 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= recipe.title %> — Everyday Cooks</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span class="nav__user"><%= session.username %></span>
-        <a href="/recipes" class="nav__link">Recipes</a>
-        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-        <a href="/auth/logout" class="nav__link">Logout</a>
+      <span class="nav__user"><%= session.username %></span>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login" class="nav__link">Login</a>
+      <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
   <div class="container container--lg">
-    <a href="javascript:history.back()" class="back-link">← Back</a>
+    <% if (typeof session !== 'undefined' && session.userId) { %>
+    <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
+    <% } else { %>
+    <a href="/recipes" class="back-link">← Back to Recipes</a>
+    <% } %>
 
     <div class="recipe-hero">
       <div class="recipe-hero__top">
         <div>
           <div class="recipe-hero__badges">
             <% if (recipe.category) { %>
-              <% (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(subCategory => { %>
-                <span class="badge badge--category"><%= subCategory %></span>
-              <% }) %>
+            <% (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(subCategory => { %>
+            <span class="badge badge--category"><%= subCategory %></span>
+            <% }) %>
             <% } %>
           </div>
           <h1><%= recipe.title %></h1>
@@ -53,21 +59,21 @@
           %>
 
           <% if (!session || !session.userId) { %>
-            <p class="text-subtle text-sm mt-2">Login to rate</p>
+          <p class="text-subtle text-sm mt-2">Login to rate</p>
           <% } else if (hasRated) { %>
-            <p class="text-success text-sm mt-2">✔ Already rated</p>
+          <p class="text-success text-sm mt-2">✔ Already rated</p>
           <% } else { %>
-            <form action="/recipes/<%= recipe._id %>/rate" method="POST">
-              <div class="star-picker" id="stars">
-                <span data-value="1">☆</span>
-                <span data-value="2">☆</span>
-                <span data-value="3">☆</span>
-                <span data-value="4">☆</span>
-                <span data-value="5">☆</span>
-              </div>
-              <input type="hidden" name="rating" id="ratingValue" value="0">
-              <button class="btn btn--primary btn--sm mt-2" type="submit">Rate</button>
-            </form>
+          <form action="/recipes/<%= recipe._id %>/rate" method="POST">
+            <div class="star-picker" id="stars">
+              <span data-value="1">☆</span>
+              <span data-value="2">☆</span>
+              <span data-value="3">☆</span>
+              <span data-value="4">☆</span>
+              <span data-value="5">☆</span>
+            </div>
+            <input type="hidden" name="rating" id="ratingValue" value="0">
+            <button class="btn btn--primary btn--sm mt-2" type="submit">Rate</button>
+          </form>
           <% } %>
         </div>
       </div>
@@ -107,7 +113,7 @@
         <h2>Ingredients</h2>
         <ul class="ingredients-list">
           <% recipe.ingredients.forEach(ingredient => { %>
-            <li><%= ingredient %></li>
+          <li><%= ingredient %></li>
           <% }); %>
         </ul>
       </div>
@@ -132,12 +138,13 @@
         });
       });
     }
+
     function highlightStars(val) {
       stars.forEach(s => {
         s.textContent = parseInt(s.dataset.value) <= val ? '⭐' : '☆';
       });
     }
-    
+
 
     async function summarizeRecipe(id) {
       const btn = document.getElementById('summarize-btn');
@@ -148,7 +155,9 @@
       btn.textContent = '⏳ Summarizing…';
 
       try {
-        const res = await fetch(`/recipes/${id}/summarize`, { method: 'POST' });
+        const res = await fetch(`/recipes/${id}/summarize`, {
+          method: 'POST'
+        });
         const data = await res.json();
 
         if (data.error) {
@@ -168,4 +177,5 @@
     }
   </script>
 </body>
+
 </html>

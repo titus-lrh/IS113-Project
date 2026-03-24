@@ -97,7 +97,7 @@
       <% if (recipes.length > 1) { %>
         <div class="recipes-grid">
           <% recipes.slice(1).forEach((recipe, i) => { %>
-            <div class="recipe-card animate-fade-up" style="transition-delay: <%= (i % 3) * 80 %>ms">
+            <div class="recipe-card animate-fade-up" style=`transition-delay: <%= (i % 3) * 80 %>ms`>
               <div class="recipe-card__header">
                 <h3><%= recipe.title %></h3>
                 <div class="recipe-card__meta">By <%= recipe.author.username %></div>
@@ -159,7 +159,7 @@
         <p style="font-size:var(--text-sm);color:var(--color-text-gray);margin-bottom:var(--sp-6);">Curated from around the world</p>
         <div class="mealdb-grid">
           <% mealdbRecipes.forEach((meal, i) => { %>
-            <div class="mealdb-card animate-fade-up" style="transition-delay: <%= (i % 4) * 60 %>ms">
+            <div class="mealdb-card animate-fade-up" style=`transition-delay: <%= (i % 4) * 60 %>ms`>
               <img class="mealdb-card__thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
               <div class="mealdb-card__body">
                 <div>

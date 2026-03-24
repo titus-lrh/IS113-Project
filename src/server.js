@@ -12,7 +12,7 @@ const profileRoutes = require("./routes/profile-routes");
 const foodlogRoutes = require('./routes/foodlog');
 const favouriteRoutes = require('./routes/favourite-routes');
 const groceryRoutes = require('./routes/grocery-routes');
-const methodOverride = require('method-override');
+// const methodOverride = require('method-override');
 
 
 require('dotenv').config();
@@ -29,7 +29,7 @@ app.get('/favicon.ico', (req, res) => res.status(204));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(methodOverride('_method'));
+// app.use(methodOverride('_method'));
 
 // View Engine
 app.set('view engine', 'ejs');
