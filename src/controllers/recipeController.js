@@ -138,7 +138,7 @@ const getRecipe = async (req, res) => {
   try {
     const recipe = await Recipe.getRecipeById(req.params.id);    
     if (!recipe) {
-      return res.status(404).send('Recipe not found');
+      return res.status(404).send('Recipe no longer exist');
     }
     res.render('recipes/show', { 
     recipe,

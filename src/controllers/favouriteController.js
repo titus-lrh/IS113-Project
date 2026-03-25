@@ -36,22 +36,6 @@ exports.viewFavourites = async (req, res) => {
   }
 };
 
-// READ - Get single favorite (API endpoint)
-exports.getSingleFavourite = async (req, res) => {
-  try {
-    const { favouriteId } = req.params;
-    const favourite = await Favourite.getFavouriteById(favouriteId);
-
-    if (!favourite) {
-      return res.status(404).json({ success: false, message: 'Favourite not found' });
-    }
-
-    res.json({ success: true, favourite });
-  } catch (error) {
-    console.error('Error getting favourite:', error);
-    res.status(500).json({ success: false, message: 'Error getting favourite' });
-  }
-};
 
 // UPDATE - Update a favorite
 exports.updateFavouriteName = async (req, res) => {
