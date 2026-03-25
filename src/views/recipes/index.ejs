@@ -54,7 +54,7 @@
       </div>
 
       <!-- FEATURED: first recipe -->
-      <% const featured = recipes[0]; %>
+      <!--<% const featured = recipes[0]; %>
       <a href="/recipes/<%= featured._id %>" class="recipe-card--featured animate-fade-up" style="text-decoration:none;color:inherit;">
         <div class="featured__left">
           <div>
@@ -91,12 +91,12 @@
             <p class="featured__visual-label">Community favourite</p>
           </div>
         </div>
-      </a>
+      </a> -->
 
       <!-- REST OF GRID -->
-      <% if (recipes.length > 1) { %>
+      <!--<% if (recipes.length > 1) { %>-->
         <div class="recipes-grid">
-          <% recipes.slice(1).forEach((recipe, i) => { %>
+          <% recipes.forEach((recipe, i) => { %>
             <div class="recipe-card animate-fade-up" style=`transition-delay: <%= (i % 3) * 80 %>ms`>
               <div class="recipe-card__header">
                 <h3><%= recipe.title %></h3>
