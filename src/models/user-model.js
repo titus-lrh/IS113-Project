@@ -2,7 +2,7 @@
 // Define user schema and authentication logic
 
 const mongoose = require('mongoose');
-const bcryptjs = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -35,31 +35,27 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  // bio: {
-  //   type:String,
-  //   required:false
-  // }
+  bio: {
+    type:String,
+    required: false,
+    maxlength: 200,
+  }
   
 });
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
 
-  try {
-    const salt = await bcryptjs.genSalt(10);
-    this.password = await bcryptjs.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  // Example hashing logic
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  
+  // No next() needed here!
 });
-
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcryptjs.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
 module.exports = mongoose.model('User', userSchema);

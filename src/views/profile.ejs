@@ -29,12 +29,15 @@
     </div>
 
     <div class="actions">
-      <button onclick="window.location.href='/profile/edit/<%= user._id %>'" class="btn btn--secondary">
+      <a href="/profile/edit/<%= user._id %>" class="btn btn--secondary">
         ✏️ Edit Profile
-      </button>
-      <button onclick="window.location.href='/profile/delete/<%= user._id %>'" class="btn btn--danger">
-        🗑 Delete Account
-      </button>
+      </a>
+
+      <form action="/profile/delete/<%= user._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+        <button type="submit" class="btn btn--danger">
+          🗑 Delete Account
+        </button>
+      </form>
     </div>
   </div>
 </body>
