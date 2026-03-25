@@ -12,13 +12,17 @@ router.get('/mealdb/:id', recipeController.getMealDBRecipe);
 router.get('/my-recipes/:userId', recipeController.getMyRecipes);
 router.get('/category/:category', recipeController.getRecipesByCategory);
 router.get('/new', isAuthenticated, recipeController.getNewRecipeForm);
+
 router.post('/', isAuthenticated, recipeController.createRecipe);
+router.get('/favourites', isAuthenticated, recipeController.getFavourite);
+router.post('/', isAuthenticated, recipeController.recipeValidationRules(), recipeController.createRecipe);
 router.post('/:id/rate', isAuthenticated, recipeController.rateRecipe);
 router.get('/:id', recipeController.getRecipe);
 router.get('/:id/edit', isAuthenticated, recipeController.getEditRecipeForm);
 router.post('/:id/update', isAuthenticated, recipeController.updateRecipe);
 router.post('/:id/delete', isAuthenticated, recipeController.deleteRecipe);
 router.post('/:id/summarize', recipeController.summarizeRecipe);
+
 
 
 module.exports = router;
