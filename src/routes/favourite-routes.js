@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const favouriteController = require('../controllers/favourite-controller');
+const favouriteController = require('../controllers/favouriteController');
 
 const { isAuthenticated } = require('../middleware/auth');
 

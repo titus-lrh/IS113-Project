@@ -52,7 +52,9 @@
               <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View</a>
               <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
                 <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
-                <button onclick="deleteRecipe('<%= recipe._id %>', '<%= session.userId %>')" class="btn btn--danger btn--sm">Delete</button>
+                <form action="/recipes/<%= recipe.id %>/delete" method="POST">
+                  <button class="btn btn--danger btn--sm">Delete</button>
+                </form>
               <% } %>
             </div>
           </div>
@@ -72,15 +74,5 @@
     <% } %>
   </div>
 
-  <script>
-    function deleteRecipe(id, userId) {
-      if (confirm('Are you sure you want to delete this recipe?')) {
-        fetch(`/recipes/${id}/delete`, { method: 'POST' })
-          .then(res => res.json())
-          .then(data => { alert(data.msg); location.reload(); })
-          .catch(err => console.error(err));
-      }
-    }
-  </script>
 </body>
 </html>

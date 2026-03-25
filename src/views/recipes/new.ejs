@@ -71,9 +71,12 @@
           <label>Category <span class="text-subtle">(select up to 3)</span></label>
           <% const cats = ['Appetisers/Sides','Breakfast','Lunch','Dinner','Dessert','Healthy','Vegan','20 Minutes or less']; %>
           <% const catVals = ['Appetisers','Breakfast','Lunch','Dinner','Dessert','Healthy','Vegan','20 Minutes']; %>
+          <% const selected = body && body.category 
+            ? (Array.isArray(body.category) ? body.category : [body.category]) 
+          : [] %>
           <% catVals.forEach((val, i) => { %>
             <label class="check-group">
-              <input type="checkbox" name="category" value="<%= val %>">
+              <input type="checkbox" name="category" value="<%= val %>"  <%= selected.includes(val) ? 'checked' : '' %> >
               <%= cats[i] %>
             </label>
           <% }) %>

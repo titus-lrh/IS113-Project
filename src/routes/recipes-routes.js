@@ -3,7 +3,7 @@
 
 const express = require('express');
 const router = express.Router();
-const recipeController = require('../controllers/recipe-controller');
+const recipeController = require('../controllers/recipeController');
 const { isAuthenticated } = require('../middleware/auth');
 
 router.get('/', recipeController.getAllRecipes);

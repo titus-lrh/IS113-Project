@@ -53,7 +53,7 @@ const getAllRecipes = async (req, res) => {
     recipes.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     const mealdbMeals = await fetchFromMealDB('https://www.themealdb.com/api/json/v1/1/filter.php?c=Chicken');
     const mealdbRecipes = mealdbMeals.slice(0, 12);
-    res.render('recipes/index', { recipes, mealdbRecipes, session: req.session });
+    res.render('recipes/index', { recipes, mealdbRecipes, currentPage: 'recipes', session: req.session });
   } catch (error) {
     console.error('Error fetching recipes:', error);
     res.status(500).send('Error fetching recipes');
@@ -64,7 +64,7 @@ const getAllRecipes = async (req, res) => {
 const getMyRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.getRecipesByUser(req.params.userId);
-    res.render('recipes/userRecipe', { recipes, session: req.session });
+    res.render('recipes/userRecipe', { recipes, currentPage: 'my-recipes', session: req.session });
   } catch (error) {
     console.error('Error fetching uploaded recipes by user:', error);
     res.status(500).send('Error fetching uploaded recipes by user');
@@ -98,6 +98,12 @@ const createRecipe = async (req, res) => {
     const { title, description, ingredients, instructions, cookingTime, servings, category } = req.body;
     let formatCategory = Array.isArray(category) ? category : [category]
 
+    if(formatCategory.length < 1) {
+      return res.status(400).render('recipes/new', { errors: [{ msg: 'Please select at least 1 category!' }], body: req.body });
+    }
+    else if(formatCategory.length > 3) {
+      return res.status(400).render('recipes/new', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
+    }
     const ingredientArray = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
 
     const newRecipe = await Recipe.createRecipe({
@@ -229,7 +235,7 @@ const deleteRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-    res.json({ msg: 'Recipe deleted successfully' });
+      res.send("Book has been successfully deleted")
   } catch (error) {
     console.error('Error deleting recipe:', error);
     res.status(500).send('Error deleting recipe');
