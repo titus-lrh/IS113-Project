@@ -235,7 +235,7 @@ const deleteRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-      res.send("Book has been successfully deleted")
+      res.send("Recipe has been successfully deleted")
   } catch (error) {
     console.error('Error deleting recipe:', error);
     res.status(500).send('Error deleting recipe');
