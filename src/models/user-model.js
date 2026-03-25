@@ -31,27 +31,28 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  calorieGoal: {
+    type: Number,
+    default: 3000,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
   bio: {
-    type:String,
+    type: String,
     required: false,
     maxlength: 200,
-  }
-  
+  },
+
 });
 
 // Hash password before saving
 userSchema.pre('save', async function() {
   if (!this.isModified('password')) return;
 
-  // Example hashing logic
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  
-  // No next() needed here!
 });
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {

@@ -25,8 +25,11 @@
 
     <!-- MACRO BAR -->
     <div id="macrobar-region">
-      <%- include('./_macrobar', { dailyTotals: log.dailyTotals }) %>
+      <%- include('./_macrobar', { dailyTotals: log.dailyTotals, calorieGoal: calorieGoal }) %>
     </div>
+
+    <!-- SUGGESTIONS -->
+    <%- include('./_suggestions', { suggestions: suggestions || [], remainingCalories: remainingCalories || 0 }) %>
 
     <!-- DATE NAVIGATOR -->
     <%

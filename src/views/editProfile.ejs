@@ -37,6 +37,10 @@
           <label for="bio">Bio</label>
           <textarea id="bio" name="bio" placeholder="Tell the community about yourself..."><%= user.bio %></textarea>
         </div>
+        <div class="form-group">
+          <label for="calorieGoal">Daily Calorie Goal (kcal)</label>
+          <input type="number" id="calorieGoal" name="calorieGoal" value="<%= user.calorieGoal || 3000 %>" min="500" max="10000">
+        </div>
 
         <div class="button-group">
           <a href="javascript:history.back()" class="btn btn--secondary">Cancel</a>

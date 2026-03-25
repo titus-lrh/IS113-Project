@@ -109,10 +109,10 @@ const getEditProfileForm = async (req, res) => {
 
 // POST update profile
 const updateProfile = async (req, res) => {
-  const { username, email, bio } = req.body;
+  const { username, email, bio, calorieGoal } = req.body;
   await User.findByIdAndUpdate(
     req.params.id,
-    { $set: { username, email, bio } },
+    { $set: { username, email, bio, calorieGoal: Number(calorieGoal) || 3000 } },
     { new: true }
   );
   res.redirect('/profile/' + req.params.id);
@@ -143,25 +143,19 @@ const getProfile = async (req, res) => {
 const deleteProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-      // 1. Remove the user from the database
     await User.findByIdAndDelete(userId);
 
-      // 2. Wipe the session so they are no longer "logged in"
     req.session.destroy((err) => {
-        if (err) {
-          console.log("Error clearing session:", err);
-          return res.redirect('/profile'); 
-        }
-
-            // 3. Clear the cookie on the client side
-        res.clearCookie('connect.sid'); // 'connect.sid' is the default Express session name
-
-            // 4. Send them back to the landing page or registration
-        res.redirect('/'); 
-      });
-  }catch (error) {
-      console.error("Delete Error:", error);
-      res.status(500).send("Could not delete profile.");
+      if (err) {
+        console.log("Error clearing session:", err);
+        return res.redirect('/profile');
+      }
+      res.clearCookie('connect.sid');
+      res.redirect('/');
+    });
+  } catch (error) {
+    console.error("Delete Error:", error);
+    res.status(500).send("Could not delete profile.");
   }
 };
 

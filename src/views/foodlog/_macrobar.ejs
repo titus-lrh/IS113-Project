@@ -3,8 +3,8 @@
   // Expects: dailyTotals = { calories, protein, carbs, fat }
   // Optional: goals = { calories: 2000 }
   const totals = dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
-  const calorieGoal = 3000;
-  const calPct = Math.min(Math.round((totals.calories / calorieGoal) * 100), 100);
+  const goal = calorieGoal || 3000;
+  const calPct = Math.min(Math.round((totals.calories / goal) * 100), 100);
 %>
 <div class="macrobar">
   <div class="macrobar__header">
@@ -12,7 +12,7 @@
     <span class="macrobar__values">
       <strong><%= Math.round(totals.calories) %></strong>
       <span class="macrobar__sep">/</span>
-      <span class="macrobar__goal"><%= calorieGoal %> kcal</span>
+      <span class="macrobar__goal"><%= goal %> kcal</span>
     </span>
   </div>
   <div class="macrobar__track">

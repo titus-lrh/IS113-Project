@@ -3,8 +3,10 @@
 const mongoose = require('mongoose');
 const FoodLog = require('../models/FoodLog');
 const Recipe = require('../models/recipe-model');
+const User = require('../models/user-model');
 const { getNutrition } = require('../services/nutritionService');
 const { getOrCreateLog, addFoodEntry, removeFoodEntry } = require('../services/foodLogService');
+const { getSuggestions } = require('../services/suggestionService');
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -12,6 +14,11 @@ async function fetchFromMealDB(url) {
   const response = await fetch(url);
   const data = await response.json();
   return data.meals || [];
+}
+
+async function getUserCalorieGoal(userId) {
+  const user = await User.findById(userId);
+  return user ? user.calorieGoal || 3000 : 3000;
 }
 
 // ── controllers ────────────────────────────────────────────────────────────
@@ -24,12 +31,22 @@ const getSchedule = async (req, res) => {
   try {
     const dateString = req.params.dateString || new Date().toISOString().slice(0, 10);
     const userId = req.session.userId;
-    const log = await getOrCreateLog(userId, dateString);
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(userId, dateString),
+      getUserCalorieGoal(userId),
+    ]);
+
+    // Calculate remaining calories, then fetch suggestions (never breaks the page)
+    const remaining = calorieGoal - (log.dailyTotals ? log.dailyTotals.calories : 0);
+    const suggestions = await getSuggestions(remaining).catch(() => []);
 
     res.render('foodlog/schedule', {
       log,
       dateString,
       session: req.session,
+      calorieGoal,
+      suggestions,
+      remainingCalories: remaining,
       page: 'schedule',
     });
   } catch (error) {
@@ -180,8 +197,11 @@ const searchFoodForm = async (req, res) => {
   if (!query || !query.trim()) {
     errors.push('Enter a food name');
     const dateString = new Date().toISOString().slice(0, 10);
-    const log = await getOrCreateLog(req.session.userId, dateString);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(req.session.userId, dateString),
+      getUserCalorieGoal(req.session.userId),
+    ]);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 
   try {
@@ -224,8 +244,11 @@ const searchFoodForm = async (req, res) => {
     console.error('Error searching food:', error);
     errors.push('Search failed. Try again.');
     const dateString = new Date().toISOString().slice(0, 10);
-    const log = await getOrCreateLog(req.session.userId, dateString);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(req.session.userId, dateString),
+      getUserCalorieGoal(req.session.userId),
+    ]);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 };
 
@@ -241,8 +264,11 @@ const selectFoodForm = async (req, res) => {
   if (!results || !selectedIndex) {
     errors.push('No food selected');
     const dateString = new Date().toISOString().slice(0, 10);
-    const log = await getOrCreateLog(req.session.userId, dateString);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(req.session.userId, dateString),
+      getUserCalorieGoal(req.session.userId),
+    ]);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 
   try {
@@ -278,8 +304,11 @@ const selectFoodForm = async (req, res) => {
     console.error('Error selecting food:', error);
     errors.push('Food not found');
     const dateString = new Date().toISOString().slice(0, 10);
-    const log = await getOrCreateLog(req.session.userId, dateString);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(req.session.userId, dateString),
+      getUserCalorieGoal(req.session.userId),
+    ]);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 };
 
@@ -298,8 +327,11 @@ const addFoodPost = async (req, res) => {
   if (!servings || isNaN(servings) || servings <= 0) errors.push('Valid servings required');
 
   if (errors.length > 0) {
-    const log = await getOrCreateLog(userId, dateString);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(userId, dateString),
+      getUserCalorieGoal(userId),
+    ]);
+    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 
   try {
@@ -327,8 +359,11 @@ const addFoodPost = async (req, res) => {
   } catch (error) {
     console.error('Error adding entry:', error);
     errors.push('Failed to add entry');
-    const log = await getOrCreateLog(userId, dateString);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session });
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(userId, dateString),
+      getUserCalorieGoal(userId),
+    ]);
+    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
   }
 };
 
