@@ -29,7 +29,7 @@ exports.viewFavourites = async (req, res) => {
     // Get all favorites from database
     const favourites = await Favourite.getFavourites(userId);
 
-    res.render('my-favourites', { favourites });
+    res.render('my-favourites', { favourites, session: req.session });
   } catch (error) {
     console.error('Error getting favourites:', error);
     res.status(500).send('Error getting favourites');

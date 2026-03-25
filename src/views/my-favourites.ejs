@@ -1,72 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>My Favourites</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Favourites - Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
-
-<h1>My Favourite Recipes</h1>
-
-<% if (favourites.length === 0) { %>
-  <p>No favourites yet.</p>
-  <a href="/recipes">Browse recipes</a>
-<% } else { %>
-  <p>Total: <%= favourites.length %></p>
-
-  <% favourites.forEach(fav => { %>
-    <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
-      <h3><%= fav.recipeTitle %></h3>
-      <p>By: <%= fav.recipeType %></p>
-      <p>Saved: <%= fav.savedAt.toLocaleDateString() %></p>
-      
-      <% if (fav.recipeType === 'mealdb') { %>
-        <a href="/recipes/mealdb/<%= fav.recipeId %>">View Recipe</a>
-      <% } else { %>
-        <a href="/recipes/<%= fav.recipeId %>">View Recipe</a>
-      <% } %>
-      
-      <button onclick="editFavourite('<%= fav._id %>', '<%= fav.recipeTitle %>')">Edit Name</button>
-      <button onclick="deleteFavourite('<%= fav._id %>')">Remove</button>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !=='undefined' && session.userId) { %>
+        <span class="nav__user">
+          <%= session.username %>
+        </span>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+        <% } else { %>
+          <a href="/auth/login" class="nav__link">Login</a>
+          <% } %>
     </div>
-  <% }); %>
-<% } %>
+  </nav>
 
-<a href="/">Back to Dashboard</a>
 
-<script>
-// Delete favorite by ID
-function deleteFavourite(favouriteId) {
-  if (confirm('Delete this favourite?')) {
-    fetch(`/favourites/${favouriteId}`, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      location.reload();
-    });
-  }
-}
 
-// Edit favorite name
-function editFavourite(favouriteId, currentName) {
-  const newName = prompt('Enter new name:', currentName);
-  
-  if (newName && newName !== currentName) {
-    fetch(`/favourites/${favouriteId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipeTitle: newName })
-    })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);
-      location.reload();
-    });
-  }
-}
-</script>
+
+  <h1>My Favourite Recipes</h1>
+
+  <% if (favourites.length===0) { %>
+    <p>No favourites yet.</p>
+    <a href="/recipes">Browse recipes</a>
+    <% } else { %>
+      <p>Total: <%= favourites.length %>
+      </p>
+
+      <% favourites.forEach(fav=> { %>
+        <div style="border: 1px solid #ccc; padding: 15px; margin: 10px 0;">
+          <h3>
+            <%= fav.recipeTitle %>
+          </h3>
+          <p>By: <%= fav.recipeType %>
+          </p>
+          <p>Saved: <%= fav.savedAt.toLocaleDateString() %>
+          </p>
+
+          <% if (fav.recipeType==='mealdb' ) { %>
+            <a href="/recipes/mealdb/<%= fav.recipeId %>">View Recipe</a>
+            <% } else { %>
+              <a href="/recipes/<%= fav.recipeId %>">View Recipe</a>
+              <% } %>
+
+                <button onclick="editFavourite('<%= fav._id %>', '<%= fav.recipeTitle %>')">Edit Name</button>
+                <button onclick="deleteFavourite('<%= fav._id %>')">Remove</button>
+        </div>
+        <% }); %>
+          <% } %>
+
+            <a href="/">Back to Dashboard</a>
+
+            <script>
+              // Delete favorite by ID
+              function deleteFavourite(favouriteId) {
+                if (confirm('Delete this favourite?')) {
+                  fetch(`/favourites/${favouriteId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                  })
+                    .then(res => res.json())
+                    .then(data => {
+                      alert(data.message);
+                      location.reload();
+                    });
+                }
+              }
+
+              // Edit favorite name
+              function editFavourite(favouriteId, currentName) {
+                const newName = prompt('Enter new name:', currentName);
+
+                if (newName && newName !== currentName) {
+                  fetch(`/favourites/${favouriteId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipeTitle: newName })
+                  })
+                    .then(res => res.json())
+                    .then(data => {
+                      alert(data.message);
+                      location.reload();
+                    });
+                }
+              }
+            </script>
 
 </body>
+
 </html>
