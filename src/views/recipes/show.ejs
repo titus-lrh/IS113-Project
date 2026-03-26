@@ -126,6 +126,100 @@
       </div>
     </div>
   </div>
+  
+  <div class="container" style="margin-top:2rem;">
+
+  <h2>Comments</h2>
+
+  <% if (recipe.comments && recipe.comments.length > 0) { %>
+
+    <% recipe.comments.forEach(comment => { %>
+
+      <div style="padding:16px; border-bottom:1px solid #eee;">
+
+        <!-- Username -->
+        <strong style="display:block; margin-bottom:4px;">
+          <%= comment.username %>
+        </strong>
+
+        <!-- Comment -->
+        <p id="text-<%= comment._id %>" style="margin-bottom:6px;">
+          <%= comment.text %>
+        </p>
+
+        <!-- Timestamp -->
+        <small style="color:#999; display:block; margin-bottom:10px;">
+          <%= new Date(comment.createdAt).toLocaleString() %>
+        </small>
+
+        <!-- Buttons -->
+        <div style="display:flex; gap:10px; align-items:center;">
+
+          <!-- LIKE -->
+          <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/like" method="POST">
+            <button class="btn btn--primary btn--sm" style="background:#f4b183;">
+              ❤️ <%= comment.likes || 0 %>
+            </button>
+          </form>
+
+          <% if (session && session.userId && comment.user.toString() === session.userId) { %>
+
+            <!-- EDIT -->
+            <button onclick="toggleEdit('<%= comment._id %>')" 
+                    class="btn btn--primary btn--sm" 
+                    style="background:#d6a86c;">
+              Edit
+            </button>
+
+            <!-- DELETE -->
+            <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/delete" method="POST">
+              <button class="btn btn--primary btn--sm" style="background:#dc3545;">
+                Delete
+              </button>
+            </form>
+
+          <% } %>
+
+        </div>
+
+        <!-- EDIT FORM -->
+        <form id="edit-form-<%= comment._id %>" 
+              action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/edit" 
+              method="POST" 
+              style="display:none; margin-top:10px;">
+          <input type="text" name="text" value="<%= comment.text %>" style="width:100%; padding:6px;">
+          <button class="btn btn--primary btn--sm" style="margin-top:6px;">
+            Save
+          </button>
+        </form>
+
+      </div>
+
+    <% }) %>
+
+  <% } else { %>
+
+    <p>No comments yet.</p>
+
+  <% } %>
+
+  <!-- Add Comment -->
+  <% if (session && session.userId) { %>
+
+    <form action="/recipes/<%= recipe._id %>/comment" method="POST" style="margin-top:15px;">
+      <textarea name="text" required style="width:100%; padding:8px;"></textarea>
+      <button class="btn btn--primary" style="margin-top:8px;">
+        Post Comment
+      </button>
+    </form>
+
+  <% } else { %>
+
+    <p>Login to comment</p>
+
+  <% } %>
+
+</div>
 
   <script>
     const stars = document.querySelectorAll('#stars span');
@@ -146,6 +240,16 @@
         s.textContent = parseInt(s.dataset.value) <= val ? '⭐' : '☆';
       });
     }
+
+
+        function toggleEdit(id) {
+          const text = document.getElementById("text-" + id);
+          const form = document.getElementById("edit-form-" + id);
+
+          form.style.display = form.style.display === "none" ? "block" : "none";
+          text.style.display = text.style.display === "none" ? "block" : "none";
+        }
+
   </script>
 </body>
 

@@ -59,6 +59,30 @@ const recipeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  comments: [
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    username: String,
+    text: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    },
+    likes: {
+      type: Number,
+      default: 0
+    },
+    likedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      }
+    ]
+  }
+],
 });
 
 // Index for better query performance
@@ -115,4 +139,50 @@ exports.addRatedUser = async (id, userId) => {
   return await Recipe.findByIdAndUpdate(id, {
     $push: { ratedUsers: userId }
   });
+};
+
+// Add comment
+exports.addComment = async (recipeId, commentData) => {
+  return await Recipe.findByIdAndUpdate(
+    recipeId,
+    { $push: { comments: commentData } },
+    { returnDocument: 'after' }
+  );
+};
+
+//  Delete comment
+exports.deleteComment = async (recipeId, commentId) => {
+  return await Recipe.findByIdAndUpdate(
+    recipeId,
+    { $pull: { comments: { _id: commentId } } },
+    { returnDocument: 'after' }
+  );
+};
+
+// Edit comment
+exports.editComment = async (recipeId, commentId, text) => {
+  return await Recipe.findOneAndUpdate(
+    { _id: recipeId, "comments._id": commentId },
+    { $set: { "comments.$.text": text } },
+    { returnDocument: 'after' }
+  );
+};
+
+// Like comment
+exports.likeComment = async (recipeId, commentId, userId) => {
+  const recipe = await Recipe.findById(recipeId);
+  const comment = recipe.comments.id(commentId);
+
+  if (!comment) return;
+
+  const alreadyLiked = (comment.likedUsers || []).some(
+    u => u.toString() === userId
+  );
+
+  if (alreadyLiked) return;
+
+  comment.likes += 1;
+  comment.likedUsers.push(userId);
+
+  await recipe.save();
 };

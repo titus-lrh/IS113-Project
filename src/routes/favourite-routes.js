@@ -10,10 +10,13 @@ router.post('/add', isAuthenticated, favouriteController.addFavourite);
 // READ - View all user's favorites
 router.get('/my-favourites', isAuthenticated, favouriteController.viewFavourites);
 
+// GET - Show edit form
+router.get('/:favouriteId/edit', isAuthenticated, favouriteController.getEditForm)
+
 // UPDATE - Update favorite name
-router.put('/:favouriteId', isAuthenticated, favouriteController.updateFavouriteName);
+router.post('/:favouriteId/edit', isAuthenticated, favouriteController.updateFavouriteName);
 
 // DELETE - Remove by favorite ID
-router.delete('/:favouriteId', isAuthenticated, favouriteController.deleteFavouriteById);
+router.get('/:favouriteId/delete', isAuthenticated, favouriteController.deleteFavouriteById);
 
 module.exports = router;

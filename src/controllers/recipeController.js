@@ -306,6 +306,46 @@ const rateRecipe = async (req, res) => {
   }
 };
 
+// Add comment
+const addComment = async (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  const comment = {
+    user: req.session.userId,
+    username: req.session.username,
+    text
+  };
+
+  await Recipe.addComment(id, comment);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Delete comment
+const deleteComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  await Recipe.deleteComment(id, commentId);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Edit comment
+const editComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  const { text } = req.body;
+
+  await Recipe.editComment(id, commentId, text);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Like comment
+const likeComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  const userId = req.session.userId;
+
+  await Recipe.likeComment(id, commentId, userId);
+  res.redirect(`/recipes/${id}`);
+};
+
 
 
 // GET single MealDB recipe
@@ -409,4 +449,8 @@ module.exports = {
   rateRecipe,
   summarizeRecipe,
   summarizeMealDBRecipe,
+  addComment,
+  deleteComment,
+  editComment,
+  likeComment
 };
