@@ -146,11 +146,11 @@ const deleteProfile = async (req, res) => {
     await User.findByIdAndDelete(userId);
 
     req.session.destroy((err) => {
+      res.clearCookie('connect.sid');
       if (err) {
         console.log("Error clearing session:", err);
         return res.redirect('/profile');
       }
-      res.clearCookie('connect.sid');
       res.redirect('/');
     });
   } catch (error) {

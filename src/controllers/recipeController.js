@@ -325,29 +325,13 @@ const getMealDBRecipe = async (req, res) => {
   }
 };
 
-// POST summarize recipe via OpenAI (pure fetch, no library)
-// Works for both community recipes (lookup by DB id) and stock recipes (data sent in body)
-const summarizeRecipe = async (req, res) => {
-  try {
-    let recipeData;
+// Shared GPT summarize helper
+const generateSummary = async (recipeData) => {
+  const ingredients = Array.isArray(recipeData.ingredients)
+    ? recipeData.ingredients.join(', ')
+    : recipeData.ingredients;
 
-    if (req.body.title) {
-      // MealDB stock recipe: data comes directly from the client body
-      recipeData = req.body;
-    } else {
-      // Community recipe: look up from DB
-      const recipe = await Recipe.getRecipeById(req.params.id);
-      if (!recipe) {
-        return res.status(404).json({ error: 'Recipe not found' });
-      }
-      recipeData = recipe;
-    }
-
-    const ingredients = Array.isArray(recipeData.ingredients)
-      ? recipeData.ingredients.join(', ')
-      : recipeData.ingredients;
-
-    const prompt = `Summarize this recipe in 3–4 friendly sentences. Mention the key ingredients, cooking time (if known), and what makes it special.
+  const prompt = `Summarize this recipe in 3–4 friendly sentences. Mention the key ingredients, cooking time (if known), and what makes it special.
 
 Recipe: ${recipeData.title}
 ${recipeData.description ? `Description: ${recipeData.description}` : ''}
@@ -356,32 +340,56 @@ ${recipeData.servings ? `Servings: ${recipeData.servings}` : ''}
 Ingredients: ${ingredients}
 Instructions: ${recipeData.instructions}`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env['GPT-SECRET']}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        max_tokens: 200,
-        temperature: 0.7,
-      }),
-    });
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env['GPT-SECRET']}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
+      temperature: 0.7,
+    }),
+  });
 
-    if (!response.ok) {
-      const err = await response.json();
-      console.error('OpenAI error:', err);
-      return res.status(502).json({ error: 'Failed to get summary from AI' });
-    }
+  if (!response.ok) {
+    const err = await response.json();
+    console.error('OpenAI error:', err);
+    throw new Error('Failed to get summary from AI');
+  }
 
-    const data = await response.json();
-    const summary = data.choices[0].message.content.trim();
-    res.json({ summary });
+  const data = await response.json();
+  return data.choices[0].message.content.trim();
+};
+
+// POST /recipes/:id/summarize — community recipes
+const summarizeRecipe = async (req, res) => {
+  try {
+    const recipe = await Recipe.getRecipeById(req.params.id);
+    if (!recipe) return res.status(404).send('Recipe not found');
+    const summary = await generateSummary(recipe);
+    res.render('recipes/show', { recipe, session: req.session, summary });
   } catch (error) {
     console.error('Error summarizing recipe:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).send('Error summarizing recipe');
+  }
+};
+
+// POST /recipes/mealdb/:id/summarize — stock MealDB recipes
+const summarizeMealDBRecipe = async (req, res) => {
+  try {
+    const meals = await fetchFromMealDB(
+      `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.params.id}`
+    );
+    if (!meals.length) return res.status(404).send('Recipe not found');
+    const recipe = transformMealDetail(meals[0]);
+    const summary = await generateSummary(recipe);
+    res.render('recipes/mealdb-show', { recipe, session: req.session, summary });
+  } catch (error) {
+    console.error('Error summarizing MealDB recipe:', error);
+    res.status(500).send('Error summarizing recipe');
   }
 };
 
@@ -400,4 +408,5 @@ module.exports = {
   getMealDBRecipe,
   rateRecipe,
   summarizeRecipe,
+  summarizeMealDBRecipe,
 };

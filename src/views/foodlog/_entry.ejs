@@ -27,6 +27,7 @@
       <span class="log-entry__pending">Nutrition pending</span>
     <% } %>
     <form method="POST" action="/schedule/delete-entry/<%= entry._id %>" style="display:inline;">
+      <input type="hidden" name="dateString" value="<%= dateString %>">
       <button
         type="submit"
         class="log-entry__remove btn btn--ghost btn--sm"

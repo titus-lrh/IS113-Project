@@ -38,7 +38,8 @@ const getSchedule = async (req, res) => {
 
     // Calculate remaining calories, then fetch suggestions (never breaks the page)
     const remaining = calorieGoal - (log.dailyTotals ? log.dailyTotals.calories : 0);
-    const suggestions = await getSuggestions(remaining).catch(() => []);
+    const skipEnrichment = !!req.query.added;
+    const suggestions = await getSuggestions(remaining, { skipEnrichment }).catch(() => []);
 
     res.render('foodlog/schedule', {
       log,
@@ -191,12 +192,12 @@ const getNutritionData = async (req, res) => {
  * Renders search results form with matching foods
  */
 const searchFoodForm = async (req, res) => {
-  const { query, mealType = 'Other' } = req.body;
+  const { query, mealType = 'Other', dateString: bodyDate } = req.body;
+  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
   const errors = [];
 
   if (!query || !query.trim()) {
     errors.push('Enter a food name');
-    const dateString = new Date().toISOString().slice(0, 10);
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
@@ -235,15 +236,15 @@ const searchFoodForm = async (req, res) => {
         results: [],
         query: query.trim(),
         mealType,
+        dateString,
         session: req.session,
       });
     }
 
-    res.render('foodlog/search-results', { results, query: query.trim(), mealType, session: req.session });
+    res.render('foodlog/search-results', { results, query: query.trim(), mealType, dateString, session: req.session });
   } catch (error) {
     console.error('Error searching food:', error);
     errors.push('Search failed. Try again.');
-    const dateString = new Date().toISOString().slice(0, 10);
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
@@ -258,12 +259,12 @@ const searchFoodForm = async (req, res) => {
  * Renders portion/nutrition form
  */
 const selectFoodForm = async (req, res) => {
-  const { results, selectedIndex, mealType = 'Other' } = req.body;
+  const { results, selectedIndex, mealType = 'Other', dateString: bodyDate } = req.body;
+  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
   const errors = [];
 
   if (!results || !selectedIndex) {
     errors.push('No food selected');
-    const dateString = new Date().toISOString().slice(0, 10);
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
@@ -297,13 +298,13 @@ const selectFoodForm = async (req, res) => {
       selectedFood,
       nutrition,
       mealType,
+      dateString,
       nutritionPreview,
       session: req.session,
     });
   } catch (error) {
     console.error('Error selecting food:', error);
     errors.push('Food not found');
-    const dateString = new Date().toISOString().slice(0, 10);
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
@@ -318,9 +319,9 @@ const selectFoodForm = async (req, res) => {
  * Adds entry and redirects to schedule
  */
 const addFoodPost = async (req, res) => {
-  const { foodId, foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '' } = req.body;
+  const { foodId, foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '', dateString: bodyDate } = req.body;
   const userId = req.session.userId;
-  const dateString = new Date().toISOString().slice(0, 10);
+  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
   const errors = [];
 
   if (!foodName || !foodName.trim()) errors.push('Food required');
@@ -355,7 +356,7 @@ const addFoodPost = async (req, res) => {
       timeLabel,
     });
 
-    res.redirect(`/schedule/${dateString}`);
+    res.redirect(`/schedule/${dateString}?added=1`);
   } catch (error) {
     console.error('Error adding entry:', error);
     errors.push('Failed to add entry');
@@ -374,7 +375,7 @@ const addFoodPost = async (req, res) => {
 const deleteEntryPost = async (req, res) => {
   const userId = req.session.userId;
   const { entryId } = req.params;
-  const dateString = new Date().toISOString().slice(0, 10);
+  const dateString = req.body.dateString || new Date().toISOString().slice(0, 10);
 
   try {
     const log = await FoodLog.findOne({

@@ -29,7 +29,7 @@
     </div>
 
     <!-- SUGGESTIONS -->
-    <%- include('./_suggestions', { suggestions: suggestions || [], remainingCalories: remainingCalories || 0 }) %>
+    <%- include('./_suggestions', { suggestions: suggestions || [], remainingCalories: remainingCalories || 0, dateString }) %>
 
     <!-- DATE NAVIGATOR -->
     <%
@@ -98,6 +98,7 @@
                 style="display: block; width: 100%; margin-bottom: 8px;"
               >
               <input type="hidden" name="mealType" value="<%= mealType %>">
+              <input type="hidden" name="dateString" value="<%= dateString %>">
               <button type="submit" class="btn btn--ghost btn--sm">+ Add to <%= mealType %></button>
             </form>
           </div>

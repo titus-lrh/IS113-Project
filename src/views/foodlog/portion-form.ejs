@@ -35,6 +35,7 @@
       <input type="hidden" name="foodName" value="<%= selectedFood.name %>">
       <input type="hidden" name="sourceType" value="<%= selectedFood.sourceType %>">
       <input type="hidden" name="sourceId" value="<%= selectedFood.sourceId %>">
+      <input type="hidden" name="dateString" value="<%= dateString %>">
 
       <!-- Servings -->
       <div class="form__field">
@@ -56,13 +57,13 @@
       <div class="form__field">
         <label for="mealType" class="form__label">Meal Type</label>
         <select id="mealType" name="mealType" class="input" required>
-          <option value="Breakfast">Breakfast</option>
-          <option value="Morning Snack">Morning Snack</option>
-          <option value="Lunch">Lunch</option>
-          <option value="Afternoon Snack">Afternoon Snack</option>
-          <option value="Dinner">Dinner</option>
-          <option value="Evening Snack">Evening Snack</option>
-          <option value="Other" selected>Other</option>
+          <option value="Breakfast" <%= mealType === 'Breakfast' ? 'selected' : '' %>>Breakfast</option>
+          <option value="Morning Snack" <%= mealType === 'Morning Snack' ? 'selected' : '' %>>Morning Snack</option>
+          <option value="Lunch" <%= mealType === 'Lunch' ? 'selected' : '' %>>Lunch</option>
+          <option value="Afternoon Snack" <%= mealType === 'Afternoon Snack' ? 'selected' : '' %>>Afternoon Snack</option>
+          <option value="Dinner" <%= mealType === 'Dinner' ? 'selected' : '' %>>Dinner</option>
+          <option value="Evening Snack" <%= mealType === 'Evening Snack' ? 'selected' : '' %>>Evening Snack</option>
+          <option value="Other" <%= mealType === 'Other' || !mealType ? 'selected' : '' %>>Other</option>
         </select>
       </div>
 

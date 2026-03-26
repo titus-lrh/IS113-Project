@@ -19,6 +19,7 @@ router.get('/:id/edit', isAuthenticated, recipeController.getEditRecipeForm);
 router.post('/:id/update', isAuthenticated, recipeController.updateRecipe);
 router.post('/:id/delete', isAuthenticated, recipeController.deleteRecipe);
 router.post('/:id/summarize', recipeController.summarizeRecipe);
+router.post('/mealdb/:id/summarize', recipeController.summarizeMealDBRecipe);
 
 
 

@@ -144,7 +144,7 @@ function calcCaloriesForServing(nutritionDoc) {
  * @param {number} remainingCalories - calorieGoal minus dailyTotals.calories
  * @returns {Array<{ name, sourceType, sourceId, calories }>} top 5 suggestions
  */
-async function getSuggestions(remainingCalories) {
+async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}) {
   const TARGET_COUNT = 5;
   const MAX_GPT_CALLS = 10;
 
@@ -168,8 +168,8 @@ async function getSuggestions(remainingCalories) {
     }))
     .filter(item => item.calories > 0 && item.calories <= remainingCalories);
 
-  // Step 4: Do we have enough from cache alone?
-  if (fittingFromCache.length >= TARGET_COUNT) {
+  // Step 4: Do we have enough from cache alone, or enrichment is disabled?
+  if (fittingFromCache.length >= TARGET_COUNT || skipEnrichment) {
     return rankAndReturn(fittingFromCache, remainingCalories, TARGET_COUNT);
   }
 
