@@ -45,6 +45,10 @@ exports.getFavourites = async (userId) => {
   return await Favourite.find({ userId }).sort({ savedAt: -1 });
 };
 
+exports.getFavouriteById = async (favouriteId) => {
+  return await Favourite.findById(favouriteId)
+}
+
 // UPDATE - Update a favorite (e.g., update recipeTitle)
 exports.updateFavourite = async (favouriteId, updateData) => {
   return await Favourite.findByIdAndUpdate(favouriteId, updateData, { new: true });
@@ -52,6 +56,7 @@ exports.updateFavourite = async (favouriteId, updateData) => {
 
 // DELETE - Remove favorite by ID
 exports.removeFavouriteById = async (favouriteId) => {
+  console.log(favouriteId);
   return await Favourite.findByIdAndDelete(favouriteId);
 };
 

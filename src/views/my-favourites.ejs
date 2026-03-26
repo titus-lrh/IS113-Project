@@ -66,10 +66,8 @@
                   <% } else { %>
                     <a href="/recipes/<%= fav.recipeId %>" class="btn btn--primary btn--sm">View Recipe</a>
                     <% } %>
-                      <button onclick="editFavourite('<%= fav._id %>', '<%= fav.recipeTitle %>')"
-                        class="btn btn--secondary btn--sm">Edit Name</button>
-                      <button onclick="deleteFavourite('<%= fav._id %>')"
-                        class="btn btn--danger btn--sm">Remove</button>
+                      <a href="/favourites/<%= fav._id %>/edit" class="btn btn--secondary btn--sm">Edit Name</a>
+                      <a href="/favourites/<%= fav._id %>/delete" class="btn btn--danger btn--sm">Remove</a>
               </div>
             </div>
             <% }); %>
