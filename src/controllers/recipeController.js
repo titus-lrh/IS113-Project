@@ -93,6 +93,11 @@ const createRecipe = async (req, res) => {
     else if(formatCategory.length > 3) {
       return res.status(400).render('recipes/new', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
     }
+
+    if(title.includes("`")) {
+      return res.status(400).render('recipes/new', { errors: [{ msg: 'Backticks (`) are not allowed in title!' }], body: req.body });
+    }
+
     const ingredientArray = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
 
     const newRecipe = await Recipe.createRecipe({
