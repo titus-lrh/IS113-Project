@@ -24,7 +24,7 @@
   </nav>
 
   <div class="container container--lg">
-    <% if (typeof session !== 'undefined' && session.userId) { %>
+    <% if (typeof session !== 'undefined' && session.userId && from) { %>
     <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
     <% } else { %>
     <a href="/recipes" class="back-link">← Back to Recipes</a>

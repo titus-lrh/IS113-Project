@@ -10,7 +10,6 @@ router.get('/', recipeController.getAllRecipes);
 router.get('/search', recipeController.searchRecipes);
 router.get('/mealdb/:id', recipeController.getMealDBRecipe);
 router.get('/my-recipes/:userId', recipeController.getMyRecipes);
-router.get('/category/:category', recipeController.getRecipesByCategory);
 router.get('/new', isAuthenticated, recipeController.getNewRecipeForm);
 router.post('/', isAuthenticated, recipeController.createRecipe);
 router.post('/:id/rate', isAuthenticated, recipeController.rateRecipe);

@@ -100,10 +100,6 @@ exports.getRecipesByUser = async (userId) => {
   return await Recipe.find({ author: userId }).populate('author', 'username firstName lastName');
 };
 
-// GET Recipe by Category
-exports.getRecipesByCategory = async (category) => {
-  return await Recipe.find({ category }).populate('author', 'username firstName lastName');
-};
 
 // Create a new recipe
 exports.createRecipe = async (recipeData) => {

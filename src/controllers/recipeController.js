@@ -71,17 +71,6 @@ const getMyRecipes = async (req, res) => {
   }
 };
 
-// GET recipes by category
-const getRecipesByCategory = async (req, res) => {
-  try {
-    const recipes = await Recipe.getRecipesByCategory(req.params.category);
-    res.render('recipes/index', { recipes, mealdbRecipes: [], session: req.session });
-  } catch (error) {
-    console.error('Error fetching recipes by category:', error);
-    res.status(500).send('Error fetching recipes by category');
-  }
-};
-
 // GET recipe creation form
 const getNewRecipeForm = (req, res) => {
   res.render('recipes/new', { errors: [], body: {} });
@@ -136,13 +125,15 @@ const createRecipe = async (req, res) => {
 // GET single recipe
 const getRecipe = async (req, res) => {
   try {
+    const from = req.query.from;    
     const recipe = await Recipe.getRecipeById(req.params.id);    
     if (!recipe) {
       return res.status(404).send('Recipe no longer exist');
     }
     res.render('recipes/show', { 
     recipe,
-    session: req.session
+    session: req.session,
+    from
 });
   } catch (error) {
     console.error('Error fetching recipe:', error);
@@ -445,7 +436,6 @@ const summarizeMealDBRecipe = async (req, res) => {
 module.exports = {
   getAllRecipes,
   getMyRecipes,
-  getRecipesByCategory,
   getNewRecipeForm,
   createRecipe,
   getRecipe,
