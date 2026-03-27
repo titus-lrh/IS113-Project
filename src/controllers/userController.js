@@ -52,6 +52,7 @@ const register = async (req, res) => {
 
     req.session.userId = user._id;
     req.session.username = user.username;
+    req.session.role = user.role;
 
     res.redirect('/auth/dashboard');
   } catch (error) {
@@ -81,6 +82,7 @@ const login = async (req, res) => {
 
     req.session.userId = user._id;
     req.session.username = user.username;
+    req.session.role = user.role;
 
     const redirectTo = req.session.returnTo || '/auth/dashboard';
     delete req.session.returnTo;

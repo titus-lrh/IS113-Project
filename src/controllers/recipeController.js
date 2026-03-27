@@ -231,11 +231,19 @@ const updateRecipe = async (req, res) => {
 // DELETE recipe
 const deleteRecipe = async (req, res) => {
   try {
-    const recipe = await Recipe.deleteRecipeById(req.params.id);
+    const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-      res.send("Recipe has been successfully deleted")
+
+    const isOwner = recipe.author._id.toString() === req.session.userId;
+    const isAdmin = req.session.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).send('Unauthorized');
+    }
+
+    await Recipe.deleteRecipeById(req.params.id);
+    res.redirect('/recipes');
   } catch (error) {
     console.error('Error deleting recipe:', error);
     res.status(500).send('Error deleting recipe');

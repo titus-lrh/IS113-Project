@@ -131,6 +131,11 @@
                   <% } if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId && currentPage == "my-recipes") { %>
                   <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
                 <% } %>
+                <% if (typeof session !== 'undefined' && session.role === 'admin') { %>
+                  <form action="/recipes/<%= recipe._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
+                    <button type="submit" class="btn btn--ghost btn--sm">🗑 Delete</button>
+                  </form>
+                <% } %>
               </div>
             </div>
           <% }); %>

@@ -101,6 +101,11 @@
         <form method="POST" action="/recipes/<%= recipe._id %>/summarize" style="display:inline;">
           <button class="btn btn--ghost btn--sm" type="submit">Summary</button>
         </form>
+        <% if (typeof session !== 'undefined' && session.role === 'admin') { %>
+          <form method="POST" action="/recipes/<%= recipe._id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
+            <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--color-error, #e53e3e);">🗑 Delete</button>
+          </form>
+        <% } %>
       </div>
       <% if (typeof summary !== 'undefined' && summary) { %>
       <div style="margin-top:var(--sp-4); padding:var(--sp-4); background:var(--color-bg-light); border:1px solid var(--color-border); border-radius:var(--radius-md);">
