@@ -26,7 +26,7 @@
   </nav>
 
   <div class="container container--lg">
-    <% if(typeof session !== 'undefined' && session.userId && from == "favourites") { %>
+    <% if(typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "favourites") { %>
     <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
     <% } else { %>
 
