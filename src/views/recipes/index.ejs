@@ -172,7 +172,7 @@
                 </div>
                 <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
                 <% if (typeof session !== 'undefined' && session.userId){ %>
-                  <button onclick="saveFavourite('<%= JSON.stringify(meal.idMeal) %>', '<%= JSON.stringify(meal.strMeal) %>', 'mealdb')" class="btn btn--ghost btn--sm">💚 Save</button>
+                  <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb')" class="btn btn--ghost btn--sm">💚 Save</button>
                 <%}%>
               </div>
             </div>
