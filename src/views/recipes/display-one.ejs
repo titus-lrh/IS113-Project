@@ -26,9 +26,9 @@
   </nav>
 
   <div class="container container--lg">
-    <% if (typeof session !== 'undefined' && session.userId && from == "my-recipes")  { %>
+    <% if (typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "my-recipes")  { %>
       <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
-    <% } else if(typeof session !== 'undefined' && session.userId && from == "favourites") { %>
+    <% } else if(typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "favourites") { %>
         <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
       <% } else {%>
       <a href="/recipes" class="back-link">← Back to Recipes</a>
