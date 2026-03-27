@@ -48,7 +48,7 @@ exports.getEditForm = async (req, res) => {
       return res.status(404).send("Favourite not found");
     }
 
-    res.render("edit", { favourite, session: req.session });
+    res.render("edit-favourites", { favourite, session: req.session });
   } catch (error) {
     console.error("Error getting favourite: ", error);
     res.status(500).send("Error loading edit form");

@@ -74,41 +74,6 @@
         </div>
         <% } %>
   </div>
-
-  <script>
-    // Delete favorite by ID
-    function deleteFavourite(favouriteId) {
-      if (confirm('Delete this favourite?')) {
-        fetch(`/favourites/${favouriteId}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' }
-        })
-          .then(res => res.json())
-          .then(data => {
-            alert(data.message);
-            location.reload();
-          });
-      }
-    }
-
-    // Edit favorite name
-    function editFavourite(favouriteId, currentName) {
-      const newName = prompt('Enter new name:', currentName);
-
-      if (newName && newName !== currentName) {
-        fetch(`/favourites/${favouriteId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ recipeTitle: newName })
-        })
-          .then(res => res.json())
-          .then(data => {
-            alert(data.message);
-            location.reload();
-          });
-      }
-    }
-  </script>
 </body>
 
 </html>
