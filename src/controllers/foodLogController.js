@@ -217,7 +217,7 @@ const searchFoodForm = async (req, res) => {
       ...userRecipes.map((r) => ({
         id: r._id.toString(),
         name: r.title,
-        source: 'My Recipe',
+        source: 'Community',
         sourceType: 'user_recipe',
         sourceId: r._id.toString(),
       })),

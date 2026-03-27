@@ -11,9 +11,10 @@
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span class="nav__user"><%= session.username %></span>
         <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/recipes" class="nav__link nav__link--active">Recipes</a>
         <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
         <a href="/auth/dashboard" class="nav__link">Dashboard</a>
         <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>

@@ -16,7 +16,7 @@ const getDashboard = (req, res) => {
   if (!req.session.userId) {
     return res.redirect('/auth/login');
   }
-  res.render('dashboard', { user: req.session });
+  res.render('dashboard', {session: req.session });
 };
 
 // POST register
@@ -134,7 +134,7 @@ const getProfile = async (req, res) => {
     const recipes = await Recipe.getRecipesByUser(userId);
     console.log('Found recipes:', recipes.length);
 
-    res.render('profile', { user, recipes });
+    res.render('profile', { user, recipes, session: req.session });
   } catch (err) {
     console.error('Profile error:', err);
     res.status(500).send('Server error');

@@ -10,20 +10,24 @@
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="nav__link">+ Create</a>
       <a href="/recipes" class="nav__link">Recipes</a>
       <a href="/schedule" class="nav__link">Schedule</a>
-      <a href="/profile/<%= user.userId %>" class="nav__link">My Profile</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link nav__link--active">Dashboard</a>
       <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
     </div>
   </nav>
 
   <div class="container container--xl">
 
     <!-- EDITORIAL WELCOME -->
-    <div class="dash-editorial animate-fade-up">
+    <div class="animate-fade-up">
       <div>
         <h1 class="dash-editorial__greeting">
-          Good to see you,<br><em><%= user.username %></em>.
+          Good to see you, <em><%= session.username %></em>.
         </h1>
         <p class="dash-editorial__sub">Your kitchen, your canvas. Share a new dish, browse what the community is cooking, or revisit your creations.</p>
         <div class="dash-editorial__cta">
@@ -34,12 +38,12 @@
 
     <br>
     <!-- QUICK LINKS (editorial cards with numbers) -->
-    <div class="quick-links--editorial" style="grid-template-columns: repeat(2, 1fr); max-width:700px; margin:0 auto;">
+    <div class="quick-links--editorial" >
       <div class="quick-link-card--editorial animate-fade-up" style="transition-delay:0ms;">
         <span class="card-number">01</span>
         <h3>My Recipes</h3>
         <p>View, edit, and manage all the dishes you've shared with the community.</p>
-        <a href="/recipes/my-recipes/<%= user.userId %>" class="card-cta">View my recipes →</a>
+        <a href="/recipes/my-recipes/<%= session.userId %>" class="card-cta">View my recipes →</a>
       </div>
 
       <div class="quick-link-card--editorial animate-fade-up" style="transition-delay:80ms;">

@@ -13,10 +13,12 @@
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-      <span class="nav__user"><%= session.username %></span>
-      <a href="/recipes" class="nav__link">Recipes</a>
-      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-      <a href="/auth/logout" class="nav__link">Logout</a>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
       <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
@@ -24,10 +26,12 @@
   </nav>
 
   <div class="container container--lg">
-    <% if (typeof session !== 'undefined' && session.userId && from) { %>
-    <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
-    <% } else { %>
-    <a href="/recipes" class="back-link">← Back to Recipes</a>
+    <% if (typeof session !== 'undefined' && session.userId && from == "my-recipes")  { %>
+      <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
+    <% } else if(typeof session !== 'undefined' && session.userId && from == "favourites") { %>
+        <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
+      <% } else {%>
+      <a href="/recipes" class="back-link">← Back to Recipes</a>
     <% } %>
 
     <div class="recipe-hero">

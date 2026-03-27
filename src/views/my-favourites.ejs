@@ -12,9 +12,14 @@
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
-      <a href="/recipes" class="nav__link">Browse</a>
-      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-      <a href="/auth/logout" class="nav__link">Logout</a>
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
     </div>
   </nav>
 
@@ -62,9 +67,9 @@
               <div class="recipe-card__footer">
                 <!-- DIFFERENT ROUTES FOR MEALDB RECIPES AND USER CREATED RECIPES -->
                 <% if (fav.recipeType==='mealdb' ) { %>
-                  <a href="/recipes/mealdb/<%= fav.recipeId %>" class="btn btn--primary btn--sm">View Recipe</a>
+                  <a href="/recipes/mealdb/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View Recipe</a>
                   <% } else { %>
-                    <a href="/recipes/<%= fav.recipeId %>" class="btn btn--primary btn--sm">View Recipe</a>
+                    <a href="/recipes/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View Recipe</a>
                     <% } %>
                       <a href="/favourites/<%= fav._id %>/edit" class="btn btn--secondary btn--sm">Edit Name</a>
                       <a href="/favourites/<%= fav._id %>/delete" class="btn btn--danger btn--sm">Remove</a>

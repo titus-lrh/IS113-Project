@@ -4,7 +4,7 @@ const Grocery = require('../models/grocery-model');
 exports.showAll = async (req, res) => {
     try {
         const groceryList = await Grocery.getAll(req.session.userId);
-        res.render('groceries', { groceryList, editItem: null, error: null });
+        res.render('groceries', { groceryList, editItem: null, error: null, session: req.session });
     } catch (error) {
         console.error('Error fetching grocery list:', error);
         res.status(500).render('error', { message: 'Error fetching grocery list' });
@@ -16,7 +16,7 @@ exports.showEditForm = async (req, res) => {
     try {
         const editItem = await Grocery.getById(req.params.id);
         const groceryList = await Grocery.getAll(req.session.userId);
-        res.render('groceries', { groceryList, editItem, error: null });
+        res.render('groceries', { groceryList, editItem, error: null, session: req.session });
     } catch (error) {
         console.error('Error fetching grocery item:', error);
         res.status(500).render('error', { message: 'Error fetching item' });

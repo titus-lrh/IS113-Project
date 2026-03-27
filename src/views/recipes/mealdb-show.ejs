@@ -1,41 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= recipe.title %> — Everyday Cooks</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span class="nav__user"><%= session.username %></span>
-        <a href="/recipes" class="nav__link">Recipes</a>
-        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-        <a href="/auth/logout" class="nav__link">Logout</a>
+      <a href="/recipes/new" class="nav__link nav__link--active">+ Create</a>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login" class="nav__link">Login</a>
+      <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
   <div class="container container--lg">
-    <a href="javascript:history.back()" class="back-link">← Back</a>
+    <% if(typeof session !== 'undefined' && session.userId && from == "favourites") { %>
+    <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
+    <% } else { %>
+
+    <a href="javascript:history.back()" class="back-link">← Back to Recipes</a>
+    <% } %>
 
     <div class="recipe-hero">
       <% if (recipe.thumbnail) { %>
-        <img class="recipe-hero__img" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
+      <img class="recipe-hero__img" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
       <% } %>
 
       <div class="recipe-hero__badges">
         <span class="badge badge--source">Stock Recipe — TheMealDB</span>
         <% if (recipe.category) { %>
-          <span class="badge badge--category"><%= recipe.category %></span>
+        <span class="badge badge--category"><%= recipe.category %></span>
         <% } %>
         <% if (recipe.area) { %>
-          <span class="badge badge--category"><%= recipe.area %> cuisine</span>
+        <span class="badge badge--category"><%= recipe.area %> cuisine</span>
         <% } %>
       </div>
 
@@ -63,7 +72,7 @@
         <h2>Ingredients</h2>
         <ul class="ingredients-list">
           <% recipe.ingredients.forEach(ingredient => { %>
-            <li><%= ingredient %></li>
+          <li><%= ingredient %></li>
           <% }); %>
         </ul>
       </div>
@@ -77,4 +86,5 @@
 
 
 </body>
+
 </html>

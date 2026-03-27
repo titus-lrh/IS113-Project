@@ -73,7 +73,7 @@ const getMyRecipes = async (req, res) => {
 
 // GET recipe creation form
 const getNewRecipeForm = (req, res) => {
-  res.render('recipes/new', { errors: [], body: {} });
+  res.render('recipes/new', { errors: [], body: {}, session: req.session });
 };
 
 // POST create recipe
@@ -350,6 +350,7 @@ const likeComment = async (req, res) => {
 // GET single MealDB recipe
 const getMealDBRecipe = async (req, res) => {
   try {
+    const from = req.query.from;
     const meals = await fetchFromMealDB(
       `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${req.params.id}`
     );
@@ -357,7 +358,7 @@ const getMealDBRecipe = async (req, res) => {
       return res.status(404).send('Recipe not found');
     }
     const recipe = transformMealDetail(meals[0]);
-    res.render('recipes/mealdb-show', { recipe, session: req.session });
+    res.render('recipes/mealdb-show', { recipe, session: req.session, from });
   } catch (error) {
     console.error('Error fetching MealDB recipe:', error);
     res.status(500).send('Error fetching recipe');
