@@ -52,6 +52,7 @@ app.use(session(sessionConfig));
 // ============================================
 
 // Landing Page
+app.get('/', (_req, res) => res.redirect('/recipes'));
 app.get('/index.html', (_req, res) => res.redirect('/recipes'));
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
