@@ -31,7 +31,7 @@ exports.viewFavourites = async (req, res) => {
     // Get all favorites from database
     const favourites = await Favourite.getFavourites(userId);
 
-    res.render("my-favourites", { favourites, session: req.session });
+    res.render("favourites/display-all", { favourites, session: req.session });
   } catch (error) {
     console.error("Error getting favourites:", error);
     res.status(500).send("Error getting favourites");
@@ -48,7 +48,7 @@ exports.getEditForm = async (req, res) => {
       return res.status(404).send("Favourite not found");
     }
 
-    res.render("edit-favourites", { favourite, session: req.session });
+    res.render("favourites/edit", { favourite, session: req.session });
   } catch (error) {
     console.error("Error getting favourite: ", error);
     res.status(500).send("Error loading edit form");

@@ -1,6 +1,6 @@
 'use strict';
 
-const FoodLog = require('../models/FoodLog');
+const FoodLog = require('../models/foodLog-model');
 
 /**
  * Get or create a FoodLog for a given userId and date.

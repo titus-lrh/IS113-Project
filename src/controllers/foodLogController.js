@@ -1,7 +1,7 @@
 'use strict';
 
 const mongoose = require('mongoose');
-const FoodLog = require('../models/FoodLog');
+const FoodLog = require('../models/foodLog-model');
 const Recipe = require('../models/recipe-model');
 const User = require('../models/user-model');
 const { getNutrition } = require('../services/nutritionService');

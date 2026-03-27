@@ -1,5 +1,5 @@
 const Recipe = require('../models/recipe-model');
-const FoodNutrition = require('../models/FoodNutrition');
+const FoodNutrition = require('../models/foodNutrition-model');
 const nutritionService = require('../services/nutritionService');
 
 // Validation helper
@@ -53,7 +53,7 @@ const getAllRecipes = async (req, res) => {
     recipes.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     const mealdbMeals = await fetchFromMealDB('https://www.themealdb.com/api/json/v1/1/filter.php?c=Chicken');
     const mealdbRecipes = mealdbMeals.slice(0, 12);
-    res.render('recipes/index', { recipes, mealdbRecipes, currentPage: 'recipes', session: req.session });
+    res.render('recipes/display-all', { recipes, mealdbRecipes, currentPage: 'recipes', session: req.session });
   } catch (error) {
     console.error('Error fetching recipes:', error);
     res.status(500).send('Error fetching recipes');
@@ -64,7 +64,7 @@ const getAllRecipes = async (req, res) => {
 const getMyRecipes = async (req, res) => {
   try {
     const recipes = await Recipe.getRecipesByUser(req.params.userId);
-    res.render('recipes/userRecipe', { recipes, currentPage: 'my-recipes', session: req.session });
+    res.render('recipes/display-userCreated', { recipes, currentPage: 'my-recipes', session: req.session });
   } catch (error) {
     console.error('Error fetching uploaded recipes by user:', error);
     res.status(500).send('Error fetching uploaded recipes by user');
@@ -73,14 +73,14 @@ const getMyRecipes = async (req, res) => {
 
 // GET recipe creation form
 const getNewRecipeForm = (req, res) => {
-  res.render('recipes/new', { errors: [], body: {}, session: req.session });
+  res.render('recipes/create', { errors: [], body: {}, session: req.session });
 };
 
 // POST create recipe
 const createRecipe = async (req, res) => {
   const errors = validateRecipeBody(req.body);
   if (errors.length > 0) {
-    return res.status(400).render('recipes/new', { errors, body: req.body });
+    return res.status(400).render('recipes/create', { errors, body: req.body });
   }
 
   try {
@@ -88,14 +88,14 @@ const createRecipe = async (req, res) => {
     let formatCategory = Array.isArray(category) ? category : [category]
 
     if(formatCategory.length < 1) {
-      return res.status(400).render('recipes/new', { errors: [{ msg: 'Please select at least 1 category!' }], body: req.body });
+      return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select at least 1 category!' }], body: req.body });
     }
     else if(formatCategory.length > 3) {
-      return res.status(400).render('recipes/new', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
+      return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
     }
 
     if(title.includes("`")) {
-      return res.status(400).render('recipes/new', { errors: [{ msg: 'Backticks (`) are not allowed in title!' }], body: req.body });
+      return res.status(400).render('recipes/create', { errors: [{ msg: 'Backticks (`) are not allowed in title!' }], body: req.body });
     }
 
     const ingredientArray = Array.isArray(ingredients) ? ingredients : ingredients.split(',').map(i => i.trim());
@@ -120,10 +120,10 @@ const createRecipe = async (req, res) => {
     ).catch((err) => console.error('Nutrition index failed:', err));
 
     const recipes = await Recipe.getRecipesByUser(req.session.userId);
-    res.render('recipes/userRecipe', { recipes, session: req.session });
+    res.render('recipes/display-userCreated', { recipes, session: req.session });
   } catch (error) {
     console.error('Error creating recipe:', error);
-    res.status(500).render('recipes/new', { errors: [{ msg: 'Error creating recipe' }] });
+    res.status(500).render('recipes/create', { errors: [{ msg: 'Error creating recipe' }] });
   }
 };
 
@@ -135,7 +135,7 @@ const getRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe no longer exist');
     }
-    res.render('recipes/show', { 
+    res.render('recipes/display-one', { 
     recipe,
     session: req.session,
     from
@@ -163,7 +163,7 @@ const getEditRecipeForm = async (req, res) => {
   }
 };
 
-// PUT update recipe
+// Update recipe
 const updateRecipe = async (req, res) => {
   const errors = validateRecipeBody(req.body);
   if (errors.length > 0) {
@@ -263,94 +263,6 @@ const searchRecipes = async (req, res) => {
   }
 };
 
-//Get rating of recipe(Tim & Isaac)
-const rateRecipe = async (req, res) => {
-  try {
-    console.log("RATE ROUTE HIT");
-    console.log("Rating received:", req.body.rating);
-
-    const recipeId = req.params.id;
-    const userId = req.session.userId;
-    const rating = parseInt(req.body.rating);
-
-    const recipe = await Recipe.getRecipeById(recipeId);
-
-    if (!recipe) {
-      return res.status(404).send("Recipe not found");
-    }
-
-    // prevent duplicate rating
-    if (recipe.ratedUsers?.includes(userId)) {
-      return res.send("You already rated this recipe");
-    }
-
-    const newCount = (recipe.ratingCount || 0) + 1;
-    const newRating =
-      ((recipe.rating || 0) * (recipe.ratingCount || 0) + rating) / newCount;
-
-    await Recipe.updateRecipeById(recipeId, {
-      rating: newRating,
-      ratingCount: newCount,
-    });
-    
-    await Recipe.addRatedUser(recipeId, userId);
-
-    const updatedRecipe = await Recipe.getRecipeById(recipeId);
-
-    console.log("UPDATED:", updatedRecipe.rating, updatedRecipe.ratingCount);
-
-    res.render('recipes/show', {
-      recipe: updatedRecipe,
-      session: req.session
-    });
-
-  } catch (error) {
-    console.error("Error rating recipe:", error);
-    res.status(500).send("Error rating recipe");
-  }
-};
-
-// Add comment
-const addComment = async (req, res) => {
-  const { id } = req.params;
-  const { text } = req.body;
-
-  const comment = {
-    user: req.session.userId,
-    username: req.session.username,
-    text
-  };
-
-  await Recipe.addComment(id, comment);
-  res.redirect(`/recipes/${id}`);
-};
-
-// Delete comment
-const deleteComment = async (req, res) => {
-  const { id, commentId } = req.params;
-  await Recipe.deleteComment(id, commentId);
-  res.redirect(`/recipes/${id}`);
-};
-
-// Edit comment
-const editComment = async (req, res) => {
-  const { id, commentId } = req.params;
-  const { text } = req.body;
-
-  await Recipe.editComment(id, commentId, text);
-  res.redirect(`/recipes/${id}`);
-};
-
-// Like comment
-const likeComment = async (req, res) => {
-  const { id, commentId } = req.params;
-  const userId = req.session.userId;
-
-  await Recipe.likeComment(id, commentId, userId);
-  res.redirect(`/recipes/${id}`);
-};
-
-
 
 // GET single MealDB recipe
 const getMealDBRecipe = async (req, res) => {
@@ -415,7 +327,7 @@ const summarizeRecipe = async (req, res) => {
     const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) return res.status(404).send('Recipe not found');
     const summary = await generateSummary(recipe);
-    res.render('recipes/show', { recipe, session: req.session, summary });
+    res.render('recipes/display-one', { recipe, session: req.session, summary });
   } catch (error) {
     console.error('Error summarizing recipe:', error);
     res.status(500).send('Error summarizing recipe');
@@ -438,6 +350,92 @@ const summarizeMealDBRecipe = async (req, res) => {
   }
 };
 
+//Get rating of recipe
+const rateRecipe = async (req, res) => {
+  try {
+    console.log("RATE ROUTE HIT");
+    console.log("Rating received:", req.body.rating);
+
+    const recipeId = req.params.id;
+    const userId = req.session.userId;
+    const rating = parseInt(req.body.rating);
+
+    const recipe = await Recipe.getRecipeById(recipeId);
+
+    if (!recipe) {
+      return res.status(404).send("Recipe not found");
+    }
+
+    // prevent duplicate rating
+    if (recipe.ratedUsers?.includes(userId)) {
+      return res.send("You already rated this recipe");
+    }
+
+    const newCount = (recipe.ratingCount || 0) + 1;
+    const newRating =
+      ((recipe.rating || 0) * (recipe.ratingCount || 0) + rating) / newCount;
+
+    await Recipe.updateRecipeById(recipeId, {
+      rating: newRating,
+      ratingCount: newCount,
+    });
+    
+    await Recipe.addRatedUser(recipeId, userId);
+
+    const updatedRecipe = await Recipe.getRecipeById(recipeId);
+
+    console.log("UPDATED:", updatedRecipe.rating, updatedRecipe.ratingCount);
+
+    res.render('recipes/display-one', {
+      recipe: updatedRecipe,
+      session: req.session
+    });
+
+  } catch (error) {
+    console.error("Error rating recipe:", error);
+    res.status(500).send("Error rating recipe");
+  }
+};
+
+// Add comment
+const addComment = async (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  const comment = {
+    user: req.session.userId,
+    username: req.session.username,
+    text
+  };
+
+  await Recipe.addComment(id, comment);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Delete comment
+const deleteComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  await Recipe.deleteComment(id, commentId);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Edit comment
+const editComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  const { text } = req.body;
+
+  await Recipe.editComment(id, commentId, text);
+  res.redirect(`/recipes/${id}`);
+};
+
+// Like comment
+const likeComment = async (req, res) => {
+  const { id, commentId } = req.params;
+  const userId = req.session.userId;
+
+  await Recipe.likeComment(id, commentId, userId);
+  res.redirect(`/recipes/${id}`);
+};
 
 module.exports = {
   getAllRecipes,

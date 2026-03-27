@@ -17,8 +17,9 @@
         <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
         <a href="/auth/dashboard" class="nav__link">Dashboard</a>
         <a href="/auth/logout" class="nav__link">Logout</a>
-      <% } %>
-      <% } %>
+      <% } else { %>
+         <a href="/auth/login" class="nav__link">Login</a>
+      <% }%>
     </div>
   </nav>
 

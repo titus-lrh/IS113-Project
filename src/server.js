@@ -9,7 +9,7 @@ const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth-routes');
 const recipeRoutes = require('./routes/recipes-routes');
 const profileRoutes = require("./routes/profile-routes");
-const foodlogRoutes = require('./routes/foodlog');
+const foodlogRoutes = require('./routes/foodlog-routes');
 const favouriteRoutes = require('./routes/favourite-routes');
 const groceryRoutes = require('./routes/grocery-routes');
 
@@ -52,7 +52,7 @@ app.use(session(sessionConfig));
 // ============================================
 
 // Landing Page
-app.get('/', (_req, res) => res.redirect('/recipes'));
+app.get('/index.html', (_req, res) => res.redirect('/recipes'));
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);

@@ -1,7 +1,7 @@
 'use strict';
 
 const Recipe = require('../models/recipe-model');
-const FoodNutrition = require('../models/FoodNutrition');
+const FoodNutrition = require('../models/foodNutrition-model');
 const { getNutrition } = require('./nutritionService');
 
 // ── TheMealDB categories we pull from (free bulk endpoint, no API key needed)

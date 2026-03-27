@@ -3,12 +3,12 @@ const Recipe = require('../models/recipe-model');
 
 // GET login form
 const getLoginForm = (req, res) => {
-  res.render('login');
+  res.render('user/login');
 };
 
 // GET register form
 const getRegisterForm = (req, res) => {
-  res.render('register');
+  res.render('user/register');
 };
 
 // GET dashboard
@@ -36,7 +36,7 @@ const register = async (req, res) => {
     errors.push({ msg: 'Last name is required' });
 
   if (errors.length > 0) {
-    return res.status(400).render('register', { errors });
+    return res.status(400).render('user/register', { errors });
   }
 
   try {
@@ -44,7 +44,7 @@ const register = async (req, res) => {
 
     const existingUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existingUser) {
-      return res.status(400).render('register', { errors: [{ msg: 'User already exists' }] });
+      return res.status(400).render('user/register', { errors: [{ msg: 'User already exists' }] });
     }
 
     const user = new User({ username, email, password, firstName, lastName });
@@ -57,7 +57,7 @@ const register = async (req, res) => {
     res.redirect('/auth/dashboard');
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).render('register', { errors: [{ msg: 'Server error' }] });
+    res.status(500).render('user/register', { errors: [{ msg: 'Server error' }] });
   }
 };
 
@@ -66,18 +66,18 @@ const login = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).render('login', { errors: [{ msg: 'Username and password required' }] });
+    return res.status(400).render('user/login', { errors: [{ msg: 'Username and password required' }] });
   }
 
   try {
     const user = await User.findOne({ username });
     if (!user) {
-      return res.status(401).render('login', { errors: [{ msg: 'Invalid credentials' }] });
+      return res.status(401).render('user/login', { errors: [{ msg: 'Invalid credentials' }] });
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).render('login', { errors: [{ msg: 'Invalid credentials' }] });
+      return res.status(401).render('user/login', { errors: [{ msg: 'Invalid credentials' }] });
     }
 
     req.session.userId = user._id;
@@ -89,7 +89,7 @@ const login = async (req, res) => {
     res.redirect(redirectTo);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).render('login', { errors: [{ msg: 'Server error' }] });
+    res.status(500).render('user/login', { errors: [{ msg: 'Server error' }] });
   }
 };
 
@@ -106,7 +106,7 @@ const logout = (req, res) => {
 // GET edit profile form
 const getEditProfileForm = async (req, res) => {
   const user = await User.findById(req.params.id);
-  res.render('editProfile', { user });
+  res.render('user/edit-profile', { user });
 };
 
 // POST update profile
@@ -134,7 +134,7 @@ const getProfile = async (req, res) => {
     const recipes = await Recipe.getRecipesByUser(userId);
     console.log('Found recipes:', recipes.length);
 
-    res.render('profile', { user, recipes, session: req.session });
+    res.render('user/display-profile', { user, recipes, session: req.session });
   } catch (err) {
     console.error('Profile error:', err);
     res.status(500).send('Server error');

@@ -1,6 +1,6 @@
 'use strict';
 
-const FoodNutrition = require('../models/FoodNutrition');
+const FoodNutrition = require('../models/foodNutrition-model');
 
 const GPT_SYSTEM_PROMPT = `You are a precise nutrition database. Given a food item, return ONLY a JSON object with these exact fields:
 {
