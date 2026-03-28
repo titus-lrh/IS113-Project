@@ -64,4 +64,43 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+
+// CREATE USER
+exports.createUser = async (userData) => {
+  const { username, email, password, firstName, lastName } = userData;
+  const user = new User({ username, email, password, firstName, lastName });
+  await user.save();
+  return user;
+};
+
+// READ - FIND USER BY USERNAME
+exports.findByUsername = async (username) => {
+  return await User.findOne({ username });
+};
+
+// READ - FIND USER BY USERNAME OR EMAIL
+exports.findByUsernameOrEmail = async (username, email) => {
+  return await User.findOne({ $or: [{ username }, { email }] });
+};
+
+// READ - FIND USER BY ID
+exports.findByUserId = async (userId) => {
+  return await User.findById(userId);
+};
+
+// UPDATE - UPDATE PROFILE
+exports.updateProfile = async (userId, updateData) => {
+  const { username, email, bio, calorieGoal } = updateData;
+  return await User.findByIdAndUpdate(
+    userId,
+    { $set: { username, email, bio, caloriegoal: Number(calorieGoal) || 3000 }},
+    { new: true }
+  );
+};
+
+// DELETE - DELETE USER BY ID
+exports.deleteUser = async (userId) => {
+  return await User.findByIdAndDelete(userId);
+};

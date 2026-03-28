@@ -40,16 +40,15 @@ const register = async (req, res) => {
   }
 
   try {
-    const { username, email, password, firstName, lastName } = req.body;
-
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findByUsernameOrEmail(username, email);
     if (existingUser) {
       return res.status(400).render('user/register', { errors: [{ msg: 'User already exists' }] });
     }
 
-    const user = new User({ username, email, password, firstName, lastName });
-    await user.save();
-
+    // Create new user using the model function
+    const user = await User.createUser({ username, email, password, firstName, lastName });
+    
+    // Set a session
     req.session.userId = user._id;
     req.session.username = user.username;
     req.session.role = user.role;
@@ -70,7 +69,7 @@ const login = async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findByUsername(username);
     if (!user) {
       return res.status(401).render('user/login', { errors: [{ msg: 'Invalid credentials' }] });
     }
@@ -105,19 +104,20 @@ const logout = (req, res) => {
 
 // GET edit profile form
 const getEditProfileForm = async (req, res) => {
-  const user = await User.findById(req.params.id);
+  const user = await User.findByUserId(req.params.id);
   res.render('user/edit-profile', { user });
 };
 
 // POST update profile
 const updateProfile = async (req, res) => {
-  const { username, email, bio, calorieGoal } = req.body;
-  await User.findByIdAndUpdate(
-    req.params.id,
-    { $set: { username, email, bio, calorieGoal: Number(calorieGoal) || 3000 } },
-    { new: true }
-  );
-  res.redirect('/profile/' + req.params.id);
+  try {
+    const { username, email, bio, calorieGoal } = req.body;
+    await User.updateProfile(req.params.id, { username, email, bio, calorieGoal });
+    res.redirect('/profile/' + req.params.id);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).send('Server error');
+  }
 };
 
 // GET profile
@@ -126,7 +126,7 @@ const getProfile = async (req, res) => {
     const userId = req.params.id;
     console.log('Fetching profile for userId:', userId);
 
-    const user = await User.findById(userId);
+    const user = await User.findByUserId(userId);
     if (!user) {
       return res.status(404).send('User not found');
     }
@@ -145,7 +145,7 @@ const getProfile = async (req, res) => {
 const deleteProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    await User.findByIdAndDelete(userId);
+    await User.deleteUser(userId);
 
     req.session.destroy((err) => {
       res.clearCookie('connect.sid');

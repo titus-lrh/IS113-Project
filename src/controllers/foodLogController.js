@@ -17,7 +17,7 @@ async function fetchFromMealDB(url) {
 }
 
 async function getUserCalorieGoal(userId) {
-  const user = await User.findById(userId);
+  const user = await User.findByUserId(userId);
   return user ? user.calorieGoal || 3000 : 3000;
 }
 
