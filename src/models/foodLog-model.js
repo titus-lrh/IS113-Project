@@ -74,7 +74,7 @@ foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
   return await this.findOneAndUpdate(
     { userId, date: midnight },
     { $setOnInsert: { userId, date: midnight, entries: [] } },
-    { new: true, upsert: true }
+    { returnDocument: 'after', upsert: true }
   );
 };
 
