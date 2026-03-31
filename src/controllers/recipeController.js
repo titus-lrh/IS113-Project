@@ -231,15 +231,16 @@ const deleteRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-
     const isOwner = recipe.author._id.toString() === req.session.userId;
     const isAdmin = req.session.role === 'admin';
     if (!isOwner && !isAdmin) {
       return res.status(403).send('Unauthorized');
     }
-
     await Recipe.deleteRecipeById(req.params.id);
-    res.redirect('/recipes');
+
+    const recipes = await Recipe.getRecipesByUser(req.session.userId);
+
+    res.render('recipes/display-userCreated', { recipes, session: req.session });
   } catch (error) {
     console.error('Error deleting recipe:', error);
     res.status(500).send('Error deleting recipe');
