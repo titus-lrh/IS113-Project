@@ -84,7 +84,8 @@ const createRecipe = async (req, res) => {
   }
 
   try {
-    const { title, description, ingredients, instructions, cookingTime, servings, category } = req.body;
+    const { title, description, ingredients, instructions, cookingTime, servings, category, image } = req.body;
+    
     let formatCategory = Array.isArray(category) ? category : [category]
 
     if(formatCategory.length < 1) {
@@ -108,6 +109,7 @@ const createRecipe = async (req, res) => {
       cookingTime: parseInt(cookingTime),
       servings: parseInt(servings),
       category: formatCategory,
+      image,
       author: req.session.userId,
     });
 

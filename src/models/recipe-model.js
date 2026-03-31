@@ -33,6 +33,10 @@ const recipeSchema = new mongoose.Schema({
   category: {
     type: [],
     default: 'meal',
+  }, 
+  image: {
+    type: String,
+    required: true,
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,
