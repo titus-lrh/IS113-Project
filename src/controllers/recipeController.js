@@ -182,7 +182,7 @@ const updateRecipe = async (req, res) => {
       return res.status(403).send('Unauthorized');
     }
 
-    const { title, description, ingredients, instructions, cookingTime, servings, category } = req.body;
+    const { title, description, ingredients, instructions, cookingTime, servings, category, image } = req.body;
 
     const ingredientArray = Array.isArray(ingredients)
       ? ingredients
@@ -195,7 +195,8 @@ const updateRecipe = async (req, res) => {
       instructions,
       cookingTime: parseInt(cookingTime),
       servings: parseInt(servings),
-      category
+      category,
+      image
     };
 
     const updatedRecipe = await Recipe.updateRecipeById(req.params.id, updateData);
