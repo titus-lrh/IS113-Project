@@ -3,7 +3,6 @@
 
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const path = require('path');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth-routes');
@@ -38,7 +37,6 @@ const sessionConfig = {
   resave: false,
   saveUninitialized: false,
   rolling: true,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
   cookie: {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
