@@ -86,12 +86,14 @@ const createRecipe = async (req, res) => {
   try {
     const { title, description, ingredients, instructions, cookingTime, servings, category, image } = req.body;
     
-    let formatCategory = Array.isArray(category) ? category : [category]
-
-    if(formatCategory.length < 1) {
+    if(!category) {
       return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select at least 1 category!' }], body: req.body });
     }
-    else if(formatCategory.length > 3) {
+
+    let formatCategory = Array.isArray(category) ? category : [category]
+    
+    
+    if(formatCategory.length > 3) {
       return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
     }
 
