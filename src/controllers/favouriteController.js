@@ -4,7 +4,7 @@ const Favourite = require("../models/favourite-model");
 exports.addFavourite = async (req, res) => {
   try {
     const userId = req.session.userId;
-    const { recipeId, recipeTitle, recipeType } = req.body;
+    const { recipeId, recipeTitle, recipeType, recipeImage } = req.body;
 
     // Check if already saved
     const alreadySaved = await Favourite.isFavourited(userId, recipeId);
@@ -15,7 +15,7 @@ exports.addFavourite = async (req, res) => {
     }
 
     // Save to database
-    await Favourite.saveFavourite(userId, recipeId, recipeTitle, recipeType);
+    await Favourite.saveFavourite(userId, recipeId, recipeTitle, recipeType, recipeImage);
     res.json({ success: true, message: "Saved to favourites" });
   } catch (error) {
     console.error("Error saving favourite:", error);

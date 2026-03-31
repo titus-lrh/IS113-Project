@@ -17,6 +17,10 @@ const favouriteSchema = new mongoose.Schema({
     type: String,
     required: [true, "Recipe must have an author/by meal DB"]
   },
+  recipeImage: {
+    type: String,
+    required: true,
+  },
   savedAt: {
     type: Date,
     default: Date.now,
@@ -29,12 +33,13 @@ favouriteSchema.index({ userId: 1, recipeId: 1 }, { unique: true });
 const Favourite = mongoose.model('Favourite', favouriteSchema);
 
 // CREATE - Save a recipe to favourites
-exports.saveFavourite = async (userId, recipeId, recipeTitle, recipeType) => {
+exports.saveFavourite = async (userId, recipeId, recipeTitle, recipeType, recipeImage) => {
   const favourite = new Favourite({
     userId,
     recipeId,
     recipeTitle,
     recipeType,
+    recipeImage
   });
   await favourite.save();
   return favourite;
