@@ -61,7 +61,6 @@ exports.updateFavourite = async (favouriteId, updateData) => {
 
 // DELETE - Remove favorite by ID
 exports.removeFavouriteById = async (favouriteId) => {
-  console.log(favouriteId);
   return await Favourite.findByIdAndDelete(favouriteId);
 };
 

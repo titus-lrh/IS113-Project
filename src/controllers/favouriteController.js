@@ -78,9 +78,7 @@ exports.updateFavouriteName = async (req, res) => {
 exports.deleteFavouriteById = async (req, res) => {
   try {
     const { favouriteId } = req.params;
-    console.log(favouriteId);
     const result = await Favourite.removeFavouriteById(favouriteId);
-    console.log(result);
 
     if (!result) {
       return res.status(404).send("Favourite not found");

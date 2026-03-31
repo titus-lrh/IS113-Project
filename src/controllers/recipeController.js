@@ -357,8 +357,6 @@ const summarizeMealDBRecipe = async (req, res) => {
 //Get rating of recipe
 const rateRecipe = async (req, res) => {
   try {
-    console.log("RATE ROUTE HIT");
-    console.log("Rating received:", req.body.rating);
 
     const recipeId = req.params.id;
     const userId = req.session.userId;
@@ -387,8 +385,6 @@ const rateRecipe = async (req, res) => {
     await Recipe.addRatedUser(recipeId, userId);
 
     const updatedRecipe = await Recipe.getRecipeById(recipeId);
-
-    console.log("UPDATED:", updatedRecipe.rating, updatedRecipe.ratingCount);
 
     res.render('recipes/display-one', {
       recipe: updatedRecipe,
