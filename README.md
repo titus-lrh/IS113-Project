@@ -1,0 +1,34 @@
+# Everyday Cooks - Recipes Application
+
+A full-stack web application for viewing & sharing recipes, built with Express.js, MongoDB and EJS template using MVC architecture.
+
+
+## Features
+- View Recipes
+- Upload Recipe
+- Give ratings & comments
+- Add to Favourites
+- Scheduling based on calorie intake
+- Shopping List
+
+## Additional Features
+- Fetching of recipes from MealDB
+- Using AI to summarise each recipe
+
+## Tech Stack
+- **Backend**: Express.js with MVC architecture
+- **Database**: MongoDB with Mongoose
+- **Frontend**: HTML
+- **Template**: EJS
+- **Environment**: Node.js 
+
+## Running the Application
+
+1. **Install dependencies required**
+    npm install
+
+2. **Start the application**
+    nodemon server.js
+
+3. **Open your browser to begin**
+    localhost:8000/index.html
