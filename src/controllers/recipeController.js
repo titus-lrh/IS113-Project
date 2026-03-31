@@ -260,7 +260,7 @@ const searchRecipes = async (req, res) => {
     const mealdbMeals = await fetchFromMealDB(
       `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`
     );
-    res.render('recipes/search', { userRecipes, mealdbRecipes: mealdbMeals, query, session: req.session });
+    res.render('recipes/search', { recipes: userRecipes, mealdbRecipes: mealdbMeals, query, session: req.session });
   } catch (error) {
     console.error('Error searching recipes:', error);
     res.status(500).render("recipes/search", {userRecipes: [], mealdbRecipes: [], query, session: req.session})
