@@ -95,6 +95,13 @@ exports.getAllRecipes = async () => {
   return await Recipe.find().populate('author', 'username firstName lastName');
 };
 
+exports.getRecipeSuggestionCandidates = async (limit = 60) => {
+  return await Recipe.find({}, '_id title')
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+};
+
 // GET User's Recipe
 exports.getRecipesByUser = async (userId) => {
   return await Recipe.find({ author: userId }).populate('author', 'username firstName lastName');
@@ -128,6 +135,16 @@ exports.searchRecipesByTitle = async (query) => {
   return await Recipe.find({
     title: { $regex: query, $options: 'i' }
   }).populate('author', 'username firstName lastName');
+};
+
+exports.searchRecipeTitles = async (query, limit = 12) => {
+  return await Recipe.find(
+    { title: { $regex: query, $options: 'i' } },
+    '_id title'
+  )
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
 };
 
 // Add a user to the list of people who rated

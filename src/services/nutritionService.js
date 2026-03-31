@@ -93,8 +93,10 @@ async function fetchNutritionFromGPT(foodName, context = '') {
 async function getNutrition(sourceType, sourceId, foodName, context = '') {
   const foodKey = buildFoodKey(sourceType, sourceId, foodName);
 
-  // Check if nutrition already exists for this source
-  const existing = await FoodNutrition.findBySourceId(sourceType, sourceId);
+  // Keyed items use sourceType/sourceId, custom items use the normalized foodKey.
+  const existing = sourceId
+    ? await FoodNutrition.findBySourceId(sourceType, sourceId)
+    : await FoodNutrition.findByFoodKey(foodKey);
   if (existing) return existing;
 
   // Not found — fetch from GPT and save

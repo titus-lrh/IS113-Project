@@ -6,6 +6,8 @@ const { getNutrition } = require('./nutritionService');
 
 // ── TheMealDB categories we pull from (free bulk endpoint, no API key needed)
 const MEALDB_CATEGORIES = ['Chicken', 'Beef', 'Seafood', 'Vegetarian', 'Pasta', 'Dessert'];
+const MEALDB_CACHE_TTL_MS = 10 * 60 * 1000;
+let mealDbCandidateCache = { items: [], expiresAt: 0 };
 
 /**
  * gatherCandidates()
@@ -22,7 +24,7 @@ const MEALDB_CATEGORIES = ['Chicken', 'Beef', 'Seafood', 'Vegetarian', 'Pasta', 
  */
 async function gatherCandidates() {
   // 1. Community recipes from MongoDB
-  const userRecipes = await Recipe.getAllRecipes();
+  const userRecipes = await Recipe.getRecipeSuggestionCandidates();
   const recipeCandidates = userRecipes.map(r => ({
     name: r.title,
     sourceType: 'user_recipe',
@@ -31,6 +33,11 @@ async function gatherCandidates() {
 
   // 2. TheMealDB — fetch multiple categories in parallel
   //    Each category URL returns { meals: [{ strMeal, idMeal, ... }] }
+  const now = Date.now();
+  if (mealDbCandidateCache.expiresAt > now) {
+    return dedupeCandidates([...recipeCandidates, ...mealDbCandidateCache.items]);
+  }
+
   const categoryFetches = MEALDB_CATEGORIES.map(async (cat) => {
     try {
       const res = await fetch(
@@ -51,8 +58,12 @@ async function gatherCandidates() {
   const mealdbArrays = await Promise.all(categoryFetches);
   // .flat() merges [ [a,b], [c,d] ] into [a,b,c,d]
   const mealdbCandidates = mealdbArrays.flat();
+  mealDbCandidateCache = {
+    items: mealdbCandidates,
+    expiresAt: now + MEALDB_CACHE_TTL_MS,
+  };
 
-  return [...recipeCandidates, ...mealdbCandidates];
+  return dedupeCandidates([...recipeCandidates, ...mealdbCandidates]);
 }
 
 /**
@@ -234,6 +245,16 @@ function shuffleArray(arr) {
     copy[j] = temp;
   }
   return copy;
+}
+
+function dedupeCandidates(candidates) {
+  const seen = new Set();
+  return candidates.filter((candidate) => {
+    const key = `${candidate.sourceType}:${candidate.sourceId}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 module.exports = { getSuggestions };

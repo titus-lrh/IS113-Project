@@ -38,6 +38,7 @@ const foodNutritionSchema = new mongoose.Schema({
 // sparse: true allows multiple documents where sourceType/sourceId are absent
 // (e.g. custom foods without an external source ID).
 foodNutritionSchema.index({ sourceType: 1, sourceId: 1 }, { unique: true, sparse: true });
+foodNutritionSchema.index({ foodKey: 1 }, { unique: true });
 
 // Text index for food search
 foodNutritionSchema.index({ foodKey: 'text' });
@@ -45,6 +46,10 @@ foodNutritionSchema.index({ foodKey: 'text' });
 // Static methods for DB operations
 foodNutritionSchema.statics.findBySourceId = async function(sourceType, sourceId) {
   return this.findOne({ sourceType, sourceId });
+};
+
+foodNutritionSchema.statics.findByFoodKey = async function(foodKey) {
+  return this.findOne({ foodKey });
 };
 
 foodNutritionSchema.statics.deleteBySourceId = async function(sourceType, sourceId) {

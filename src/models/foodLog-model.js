@@ -61,6 +61,60 @@ const foodLogSchema = new mongoose.Schema({
 
 foodLogSchema.index({ userId: 1, date: 1 }, { unique: true });
 
+// ── Static methods ─────────────────────────────────────────────────────────
+
+/**
+ * Get or create a FoodLog for a given userId and date.
+ */
+foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
+  const d = date instanceof Date ? date : new Date(`${date}T00:00:00.000Z`);
+  d.setUTCHours(0, 0, 0, 0);
+  const midnight = d;
+
+  return await this.findOneAndUpdate(
+    { userId, date: midnight },
+    { $setOnInsert: { userId, date: midnight, entries: [] } },
+    { new: true, upsert: true }
+  );
+};
+
+/**
+ * Add a food entry to a log.
+ * Builds entry object, denormalizes nutrition, and recalculates totals.
+ */
+foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
+  const entry = {
+    timeLabel: entryData.timeLabel,
+    mealType: entryData.mealType,
+    food: {
+      nutritionId: entryData.nutrition ? entryData.nutrition._id : undefined,
+      name: entryData.foodName,
+      sourceType: entryData.sourceType || 'custom',
+      sourceId: entryData.sourceId || undefined,
+    },
+    servings: Number(entryData.servings) || 1,
+  };
+
+  if (entryData.nutrition) {
+    entry.nutrition = entryData.nutrition.nutrition;
+    entry.defaultServing = entryData.nutrition.defaultServing;
+  }
+
+  log.entries.push(entry);
+  await log.calculateTotals();
+  return log;
+};
+
+/**
+ * Remove a food entry from a log by ID.
+ * Filters out the entry and recalculates totals.
+ */
+foodLogSchema.statics.removeFoodEntry = async function (log, entryId) {
+  log.entries = log.entries.filter((e) => e._id.toString() !== entryId);
+  await log.calculateTotals();
+  return log;
+};
+
 // Recalculates dailyTotals and per-entry computed values, then persists.
 // Formula: (nutrition[field] / 100) * defaultServing.amount * servings
 foodLogSchema.methods.calculateTotals = async function () {

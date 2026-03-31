@@ -13,6 +13,7 @@ router.post('/search-food', foodLogController.searchFoodForm);
 router.post('/select-food', foodLogController.selectFoodForm);
 router.post('/add-food', foodLogController.addFoodPost);
 router.post('/delete-entry/:entryId', foodLogController.deleteEntryPost);
+router.post('/generate-suggestions', foodLogController.generateSuggestions);
 
 // ── JSON endpoints (legacy, can remove later) ──
 router.get('/search', foodLogController.searchFood);

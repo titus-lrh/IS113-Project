@@ -5,7 +5,9 @@ const FoodLog = require('../models/foodLog-model');
 const Recipe = require('../models/recipe-model');
 const User = require('../models/user-model');
 const { getNutrition } = require('../services/nutritionService');
-const { getOrCreateLog, addFoodEntry, removeFoodEntry } = require('../services/foodLogService');
+const getOrCreateLog = FoodLog.getOrCreateLog.bind(FoodLog);
+const addFoodEntry = FoodLog.addFoodEntry.bind(FoodLog);
+const removeFoodEntry = FoodLog.removeFoodEntry.bind(FoodLog);
 const { getSuggestions } = require('../services/suggestionService');
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -19,6 +21,58 @@ async function fetchFromMealDB(url) {
 async function getUserCalorieGoal(userId) {
   const user = await User.findByUserId(userId);
   return user ? user.calorieGoal || 3000 : 3000;
+}
+
+function buildScheduleViewModel(log, dateString, calorieGoal) {
+  const totals = log.dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+  const remainingCalories = calorieGoal - (totals.calories || 0);
+  const mealOrder = ['Breakfast', 'Morning Snack', 'Lunch', 'Afternoon Snack', 'Dinner', 'Evening Snack', 'Other'];
+  const groupedEntries = {};
+
+  mealOrder.forEach((mealType) => {
+    groupedEntries[mealType] = { entries: [], calories: 0 };
+  });
+
+  (log.entries || []).forEach((entry) => {
+    const mealType = entry.mealType || 'Other';
+    if (!groupedEntries[mealType]) {
+      groupedEntries[mealType] = { entries: [], calories: 0 };
+    }
+    groupedEntries[mealType].entries.push(entry);
+    groupedEntries[mealType].calories += entry.computed?.calories || 0;
+  });
+
+  const today = new Date().toISOString().slice(0, 10);
+  const current = new Date(`${dateString}T00:00:00Z`);
+  const prevDate = new Date(current);
+  prevDate.setUTCDate(prevDate.getUTCDate() - 1);
+  const nextDate = new Date(current);
+  nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+
+  return {
+    calorieGoal,
+    remainingCalories,
+    mealOrder,
+    groupedEntries,
+    prevStr: prevDate.toISOString().slice(0, 10),
+    nextStr: nextDate.toISOString().slice(0, 10),
+    displayLabel: dateString === today
+      ? 'Today'
+      : current.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' }),
+  };
+}
+
+function renderSchedulePage(res, req, { log, dateString, calorieGoal, errors = [], suggestions = [] }) {
+  const viewModel = buildScheduleViewModel(log, dateString, calorieGoal);
+  return res.render('foodlog/schedule', {
+    log,
+    dateString,
+    errors,
+    suggestions,
+    session: req.session,
+    ...viewModel,
+    page: 'schedule',
+  });
 }
 
 // ── controllers ────────────────────────────────────────────────────────────
@@ -35,24 +89,28 @@ const getSchedule = async (req, res) => {
       getOrCreateLog(userId, dateString),
       getUserCalorieGoal(userId),
     ]);
-
-    // Calculate remaining calories, then fetch suggestions (never breaks the page)
-    const remaining = calorieGoal - (log.dailyTotals ? log.dailyTotals.calories : 0);
-    const skipEnrichment = !!req.query.added;
-    const suggestions = await getSuggestions(remaining, { skipEnrichment }).catch(() => []);
-
-    res.render('foodlog/schedule', {
-      log,
-      dateString,
-      session: req.session,
-      calorieGoal,
-      suggestions,
-      remainingCalories: remaining,
-      page: 'schedule',
-    });
+    renderSchedulePage(res, req, { log, dateString, calorieGoal });
   } catch (error) {
     console.error('Error loading schedule:', error);
     res.status(500).send('Error loading schedule');
+  }
+};
+
+const generateSuggestions = async (req, res) => {
+  const dateString = req.body.dateString || req.params.dateString || new Date().toISOString().slice(0, 10);
+  const userId = req.session.userId;
+
+  try {
+    const [log, calorieGoal] = await Promise.all([
+      getOrCreateLog(userId, dateString),
+      getUserCalorieGoal(userId),
+    ]);
+    const { remainingCalories } = buildScheduleViewModel(log, dateString, calorieGoal);
+    const suggestions = await getSuggestions(remainingCalories);
+    renderSchedulePage(res, req, { log, dateString, calorieGoal, suggestions });
+  } catch (error) {
+    console.error('Error loading suggestions:', error);
+    res.status(500).send('Failed to load suggestions');
   }
 };
 
@@ -66,7 +124,7 @@ const searchFood = async (req, res) => {
 
   try {
     const [userRecipes, mealdbMeals] = await Promise.all([
-      Recipe.searchRecipesByTitle(query),
+      Recipe.searchRecipeTitles(query),
       fetchFromMealDB(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`),
     ]);
 
@@ -126,9 +184,7 @@ const addEntry = async (req, res) => {
 
     const log = await getOrCreateLog(userId, date);
     await addFoodEntry(log, { foodName, sourceType, sourceId, nutrition: nutritionDoc, servings, mealType, timeLabel });
-
-    const updated = await FoodLog.findById(log._id);
-    res.json({ log: updated });
+    res.json({ log });
   } catch (error) {
     console.error('Error adding entry:', error);
     res.status(500).json({ error: 'Failed to add entry' });
@@ -202,13 +258,13 @@ const searchFoodForm = async (req, res) => {
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
     ]);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    return renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 
   try {
     // Search both user recipes and TheMealDB
     const [userRecipes, mealdbMeals] = await Promise.all([
-      Recipe.searchRecipesByTitle(query.trim()),
+      Recipe.searchRecipeTitles(query.trim()),
       fetchFromMealDB(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`),
     ]);
 
@@ -249,7 +305,7 @@ const searchFoodForm = async (req, res) => {
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
     ]);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 };
 
@@ -269,7 +325,7 @@ const selectFoodForm = async (req, res) => {
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
     ]);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    return renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 
   try {
@@ -309,7 +365,7 @@ const selectFoodForm = async (req, res) => {
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
     ]);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 };
 
@@ -332,7 +388,7 @@ const addFoodPost = async (req, res) => {
       getOrCreateLog(userId, dateString),
       getUserCalorieGoal(userId),
     ]);
-    return res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    return renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 
   try {
@@ -364,7 +420,7 @@ const addFoodPost = async (req, res) => {
       getOrCreateLog(userId, dateString),
       getUserCalorieGoal(userId),
     ]);
-    res.render('foodlog/schedule', { log, dateString, errors, session: req.session, calorieGoal });
+    renderSchedulePage(res, req, { log, dateString, calorieGoal, errors });
   }
 };
 
@@ -397,6 +453,7 @@ const deleteEntryPost = async (req, res) => {
 
 module.exports = {
   getSchedule,
+  generateSuggestions,
   searchFood,
   addEntry,
   removeEntry,
