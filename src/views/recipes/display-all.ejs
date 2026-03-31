@@ -61,6 +61,10 @@
       <% recipes.reverse().forEach((recipe, i) => { %>
       <div class="recipe-card animate-fade-up" style=`transition-delay: <%= (i % 3) * 80 %>ms`>
         <div class="recipe-card__header">
+          <% if(recipe.image) { %>
+            <img class="mealdb-card__thumb" src="<%= recipe.image %>" alt="<%= recipe.title %>">
+            <br>
+          <% } %>
           <h3><%= recipe.title %></h3>
           <div class="recipe-card__meta">By <%= recipe.author.username %></div>
         </div>
