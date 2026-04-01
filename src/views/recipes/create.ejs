@@ -39,14 +39,14 @@
          <div class="form-group">
           <label for="image">Reference Image</label>
           <input type="text" id="image" name="image"
-            placeholder="e.g., https:XXXX.jpg"
+            placeholder="e.g. https:XXXX.jpg"
             value="<%= typeof body !== 'undefined' ? body.image || '' : '' %>" required>
         </div>
 
         <div class="form-group">
           <label for="title">Recipe Title</label>
           <input type="text" id="title" name="title"
-            placeholder="e.g., Classic Chocolate Chip Cookies"
+            placeholder="e.g. Classic Chocolate Chip Cookies"
             value="<%= typeof body !== 'undefined' ? body.title || '' : '' %>" required>
           <div class="form-hint">Give your recipe a clear, descriptive name</div>
         </div>
@@ -91,7 +91,7 @@
         <div class="form-group">
           <label for="ingredients">Ingredients</label>
           <textarea id="ingredients" name="ingredients"
-            placeholder="e.g., 2 cups flour, 1 cup sugar, 3 eggs, 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
+            placeholder="e.g. 2 cups flour, 1 cup sugar, 3 eggs, 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
           <div class="form-hint">List each ingredient separated by commas. Include quantities!</div>
         </div>
 
