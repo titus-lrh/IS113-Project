@@ -28,8 +28,7 @@ exports.showEditForm = async (req, res) => {
  
 // POST /groceries — create new item
 exports.createItem = async (req, res) => {
-    const { name, quantity, category, notes } = req.body;
- 
+    const { name, quantity, category, notes } = req.body;   
     // validation
     if (!name || !quantity) {
         const groceryList = await Grocery.getAll(req.session.userId);
@@ -39,8 +38,16 @@ exports.createItem = async (req, res) => {
             error: 'Name and quantity are required.',
             session: req.session,
         });
+    } else if (name === " ") {
+        const groceryList = await Grocery.getAll(req.session.userId);
+        return res.render('groceries', {
+            groceryList,
+            editItem: null,
+            error: 'Name cannot be empty!',
+            session: req.session,
+        });    
     }
- 
+
     try {
         await Grocery.createItem({ userId: req.session.userId, name, quantity, category, notes });
         res.redirect('/groceries');

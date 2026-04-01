@@ -89,10 +89,10 @@
         </div>
 
         <div class="form-group">
-          <label for="ingredients">Ingredients</label>
+          <label for="ingredients">Ingredients <span class="text-subtle">(Separate using semicolon ;)</span></label>
           <textarea id="ingredients" name="ingredients"
-            placeholder="e.g. 2 cups flour, 1 cup sugar, 3 eggs, 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
-          <div class="form-hint">List each ingredient separated by commas. Include quantities!</div>
+            placeholder="e.g. 2 cups flour; 1 cup sugar; 3 eggs; 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
+          <div class="form-hint">List each ingredient separated by semicolon. Include quantities!</div>
         </div>
 
         <div class="form-group">

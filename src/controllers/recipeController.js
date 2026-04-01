@@ -123,7 +123,7 @@ const createRecipe = async (req, res) => {
       `Ingredients: ${ingredientArray.join(', ')}`
     ).catch((err) => console.error('Nutrition index failed:', err));
 
-    const recipes = await Recipe.getRecipesByUser(req.session.userId);
+    const recipes = await Recipe.getRecipesByUser(req.session.userId);  
     res.render('recipes/display-userCreated', { recipes, session: req.session });
   } catch (error) {
     console.error('Error creating recipe:', error);
@@ -185,10 +185,12 @@ const updateRecipe = async (req, res) => {
     }
 
     const { title, description, ingredients, instructions, cookingTime, servings, category, image } = req.body;
-
     const ingredientArray = Array.isArray(ingredients)
       ? ingredients
-      : ingredients.split(',').map(i => i.trim());
+      // Regex to match one or more characters in [; and newline]
+      : ingredients.split(/[;\n]+/) 
+      .map(i => i.trim())
+      .filter(i => i.length > 0);
 
     const updateData = {
       title,
@@ -221,8 +223,8 @@ const updateRecipe = async (req, res) => {
         }
       })();
     }
-
-    res.redirect(`/recipes/${req.params.id}`);
+    const recipes = await Recipe.getRecipesByUser(req.session.userId);
+    res.render(`recipes/display-userCreated`, { recipes, session: req.session });
   } catch (error) {
     console.error('Error updating recipe:', error);
     res.status(500).send('Error updating recipe');

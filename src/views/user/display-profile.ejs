@@ -23,7 +23,7 @@
 
   <div class="container container--xl">
     <div class="profile-hero">
-      <div class="profile-hero__name">User: <%= user.username %></div>
+      <div class="profile-hero__name"><%= user.username %></div>
       <div class="profile-hero__meta">
         <span>✉️ <%= user.email %></span>
         <span>📅 Joined <%= user.createdAt.toDateString() %></span>
@@ -34,12 +34,12 @@
     </div>
 
     <div class="actions">
-      <a href="/profile/edit/<%= user._id %>" class="btn btn--secondary">
+      <a href="/profile/edit/<%= user._id %>" class="btn btn--secondary btn--sm">
         ✏️ Edit Profile
       </a>
 
       <form action="/profile/delete/<%= user._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
-        <button type="submit" class="btn btn--danger">
+        <button type="submit" class="btn btn--danger btn--sm" style="height: 37px;">
           🗑 Delete Account
         </button>
       </form>

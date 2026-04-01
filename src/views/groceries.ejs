@@ -36,9 +36,10 @@
           <% } else { %>
           <form action="/groceries" method="POST">
             <% } %>
-
             <% if (error) { %>
-            <p style="color:red;"><%= error %></p>
+              <div class="alert alert--error">
+                <%= error %>
+              </div>
             <% } %>
 
             <label>Name</label>
@@ -60,7 +61,7 @@
             <textarea name="notes" placeholder="e.g. Get the low-fat version"><%= editItem ? editItem.notes : '' %></textarea>
 
             <br><br>
-            <button type="submit" class="btn btn-primary">
+            <button type="submit" class="btn btn--primary">
               <%= editItem ? "Update Item" : "Add Item" %>
             </button>
             <% if (editItem) { %>
@@ -75,7 +76,7 @@
 
 
         <!-- ========== READ - LIST ALL ITEMS ========== -->
-        <h2>Grocery List (<%= groceryList.length %> items)</h2>
+        <h2>Grocery List (<%= groceryList.length %> <%= groceryList.length > 1 ? "items" : "item" %>)</h2>
 
         <% if (groceryList.length === 0) { %>
         <p>No items yet. Add one above!</p>
@@ -100,11 +101,11 @@
               <td style="width:200px;">
                 <!-- UPDATE button -->
                 <form action="/groceries/<%= item._id %>/edit" method="GET" style="display:inline;">
-                  <button type="submit" class="btn btn-danger" style="margin: 10px 0;">Edit</button>
+                  <button type="submit" class="btn btn--secondary btn--sm" style="margin: 10px 0;">Edit</button>
                 </form>
 
                 <!-- DELETE button -->
-                <button class="btn btn-danger" onclick="deleteItem('<%= item._id %>')">Delete</button>
+                <button class="btn btn--danger btn--sm" onclick="deleteItem('<%= item._id %>')">Delete</button>
               </td>
             </tr>
             <% }) %>

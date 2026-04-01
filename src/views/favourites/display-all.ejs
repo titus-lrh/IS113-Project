@@ -69,11 +69,11 @@
               <div class="recipe-card__footer">
                 <!-- DIFFERENT ROUTES FOR MEALDB RECIPES AND USER CREATED RECIPES -->
                 <% if (fav.recipeType==='mealdb' ) { %>
-                  <a href="/recipes/mealdb/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View Recipe</a>
+                  <a href="/recipes/mealdb/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View</a>
                   <% } else { %>
-                    <a href="/recipes/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View Recipe</a>
+                    <a href="/recipes/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View</a>
                     <% } %>
-                      <a href="/favourites/<%= fav._id %>/edit" class="btn btn--secondary btn--sm">Edit Name</a>
+                      <a href="/favourites/<%= fav._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
                       <a href="/favourites/<%= fav._id %>/delete" class="btn btn--danger btn--sm">Remove</a>
               </div>
             </div>
