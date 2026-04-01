@@ -31,7 +31,7 @@
     <h1 class="index-hero__title">Every meal<br>has a story.</h1>
     <p class="index-hero__sub">Discover home-cooked dishes shared by real cooks — or find your next inspiration from a world of recipes.</p>
     <form class="search-bar" action="/recipes/search" method="GET">
-      <input type="text" name="q" placeholder="Search by name, ingredient…">
+      <input type="text" name="q" placeholder="Search by recipe name...">
       <button type="submit" class="btn btn--primary">Search</button>
     </form>
   </div>
@@ -85,10 +85,6 @@
           <div class="stat-item">
             <strong><%= recipe.servings %></strong>
             <small>servings</small>
-          </div>
-          <div class="stat-item">
-            <strong><%= recipe.ingredients.length %></strong>
-            <small>ingredients</small>
           </div>
         </div>
         <div class="recipe-card__footer">
