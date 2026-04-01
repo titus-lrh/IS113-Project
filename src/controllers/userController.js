@@ -130,7 +130,6 @@ const updateProfile = async (req, res) => {
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    console.log('Fetching profile for userId:', userId);
 
     const user = await User.findByUserId(userId);
     if (!user) {
@@ -138,7 +137,6 @@ const getProfile = async (req, res) => {
     }
 
     const recipes = await Recipe.getRecipesByUser(userId);
-    console.log('Found recipes:', recipes.length);
 
     res.render('user/display-profile', { user, recipes, session: req.session });
   } catch (err) {
@@ -159,7 +157,7 @@ const deleteProfile = async (req, res) => {
     req.session.destroy((err) => {
       res.clearCookie('connect.sid');
       if (err) {
-        console.log("Error clearing session:", err);
+        console.error("Error clearing session:", err);
         return res.redirect('/profile');
       }
       res.redirect('/');

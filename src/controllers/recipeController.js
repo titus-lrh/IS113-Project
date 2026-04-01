@@ -86,12 +86,14 @@ const createRecipe = async (req, res) => {
   try {
     const { title, description, ingredients, instructions, cookingTime, servings, category, image } = req.body;
     
-    let formatCategory = Array.isArray(category) ? category : [category]
-
-    if(formatCategory.length < 1) {
+    if(!category) {
       return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select at least 1 category!' }], body: req.body });
     }
-    else if(formatCategory.length > 3) {
+
+    let formatCategory = Array.isArray(category) ? category : [category]
+    
+    
+    if(formatCategory.length > 3) {
       return res.status(400).render('recipes/create', { errors: [{ msg: 'Please select max 3 categories!' }], body: req.body });
     }
 
@@ -255,15 +257,13 @@ const searchRecipes = async (req, res) => {
   const query = req.query.q || '';
   try {
     const userRecipes = await Recipe.searchRecipesByTitle(query);
-
     const mealdbMeals = await fetchFromMealDB(
       `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`
     );
-
-    res.render('recipes/search', { userRecipes, mealdbRecipes: mealdbMeals, query, session: req.session });
+    res.render('recipes/search', { recipes: userRecipes, mealdbRecipes: mealdbMeals, query, session: req.session });
   } catch (error) {
     console.error('Error searching recipes:', error);
-    res.status(500).send('Error searching recipes');
+    res.status(500).render("recipes/search", {userRecipes: [], mealdbRecipes: [], query, session: req.session})
   }
 };
 
@@ -357,8 +357,6 @@ const summarizeMealDBRecipe = async (req, res) => {
 //Get rating of recipe
 const rateRecipe = async (req, res) => {
   try {
-    console.log("RATE ROUTE HIT");
-    console.log("Rating received:", req.body.rating);
 
     const recipeId = req.params.id;
     const userId = req.session.userId;
@@ -393,8 +391,6 @@ const rateRecipe = async (req, res) => {
     await Recipe.addRatedUser(recipeId, userId);
 
     const updatedRecipe = await Recipe.getRecipeById(recipeId);
-
-    console.log("UPDATED:", updatedRecipe.rating, updatedRecipe.ratingCount);
 
     res.render('recipes/display-one', {
       recipe: updatedRecipe,

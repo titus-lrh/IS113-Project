@@ -53,9 +53,11 @@
           <% favourites.forEach(fav=> { %>
             <div class="recipe-card">
               <div class="recipe-card__header">
-                <h3>
-                  <%= fav.recipeTitle %>
-                </h3>
+                <% if(fav.recipeImage) { %>
+                  <img class="mealdb-card__thumb" src="<%= fav.recipeImage %>" alt="<%= fav.recipeTitle %>">
+                  <br>
+                <% } %>
+                <h3><%= fav.recipeTitle %></h3>
                 <div class="recipe-card__meta">
                   By: <%= fav.recipeType==='mealdb' ? 'TheMealDB' : fav.recipeType %>
                 </div>
