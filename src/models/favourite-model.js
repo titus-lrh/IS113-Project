@@ -50,6 +50,7 @@ exports.getFavourites = async (userId) => {
   return await Favourite.find({ userId }).sort({ savedAt: -1 });
 };
 
+// READ - Get all favourites by ID
 exports.getFavouriteById = async (favouriteId) => {
   return await Favourite.findById(favouriteId)
 }
