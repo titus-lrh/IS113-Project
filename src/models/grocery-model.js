@@ -33,8 +33,8 @@ exports.getAll = function (userId) {
 };
 
 // GET one item by ID
-exports.getById = function (id) {
-    return Grocery.findById(id);
+exports.getById = function (userId, id) {
+    return Grocery.findOne({ _id: id, userId });
 };
 
 // CREATE new item
@@ -43,11 +43,11 @@ exports.createItem = function (data) {
 };
 
 // UPDATE item by ID
-exports.updateItem = function (id, data) {
-    return Grocery.updateOne({_id: id}, { $set: data });
+exports.updateItem = function (userId, id, data) {
+    return Grocery.updateOne({ _id: id, userId }, { $set: data });
 };
 
 // DELETE item by ID
-exports.deleteItem = function (id) {
-    return Grocery.deleteOne({_id: id});
+exports.deleteItem = function (userId, id) {
+    return Grocery.deleteOne({ _id: id, userId });
 };

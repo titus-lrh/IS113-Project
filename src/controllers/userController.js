@@ -104,6 +104,9 @@ const logout = (req, res) => {
 
 // GET edit profile form
 const getEditProfileForm = async (req, res) => {
+  if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+    return res.status(403).send('Forbidden');
+  }
   const user = await User.findByUserId(req.params.id);
   res.render('user/edit-profile', { user });
 };
@@ -111,6 +114,9 @@ const getEditProfileForm = async (req, res) => {
 // POST update profile
 const updateProfile = async (req, res) => {
   try {
+    if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+      return res.status(403).send('Forbidden');
+    }
     const { username, email, bio, calorieGoal } = req.body;
     await User.updateProfile(req.params.id, { username, email, bio, calorieGoal });
     res.redirect('/profile/' + req.params.id);
@@ -144,6 +150,9 @@ const getProfile = async (req, res) => {
 // POST delete profile
 const deleteProfile = async (req, res) => {
   try {
+    if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+      return res.status(403).send('Forbidden');
+    }
     const userId = req.params.id;
     await User.deleteUser(userId);
 

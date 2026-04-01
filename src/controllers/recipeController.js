@@ -362,7 +362,10 @@ const rateRecipe = async (req, res) => {
 
     const recipeId = req.params.id;
     const userId = req.session.userId;
-    const rating = parseInt(req.body.rating);
+    const rating = parseInt(req.body.rating, 10);
+    if (Number.isNaN(rating) || rating < 1 || rating > 5) {
+      return res.status(400).send("Invalid rating");
+    }
 
     const recipe = await Recipe.getRecipeById(recipeId);
 
@@ -371,7 +374,10 @@ const rateRecipe = async (req, res) => {
     }
 
     // prevent duplicate rating
-    if (recipe.ratedUsers?.includes(userId)) {
+    const alreadyRated = (recipe.ratedUsers || []).some(
+      (u) => u.toString() === userId
+    );
+    if (alreadyRated) {
       return res.send("You already rated this recipe");
     }
 
@@ -412,6 +418,9 @@ const addComment = async (req, res) => {
     text
   };
 
+  if (!text || !text.trim()) {
+    return res.status(400).send("Comment text required");
+  }
   await Recipe.addComment(id, comment);
   res.redirect(`/recipes/${id}`);
 };
@@ -419,6 +428,13 @@ const addComment = async (req, res) => {
 // Delete comment
 const deleteComment = async (req, res) => {
   const { id, commentId } = req.params;
+  const recipe = await Recipe.getRecipeById(id);
+  if (!recipe) return res.status(404).send('Recipe not found');
+  const comment = recipe.comments.id(commentId);
+  if (!comment) return res.status(404).send('Comment not found');
+  const isOwner = comment.user && comment.user.toString() === req.session.userId;
+  const isAdmin = req.session.role === 'admin';
+  if (!isOwner && !isAdmin) return res.status(403).send('Unauthorized');
   await Recipe.deleteComment(id, commentId);
   res.redirect(`/recipes/${id}`);
 };
@@ -428,6 +444,16 @@ const editComment = async (req, res) => {
   const { id, commentId } = req.params;
   const { text } = req.body;
 
+  if (!text || !text.trim()) {
+    return res.status(400).send("Comment text required");
+  }
+  const recipe = await Recipe.getRecipeById(id);
+  if (!recipe) return res.status(404).send('Recipe not found');
+  const comment = recipe.comments.id(commentId);
+  if (!comment) return res.status(404).send('Comment not found');
+  const isOwner = comment.user && comment.user.toString() === req.session.userId;
+  const isAdmin = req.session.role === 'admin';
+  if (!isOwner && !isAdmin) return res.status(403).send('Unauthorized');
   await Recipe.editComment(id, commentId, text);
   res.redirect(`/recipes/${id}`);
 };
@@ -437,6 +463,10 @@ const likeComment = async (req, res) => {
   const { id, commentId } = req.params;
   const userId = req.session.userId;
 
+  const recipe = await Recipe.getRecipeById(id);
+  if (!recipe) return res.status(404).send('Recipe not found');
+  const comment = recipe.comments.id(commentId);
+  if (!comment) return res.status(404).send('Comment not found');
   await Recipe.likeComment(id, commentId, userId);
   res.redirect(`/recipes/${id}`);
 };

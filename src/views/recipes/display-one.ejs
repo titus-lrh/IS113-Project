@@ -70,17 +70,14 @@
           <% } else if (hasRated) { %>
           <p class="text-success text-sm mt-2">✔ Already rated</p>
           <% } else { %>
-          <form action="/recipes/<%= recipe._id %>/rate" method="POST">
-            <div class="star-picker" id="stars">
-              <span data-value="1">☆</span>
-              <span data-value="2">☆</span>
-              <span data-value="3">☆</span>
-              <span data-value="4">☆</span>
-              <span data-value="5">☆</span>
-            </div>
-            <input type="hidden" name="rating" id="ratingValue" value="0">
-            <button class="btn btn--primary btn--sm mt-2" type="submit">Rate</button>
-          </form>
+          <div class="star-picker">
+            <% for (let i = 1; i <= 5; i++) { %>
+            <form action="/recipes/<%= recipe._id %>/rate" method="POST" style="display:inline">
+              <input type="hidden" name="rating" value="<%= i %>">
+              <button type="submit" style="background:none;border:none;cursor:pointer;font-size:1.4rem;">☆</button>
+            </form>
+            <% } %>
+          </div>
           <% } %>
         </div>
       </div>
@@ -229,26 +226,6 @@
   </div>
 
   <script>
-    const stars = document.querySelectorAll('#stars span');
-    const ratingInput = document.getElementById('ratingValue');
-    if (stars.length) {
-      stars.forEach(star => {
-        star.addEventListener('mouseover', () => highlightStars(star.dataset.value));
-        star.addEventListener('mouseout', () => highlightStars(ratingInput.value || 0));
-        star.addEventListener('click', () => {
-          ratingInput.value = star.dataset.value;
-          highlightStars(star.dataset.value);
-        });
-      });
-    }
-
-    function highlightStars(val) {
-      stars.forEach(s => {
-        s.textContent = parseInt(s.dataset.value) <= val ? '⭐' : '☆';
-      });
-    }
-
-
     function toggleEdit(id) {
       const text = document.getElementById("text-" + id);
       const form = document.getElementById("edit-form-" + id);

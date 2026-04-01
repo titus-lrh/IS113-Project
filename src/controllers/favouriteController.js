@@ -41,8 +41,9 @@ exports.viewFavourites = async (req, res) => {
 // GET - EDIT FORM
 exports.getEditForm = async (req, res) => {
   try {
-    const {favouriteId} = req.params;
-    const favourite = await Favourite.getFavouriteById(favouriteId);
+    const { favouriteId } = req.params;
+    const userId = req.session.userId;
+    const favourite = await Favourite.getFavouriteById(userId, favouriteId);
 
     if (!favourite) {
       return res.status(404).send("Favourite not found");
@@ -59,9 +60,10 @@ exports.getEditForm = async (req, res) => {
 exports.updateFavouriteName = async (req, res) => {
   try {
     const { favouriteId } = req.params;
+    const userId = req.session.userId;
     const { recipeTitle } = req.body;
 
-    const updatedFavourite = await Favourite.updateFavourite(favouriteId, { recipeTitle });
+    const updatedFavourite = await Favourite.updateFavourite(userId, favouriteId, { recipeTitle });
 
     if (!updatedFavourite) {
       return res.status(404).send("Favourite not found");
@@ -78,9 +80,8 @@ exports.updateFavouriteName = async (req, res) => {
 exports.deleteFavouriteById = async (req, res) => {
   try {
     const { favouriteId } = req.params;
-    console.log(favouriteId);
-    const result = await Favourite.removeFavouriteById(favouriteId);
-    console.log(result);
+    const userId = req.session.userId;
+    const result = await Favourite.removeFavouriteById(userId, favouriteId);
 
     if (!result) {
       return res.status(404).send("Favourite not found");

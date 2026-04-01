@@ -12,6 +12,14 @@ const { getSuggestions } = require('../services/suggestionService');
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
+function normalizeDateString(input) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!input || typeof input !== 'string') return today;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return today;
+  const parsed = Date.parse(`${input}T00:00:00Z`);
+  return Number.isNaN(parsed) ? today : input;
+}
+
 async function fetchFromMealDB(url) {
   const response = await fetch(url);
   const data = await response.json();
@@ -83,7 +91,7 @@ function renderSchedulePage(res, req, { log, dateString, calorieGoal, errors = [
  */
 const getSchedule = async (req, res) => {
   try {
-    const dateString = req.params.dateString || new Date().toISOString().slice(0, 10);
+    const dateString = normalizeDateString(req.params.dateString);
     const userId = req.session.userId;
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(userId, dateString),
@@ -97,7 +105,7 @@ const getSchedule = async (req, res) => {
 };
 
 const generateSuggestions = async (req, res) => {
-  const dateString = req.body.dateString || req.params.dateString || new Date().toISOString().slice(0, 10);
+  const dateString = normalizeDateString(req.body.dateString || req.params.dateString);
   const userId = req.session.userId;
 
   try {
@@ -171,7 +179,7 @@ const addEntry = async (req, res) => {
   }
 
   const userId = req.session.userId;
-  const date = dateString || new Date().toISOString().slice(0, 10);
+  const date = normalizeDateString(dateString);
 
   try {
     // Nutrition lookup (cache-first, GPT fallback)
@@ -197,6 +205,10 @@ const addEntry = async (req, res) => {
 const removeEntry = async (req, res) => {
   const userId = req.session.userId;
   const { entryId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(entryId)) {
+    return res.status(400).json({ error: 'Invalid entryId' });
+  }
 
   try {
     const log = await FoodLog.findOne({
@@ -249,7 +261,7 @@ const getNutritionData = async (req, res) => {
  */
 const searchFoodForm = async (req, res) => {
   const { query, mealType = 'Other', dateString: bodyDate } = req.body;
-  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
+  const dateString = normalizeDateString(bodyDate);
   const errors = [];
 
   if (!query || !query.trim()) {
@@ -316,10 +328,10 @@ const searchFoodForm = async (req, res) => {
  */
 const selectFoodForm = async (req, res) => {
   const { results, selectedIndex, mealType = 'Other', dateString: bodyDate } = req.body;
-  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
+  const dateString = normalizeDateString(bodyDate);
   const errors = [];
 
-  if (!results || !selectedIndex) {
+  if (!results || selectedIndex === undefined || selectedIndex === null || selectedIndex === '') {
     errors.push('No food selected');
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
@@ -377,7 +389,7 @@ const selectFoodForm = async (req, res) => {
 const addFoodPost = async (req, res) => {
   const { foodId, foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '', dateString: bodyDate } = req.body;
   const userId = req.session.userId;
-  const dateString = bodyDate || new Date().toISOString().slice(0, 10);
+  const dateString = normalizeDateString(bodyDate);
   const errors = [];
 
   if (!foodName || !foodName.trim()) errors.push('Food required');
@@ -431,7 +443,11 @@ const addFoodPost = async (req, res) => {
 const deleteEntryPost = async (req, res) => {
   const userId = req.session.userId;
   const { entryId } = req.params;
-  const dateString = req.body.dateString || new Date().toISOString().slice(0, 10);
+  const dateString = normalizeDateString(req.body.dateString);
+
+  if (!mongoose.Types.ObjectId.isValid(entryId)) {
+    return res.status(400).send('Invalid entryId');
+  }
 
   try {
     const log = await FoodLog.findOne({

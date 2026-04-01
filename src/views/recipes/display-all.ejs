@@ -151,21 +151,7 @@
       </div>
 
       <script>
-        // Scroll-triggered fade-up animations
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-visible');
-              observer.unobserve(entry.target);
-            }
-          });
-        }, {
-          threshold: 0.08
-        });
-
-        document.querySelectorAll('.animate-fade-up').forEach(el => observer.observe(el));
-
-        function saveFavourite(recipeId, recipeTitle, recipeType) {
+function saveFavourite(recipeId, recipeTitle, recipeType) {
           fetch('/favourites/add', {
               method: 'POST',
               headers: {

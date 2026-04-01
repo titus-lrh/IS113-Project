@@ -14,7 +14,10 @@ exports.showAll = async (req, res) => {
 // GET /groceries/:id/edit — show form pre-filled with item data
 exports.showEditForm = async (req, res) => {
     try {
-        const editItem = await Grocery.getById(req.params.id);
+        const editItem = await Grocery.getById(req.session.userId, req.params.id);
+        if (!editItem) {
+            return res.status(404).render('error', { message: 'Item not found' });
+        }
         const groceryList = await Grocery.getAll(req.session.userId);
         res.render('groceries', { groceryList, editItem, error: null, session: req.session });
     } catch (error) {
@@ -29,11 +32,12 @@ exports.createItem = async (req, res) => {
  
     // validation
     if (!name || !quantity) {
-        const groceryList = await Grocery.getAll();
+        const groceryList = await Grocery.getAll(req.session.userId);
         return res.render('groceries', {
             groceryList,
             editItem: null,
-            error: 'Name and quantity are required.'
+            error: 'Name and quantity are required.',
+            session: req.session,
         });
     }
  
@@ -52,17 +56,21 @@ exports.updateItem = async (req, res) => {
  
     // validation
     if (!name || !quantity) {
-        const groceryList = await Grocery.getAll();
-        const editItem = await Grocery.getById(req.params.id);
+        const groceryList = await Grocery.getAll(req.session.userId);
+        const editItem = await Grocery.getById(req.session.userId, req.params.id);
         return res.render('groceries', {
             groceryList,
             editItem,
-            error: 'Name and quantity are required.'
+            error: 'Name and quantity are required.',
+            session: req.session,
         });
     }
  
     try {
-        await Grocery.updateItem(req.params.id, { name, quantity, category, notes });
+        const result = await Grocery.updateItem(req.session.userId, req.params.id, { name, quantity, category, notes });
+        if (result.matchedCount === 0) {
+            return res.status(404).render('error', { message: 'Item not found' });
+        }
         res.redirect('/groceries');
     } catch (error) {
         console.error(error);
@@ -73,7 +81,10 @@ exports.updateItem = async (req, res) => {
 // DELETE /groceries/:id — delete item
 exports.deleteItem = async (req, res) => {
     try {
-        await Grocery.deleteItem(req.params.id);
+        const result = await Grocery.deleteItem(req.session.userId, req.params.id);
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ msg: 'Item not found' });
+        }
         res.json({ msg: 'Item deleted successfully' });
     } catch (error) {
         console.error(error);
