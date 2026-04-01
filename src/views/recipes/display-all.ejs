@@ -50,9 +50,10 @@
           return categoryEmojis[cats[0]] || '🍽️';
         }
       %>
-
+    Jump to section: <a href="#community">Community Recipes</a> | 
+    <a href="#stock">Recipes From MealDB</a>
     <div class="section-header animate-fade-up">
-      <h2 class="section-header__title">Community Recipes</h2>
+      <h2 class="section-header__title" id="community">Community Recipes</h2>
       <span class="section-header__count"><%= recipes.length %> dish<%= recipes.length !== 1 ? 'es' : '' %></span>
     </div>
 
@@ -123,7 +124,7 @@
     <% if (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0) { %>
     <div class="mealdb-section animate-fade-up">
       <div class="section-header" style="margin:0 0 var(--sp-2);">
-        <h2 class="section-header__title">Stock Recipes</h2>
+        <h2 class="section-header__title" id="stock">Stock Recipes</h2>
         <span class="badge badge--source">TheMealDB</span>
       </div>
       <p style="font-size:var(--text-sm);color:var(--color-text-gray);margin-bottom:var(--sp-6);">Curated from around the world</p>
