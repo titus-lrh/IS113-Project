@@ -405,7 +405,7 @@ const rateRecipe = async (req, res) => {
   }
 };
 
-// Add comment
+// Add comment using logged-in user info and save it to recipe
 const addComment = async (req, res) => {
   const { id } = req.params;
   const { text } = req.body;
@@ -423,7 +423,7 @@ const addComment = async (req, res) => {
   res.redirect(`/recipes/${id}`);
 };
 
-// Delete comment
+// Delete comment from recipe using comment ID
 const deleteComment = async (req, res) => {
   const { id, commentId } = req.params;
   const recipe = await Recipe.getRecipeById(id);
@@ -437,7 +437,7 @@ const deleteComment = async (req, res) => {
   res.redirect(`/recipes/${id}`);
 };
 
-// Edit comment
+// Edit comment- updates exisiting comments text
 const editComment = async (req, res) => {
   const { id, commentId } = req.params;
   const { text } = req.body;
@@ -456,7 +456,7 @@ const editComment = async (req, res) => {
   res.redirect(`/recipes/${id}`);
 };
 
-// Like comment
+// Like comment- allow a user to like a comment once
 const likeComment = async (req, res) => {
   const { id, commentId } = req.params;
   const userId = req.session.userId;

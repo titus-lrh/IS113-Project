@@ -45,15 +45,15 @@ const recipeSchema = new mongoose.Schema({
   },
   rating: {
     type: Number,
-    default: 0,
+    default: 0, //store the average rating value of the recipe
   },
   ratingCount: {
     type: Number,
-    default: 0,
+    default: 0, //store how many users have rated this recipe
   },
   ratedUsers: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'User', //stored userIDs to prevent duplicate
   }],
   createdAt: {
     type: Date,
@@ -63,23 +63,25 @@ const recipeSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  //stores all comments related to a recipe
   comments: [
   {
+    //user who posted the comment
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User'
     },
-    username: String,
-    text: String,
-    createdAt: {
+    username: String, //for display
+    text: String, //comment content
+    createdAt: { //timestamp
       type: Date,
       default: Date.now
     },
-    likes: {
+    likes: { //number of likes on th
       type: Number,
       default: 0
     },
-    likedUsers: [
+    likedUsers: [ //stores users who liked the comment
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -167,7 +169,7 @@ exports.addComment = async (recipeId, commentData) => {
   );
 };
 
-//  Delete comment
+//  Delete comment, removes a specific comment
 exports.deleteComment = async (recipeId, commentId) => {
   return await Recipe.findByIdAndUpdate(
     recipeId,
@@ -176,7 +178,7 @@ exports.deleteComment = async (recipeId, commentId) => {
   );
 };
 
-// Edit comment
+// Edit comment- updates the text to the new one
 exports.editComment = async (recipeId, commentId, text) => {
   return await Recipe.findOneAndUpdate(
     { _id: recipeId, "comments._id": commentId },
@@ -185,7 +187,7 @@ exports.editComment = async (recipeId, commentId, text) => {
   );
 };
 
-// Like comment
+// Like comment- increase heart icon count
 exports.likeComment = async (recipeId, commentId, userId) => {
   const recipe = await Recipe.findById(recipeId);
   const comment = recipe.comments.id(commentId);
