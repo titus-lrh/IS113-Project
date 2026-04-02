@@ -32,6 +32,15 @@
 
       <form action="/profile/update/<%= user._id %>" method="POST">
         <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>" placeholder="John">
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>" placeholder="Doe">
+        </div>
+        <div class="form-group">
           <label for="username">Username</label>
           <input type="text" id="username" name="username" value="<%= user.username %>" required>
         </div>

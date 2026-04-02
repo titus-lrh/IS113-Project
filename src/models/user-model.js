@@ -92,11 +92,11 @@ exports.findByUserId = async (userId) => {
 
 // UPDATE - UPDATE PROFILE
 exports.updateProfile = async (userId, updateData) => {
-  const { username, email, bio, calorieGoal } = updateData;
+  const { firstName, lastName, username, email, bio, calorieGoal } = updateData;
   const parsedGoal = Number(calorieGoal);
   return await User.findByIdAndUpdate(
     userId,
-    { $set: { username, email, bio, calorieGoal: Number.isNaN(parsedGoal) ? 3000 : parsedGoal }},
+    { $set: { firstName, lastName, username, email, bio, calorieGoal: Number.isNaN(parsedGoal) ? 3000 : parsedGoal }},
     { new: true }
   );
 };
