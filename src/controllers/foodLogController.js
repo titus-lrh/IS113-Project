@@ -385,7 +385,7 @@ const searchFoodForm = async (req, res) => {
     res.render('foodlog/search-results', { results, query: query.trim(), mealType, dateString, session: req.session });
   } catch (error) {
     console.error('Error searching food:', error);
-    errors.push('Search failed. Try again.');
+    errors.push('Invalid search entry. Try again.');
     const [log, calorieGoal] = await Promise.all([
       getOrCreateLog(req.session.userId, dateString),
       getUserCalorieGoal(req.session.userId),
