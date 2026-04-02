@@ -3,14 +3,12 @@
 /**
  * Food log controller
  * -------------------
- * This module owns the schedule feature end to end:
+ * This file runs the schedule feature from start to finish:
  * 1. Load a day's FoodLog document (or create one if it does not exist yet)
  * 2. Let the user search for food from community recipes and TheMealDB
  * 3. Resolve nutrition through the shared nutrition cache / GPT fallback
- * 4. Persist denormalized entries onto the FoodLog document
+ * 4. Save entries onto the FoodLog document
  * 5. Render the schedule view with grouped entries, totals, and suggestions
- *
- * 
  */
 const mongoose = require('mongoose');
 const FoodLog = require('../models/foodLog-model');
@@ -26,8 +24,8 @@ const { getSuggestions } = require('../services/suggestionService');
 
 /**
  * Normalize a date string into the schedule's expected YYYY-MM-DD format.
- * Invalid or missing dates fall back to "today" so downstream code can safely
- * build Date objects and query FoodLog by a single canonical day key.
+ * Invalid or missing dates fall back to "today" so the rest of the code
+ * always works with one predictable date format.
  */
 function normalizeDateString(input) {
   const today = new Date().toISOString().slice(0, 10);
@@ -38,8 +36,8 @@ function normalizeDateString(input) {
 }
 
 /**
- * Fetch meals from TheMealDB and normalize its "null when empty" response shape
- * into a predictable array for callers in this controller.
+ * TheMealDB returns `null` when there are no meals.
+ * This helper always gives the controller an array instead.
  */
 async function fetchFromMealDB(url) {
   const response = await fetch(url);
@@ -58,12 +56,15 @@ async function getUserCalorieGoal(userId) {
 }
 
 /**
- * Convert a FoodLog document into the exact shape expected by schedule.ejs.
- * The view needs:
- * - remaining calories for the header / suggestions area
- * - a fixed meal order so empty sections still render consistently
- * - grouped entries with per-meal calories for the timeline
- * - previous / next date strings for navigation
+ * Build the extra values that schedule.ejs needs.
+ *
+ * Example:
+ * log.entries = [Breakfast item, Lunch item]
+ * groupedEntries = {
+ *   Breakfast: { entries: [...], calories: ... },
+ *   Lunch: { entries: [...], calories: ... },
+ *   ...
+ * }
  */
 function buildScheduleViewModel(log, dateString, calorieGoal) {
   const totals = log.dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -75,7 +76,7 @@ function buildScheduleViewModel(log, dateString, calorieGoal) {
     groupedEntries[mealType] = { entries: [], calories: 0 };
   });
 
-  // Group entries before rendering so the template stays simple and predictable.
+  // Turn one flat entries array into meal buckets the page can render directly.
   (log.entries || []).forEach((entry) => {
     const mealType = entry.mealType || 'Other';
     if (!groupedEntries[mealType]) {
@@ -107,7 +108,7 @@ function buildScheduleViewModel(log, dateString, calorieGoal) {
 
 /**
  * Single render helper for the main schedule page.
- * Controllers call this when they want to re-display the schedule after either:
+ * Controllers call this when they want to show the schedule page after either:
  * - a normal GET load
  * - a recoverable form error
  * - successful suggestion generation
@@ -154,7 +155,7 @@ const getSchedule = async (req, res) => {
  * Body: { dateString }
  *
  * Loads the current day's log, computes remaining calories from the same
- * view-model logic used by the page, then asks suggestionService for foods
+ * helper used by the page, then asks suggestionService for foods
  * that fit within that remaining budget.
  */
 const generateSuggestions = async (req, res) => {
@@ -179,7 +180,7 @@ const generateSuggestions = async (req, res) => {
  * GET /schedule/search?q=...
  * Returns JSON { userRecipes: [...], mealdb: [...] }
  *
- * Legacy JSON endpoint. It searches both local recipes and TheMealDB, then
+ * Older JSON endpoint. It searches both local recipes and TheMealDB, then
  * returns lightweight result objects for clients that want to build their own UI.
  */
 const searchFood = async (req, res) => {
@@ -218,11 +219,11 @@ const searchFood = async (req, res) => {
  * POST /schedule/entry
  * Body: { dateString, sourceType, sourceId, foodName, context, servings, timeLabel, mealType }
  *
- * Legacy JSON endpoint for creating an entry directly.
- * The important flow is:
+ * Older JSON endpoint for creating an entry directly.
+ * What happens here:
  * - try to resolve nutrition through the shared cache / GPT service
  * - still save the entry if nutrition lookup fails
- * - rely on FoodLog.addFoodEntry() to denormalize nutrition and recalculate totals
+ * - let FoodLog.addFoodEntry() copy nutrition onto the entry and recalculate totals
  */
 const addEntry = async (req, res) => {
   const {
@@ -244,8 +245,8 @@ const addEntry = async (req, res) => {
   const date = normalizeDateString(dateString);
 
   try {
-    // getNutrition() first checks FoodNutrition cache and only calls GPT on a miss.
-    // If lookup fails, we still save the entry so the log is not blocked by an API error.
+    // Try to get nutrition first.
+    // If that fails, still save the entry and let the UI show "Nutrition pending".
     let nutritionDoc = null;
     try {
       nutritionDoc = await getNutrition(sourceType || null, sourceId || null, foodName, context);

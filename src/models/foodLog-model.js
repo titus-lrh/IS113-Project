@@ -7,15 +7,14 @@ const mongoose = require('mongoose');
  * -------------
  * A FoodLog stores one user's entries for one calendar day (UTC midnight).
  *
- * Why nutrition is copied onto each entry instead of only storing a reference:
+ * Nutrition is copied onto each entry instead of only storing a reference because:
  * - the schedule page needs fast read-time totals without extra joins
  * - totals should stay stable even if the shared FoodNutrition cache changes later
  * - each entry remains self-contained for rendering and recalculation
  */
 const entrySchema = new mongoose.Schema({
-  // This explicit entryId exists in addition to MongoDB's built-in subdocument _id.
-  // Current controller code deletes entries by subdocument _id, so entryId acts more
-  // like an unused extra identifier than the primary way entries are addressed.
+  // Mongo already gives each embedded entry its own _id.
+  // This extra entryId is separate, but current controller code does not use it.
   entryId: {
     type: mongoose.Schema.Types.ObjectId,
     default: () => new mongoose.Types.ObjectId(),
@@ -39,8 +38,8 @@ const entrySchema = new mongoose.Schema({
     carbs: Number,
     fat: Number,
   },
-  // Snapshot of nutrition at the time the entry was added.
-  // This denormalized copy is what calculateTotals() uses later.
+  // Copy the nutrition onto the entry at save time.
+  // calculateTotals() reads from this copy later.
   nutrition: {
     calories: Number,
     protein: Number,
@@ -73,15 +72,15 @@ const foodLogSchema = new mongoose.Schema({
   },
 });
 
-// One user can only have one FoodLog document per UTC day.
+// One user can only have one FoodLog per UTC day.
 foodLogSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 // ── Static methods ─────────────────────────────────────────────────────────
 
 /**
  * Get or create a FoodLog for a given userId and date.
- * The date is normalized to UTC midnight so every request for the same calendar
- * day maps to one document and can use the unique compound index above.
+ * Convert the date to UTC midnight first so every request for the same day
+ * points at the same FoodLog document.
  */
 foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
   const d = date instanceof Date ? date : new Date(`${date}T00:00:00.000Z`);
@@ -97,8 +96,8 @@ foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
 
 /**
  * Add a food entry to a log.
- * Builds the embedded entry object, copies nutrition/default serving data onto it,
- * then recalculates both per-entry computed macros and the day's aggregate totals.
+ * Build the entry object, copy nutrition onto it if we have it,
+ * then recalculate the day's totals.
  */
 foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
   const entry = {
@@ -125,7 +124,7 @@ foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
 
 /**
  * Remove a food entry from a log by ID.
- * The controller passes the embedded subdocument _id here, not entryId.
+ * The controller passes the embedded entry's _id here, not entryId.
  * After removal, totals are recomputed from the remaining entries.
  */
 foodLogSchema.statics.removeFoodEntry = async function (log, entryId) {
@@ -140,8 +139,9 @@ foodLogSchema.statics.removeFoodEntry = async function (log, entryId) {
  * Formula:
  *   (nutrition[field] / 100) * defaultServing.amount * servings
  *
- * nutrition[field] is stored per 100g, defaultServing.amount converts that into
- * one app-level serving, and entry.servings scales it to what the user logged.
+ * Example:
+ * 130 calories per 100g, serving size 200g, servings 2
+ * => (130 / 100) * 200 * 2 = 520 calories
  */
 foodLogSchema.methods.calculateTotals = async function () {
   const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };

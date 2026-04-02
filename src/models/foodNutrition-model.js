@@ -5,15 +5,15 @@ const mongoose = require('mongoose');
 /**
  * FoodNutrition model
  * -------------------
- * This collection is the shared nutrition cache for the app.
+ * This collection stores saved nutrition lookups.
  *
  * Each document stores:
- * - a lookup identity (foodKey, and optionally sourceType + sourceId)
- * - normalized nutrition values per 100g
- * - one default serving description used by FoodLog total calculations
+ * - a key we can look up later
+ * - nutrition values per 100g
+ * - one default serving size
  *
- * The schedule feature uses this cache when adding entries, and the suggestion
- * service uses it to avoid repeated GPT enrichment for candidate foods.
+ * The schedule feature uses this when adding entries.
+ * The suggestions feature uses it so repeated requests do not keep asking GPT.
  */
 const foodNutritionSchema = new mongoose.Schema({
   foodKey: {
@@ -47,22 +47,17 @@ const foodNutritionSchema = new mongoose.Schema({
   },
 });
 
-// Documents with a stable external/source identity should be unique on that pair.
-// sparse:true means custom foods without sourceId do not all collide on null values.
+// If a food comes from a known source, that sourceType + sourceId pair should be unique.
+// sparse:true avoids collisions for custom foods that do not have a sourceId.
 foodNutritionSchema.index({ sourceType: 1, sourceId: 1 }, { unique: true, sparse: true });
 
-// foodKey is the fallback unique identity for free-text foods and also the
-// normalized cache key stored on every document.
+// foodKey is the fallback unique key for custom / text-based foods.
 foodNutritionSchema.index({ foodKey: 1 }, { unique: true });
 
-// Supports text-based lookup / exploration on normalized food keys.
+// Lets us search by foodKey text if needed.
 foodNutritionSchema.index({ foodKey: 'text' });
 
-// Lookup helpers used by nutritionService's cache contract.
-// - findBySourceId() is for foods with stable source identity
-// - findByFoodKey() is for custom / text-only foods
-// - deleteBySourceId() is used when a recipe's nutrition cache should be refreshed
-// - createNutrition() inserts the normalized cache record
+// Helper methods used by nutritionService.
 foodNutritionSchema.statics.findBySourceId = async function(sourceType, sourceId) {
   return this.findOne({ sourceType, sourceId });
 };

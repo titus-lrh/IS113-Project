@@ -7,12 +7,11 @@ const { getNutrition } = require('./nutritionService');
 /**
  * Suggestion service
  * ------------------
- * This service picks foods that fit within the user's remaining calorie budget.
- * It does not invent recipe names itself. Instead, it:
- * - gathers candidates from community recipes and TheMealDB
- * - reuses cached nutrition from FoodNutrition whenever possible
- * - enriches a small number of uncached candidates through getNutrition()
- * - returns the best-fitting suggestions for the schedule page
+ * Pick foods that fit within the user's remaining calories.
+ *
+ * We first try foods that already have nutrition saved in FoodNutrition.
+ * If that is not enough, we try a few uncached foods and save their nutrition
+ * so the next request is faster.
  */
 
 // TheMealDB categories used to build a reusable suggestion pool.
@@ -23,19 +22,15 @@ let mealDbCandidateCache = { items: [], expiresAt: 0 };
 /**
  * gatherCandidates()
  * ------------------
- * Fetches candidate foods from two sources:
- *   1. Community recipes (MongoDB) via Recipe.getRecipeSuggestionCandidates()
- *   2. TheMealDB /filter.php?c=<category> — returns ~20 meals per category
+ * Build one combined list of foods we can suggest.
  *
- * Returns a flat array of { name, sourceType, sourceId } objects.
- * Each candidate is a "potential suggestion" — we don't know calories yet.
+ * Each item looks like:
+ * { name, sourceType, sourceId }
  *
- * WHY these two sources? Suggestions must come
- * from real recipes,
+ * We only use real recipes from our DB and TheMealDB.
  */
 async function gatherCandidates() {
-  // Community recipes are intentionally capped by the model method so suggestion generation
-  // stays bounded even when the recipe collection grows.
+  // The model already limits how many recipe candidates come back.
   const userRecipes = await Recipe.getRecipeSuggestionCandidates();
   const recipeCandidates = userRecipes.map(r => ({
     name: r.title,
@@ -43,8 +38,8 @@ async function gatherCandidates() {
     sourceId: r._id.toString(),
   }));
 
-  // TheMealDB candidates are cached in memory because the source list changes slowly
-  // compared with the schedule page's request rate.
+  // Reuse the MealDB candidate list for a while so repeated clicks do not keep
+  // hitting the MealDB API.
   const now = Date.now();
   if (mealDbCandidateCache.expiresAt > now) {
     return dedupeCandidates([...recipeCandidates, ...mealDbCandidateCache.items]);
@@ -62,13 +57,13 @@ async function gatherCandidates() {
         sourceId: m.idMeal,
       }));
     } catch {
-      // If one category fails, don't break the whole thing
+      // Skip failed categories instead of failing the whole suggestions request.
       return [];
     }
   });
 
   const mealdbArrays = await Promise.all(categoryFetches);
-  // .flat() merges [ [a,b], [c,d] ] into [a,b,c,d]
+  // Promise.all gives us an array of arrays, so flatten it into one list.
   const mealdbCandidates = mealdbArrays.flat();
   mealDbCandidateCache = {
     items: mealdbCandidates,
@@ -81,37 +76,39 @@ async function gatherCandidates() {
 /**
  * batchCheckCache(candidates)
  * ---------------------------
- * Given an array of candidates, checks which ones already have nutrition
- * data in the FoodNutrition collection (our cache).
+ * Split the candidate list into:
+ * - cached: we already have nutrition for this food
+ * - uncached: we still need to look nutrition up
  *
- * Uses a single MongoDB $or query instead of N individual queries.
- * WHY? If we have 60 candidates, doing 60 separate findOne() calls would
- * be slow. One $or query with 60 conditions is much faster.
+ * We do one Mongo query for all candidates instead of one query per food.
  *
- * Returns: { cached: [...], uncached: [...] }
- *   - cached items have a .nutritionDoc attached (the full FoodNutrition document)
- *   - uncached items are candidates with no cache entry yet
+ * Example:
+ * input:  [{ sourceType: 'themealdb', sourceId: '1' }, { sourceType: 'themealdb', sourceId: '2' }]
+ * output: { cached: [...with nutritionDoc], uncached: [...without nutritionDoc] }
  */
 async function batchCheckCache(candidates) {
   if (candidates.length === 0) return { cached: [], uncached: [] };
 
-  // Build one big $or query: "find any FoodNutrition doc matching any of these"
+  // Turn each candidate into one Mongo match condition.
+  // Example:
+  // [{ sourceType: 'themealdb', sourceId: '1' }, { sourceType: 'user_recipe', sourceId: 'abc' }]
   const orConditions = candidates.map(c => ({
     sourceType: c.sourceType,
     sourceId: c.sourceId,
   }));
 
-  // This returns all FoodNutrition docs that match ANY candidate
+  // Find any FoodNutrition doc that matches any candidate in the list.
   const cachedDocs = await FoodNutrition.find({ $or: orConditions });
 
-  // Build a lookup map: "themealdb-52772" => nutritionDoc
+  // Build a quick lookup so we can answer:
+  // "for this candidate, do we already have a nutrition doc?"
   const cacheMap = new Map();
   for (const doc of cachedDocs) {
     const key = `${doc.sourceType}-${doc.sourceId}`;
     cacheMap.set(key, doc);
   }
 
-  // Split candidates into cached vs uncached
+  // Walk the original candidate list and put each item in one bucket.
   const cached = [];
   const uncached = [];
 
@@ -131,14 +128,13 @@ async function batchCheckCache(candidates) {
 /**
  * calcCaloriesForServing(nutritionDoc)
  * -------------------------------------
- * Given a FoodNutrition document, calculates the calories for ONE default serving.
+ * Convert a FoodNutrition doc into calories for one default serving.
  *
- * Formula (same as FoodLog.calculateTotals):
+ * Same formula used in FoodLog totals:
  *   (nutrition.calories / 100) * defaultServing.amount * 1 serving
  *
- * WHY divide by 100? Because nutrition values are stored "per 100g".
- * The defaultServing.amount tells us how many grams one serving actually is.
- * Example: rice is 130 kcal/100g, default serving 200g => 260 kcal per serving.
+ * Example:
+ * 130 kcal per 100g, default serving 200g -> 260 kcal for one serving
  */
 function calcCaloriesForServing(nutritionDoc) {
   const cal = (nutritionDoc.nutrition && nutritionDoc.nutrition.calories) || 0;
@@ -149,20 +145,11 @@ function calcCaloriesForServing(nutritionDoc) {
 /**
  * getSuggestions(remainingCalories)
  * ---------------------------------
- * The main orchestrator. Steps:
+ * Main suggestions flow.
  *
- * 1. Gather ~60+ candidates from community recipes + TheMealDB
- * 2. Batch-check which candidates are already in the FoodNutrition cache
- * 3. Filter cached items that fit within remainingCalories
- * 4. If we have 5+ cached suggestions => done! Zero GPT cost.
- * 5. If not enough => enrich uncached items one-by-one (calling GPT),
- *    stopping as soon as we have 5 total suggestions (adaptive enrichment)
- * 6. Rank fitting items by highest calories first
- * 7. Return top 5
- *
- * COST LOGIC: On a fresh deployment, most items are uncached, so we'd need
- * GPT calls. But we cap enrichment at 10 GPT calls max per request.
- * Over time, the cache fills up and GPT calls drop to zero.
+ * First use foods that already have nutrition saved.
+ * If that is not enough, try uncached foods one by one until we have enough
+ * results or hit the GPT-call limit.
  *
  * @param {number} remainingCalories - calorieGoal minus dailyTotals.calories
  * @returns {Array<{ name, sourceType, sourceId, calories }>} top 5 suggestions
@@ -181,7 +168,8 @@ async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}
   // Step 2: Batch-check cache
   const { cached, uncached } = await batchCheckCache(candidates);
 
-  // Step 3: Filter cached items that fit within remaining calories
+  // Turn cached items into actual suggestion rows, then keep only the ones
+  // that fit in the user's remaining calories.
   const fittingFromCache = cached
     .map(item => ({
       name: item.name,
@@ -196,8 +184,7 @@ async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}
     return rankAndReturn(fittingFromCache, remainingCalories, TARGET_COUNT);
   }
 
-  // Step 5: Adaptive enrichment — enrich uncached items until we have enough
-  //   Shuffle uncached so we get variety each time (not always the same first 10)
+  // Shuffle uncached items so repeated requests do not always try the same foods first.
   const shuffled = shuffleArray(uncached);
   const enriched = [...fittingFromCache];
   let gptCalls = 0;
@@ -206,7 +193,8 @@ async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}
     if (enriched.length >= TARGET_COUNT || gptCalls >= MAX_GPT_CALLS) break;
 
     try {
-      // getNutrition() will call GPT and cache the result for next time
+      // getNutrition() checks FoodNutrition first and only calls GPT if needed.
+      // If this succeeds, the result is also saved for later requests.
       const doc = await getNutrition(item.sourceType, item.sourceId, item.name, '');
       const cal = Math.round(calcCaloriesForServing(doc));
       gptCalls++;
@@ -220,35 +208,31 @@ async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}
         });
       }
     } catch {
-      // If GPT fails for one item, skip it and continue
+      // If one lookup fails, skip it and keep trying the next item.
       gptCalls++;
     }
   }
 
-  // Step 6 & 7: Rank and return top 5
   return rankAndReturn(enriched, remainingCalories, TARGET_COUNT);
 }
 
 // ── helpers ──────────────────────────────────────────────────────
 
 /**
- * Rank suggestions by calorie size among the items that already fit.
- * Current behavior is simple: higher calories rank first, as long as they were
- * already filtered to be <= remainingCalories.
+ * Pick the highest-calorie items from the foods that already fit the budget.
  */
 function rankAndReturn(items, remainingCalories, count) {
   const sorted = [...items].sort((a, b) => {
-    // Because all items already fit the budget, descending calories approximates
-    // "fill the gap as much as possible" without computing an explicit distance.
+    // At this point every item is already <= remainingCalories,
+    // so sorting high to low means "fill the gap as much as possible."
     return b.calories - a.calories;
   });
   return sorted.slice(0, count);
 }
 
 /**
- * Fisher-Yates shuffle — returns a new shuffled array (does not mutate original).
- * WHY shuffle? So uncached enrichment picks different items each page load,
- * giving the user variety and gradually filling the cache across requests.
+ * Return a shuffled copy of the array.
+ * We do this so uncached foods get tried in a different order between requests.
  */
 function shuffleArray(arr) {
   const copy = [...arr];
@@ -264,7 +248,8 @@ function shuffleArray(arr) {
 function dedupeCandidates(candidates) {
   const seen = new Set();
   return candidates.filter((candidate) => {
-    // sourceType + sourceId is the stable identity for suggestions across sources.
+    // Use sourceType + sourceId as the "have we seen this already?" key.
+    // filter() keeps items when we return true and removes them when we return false.
     const key = `${candidate.sourceType}:${candidate.sourceId}`;
     if (seen.has(key)) return false;
     seen.add(key);
