@@ -4,7 +4,18 @@ const Recipe = require('../models/recipe-model');
 const FoodNutrition = require('../models/foodNutrition-model');
 const { getNutrition } = require('./nutritionService');
 
-// ── TheMealDB categories we pull from (free bulk endpoint, no API key needed)
+/**
+ * Suggestion service
+ * ------------------
+ * This service picks foods that fit within the user's remaining calorie budget.
+ * It does not invent recipe names itself. Instead, it:
+ * - gathers candidates from community recipes and TheMealDB
+ * - reuses cached nutrition from FoodNutrition whenever possible
+ * - enriches a small number of uncached candidates through getNutrition()
+ * - returns the best-fitting suggestions for the schedule page
+ */
+
+// TheMealDB categories used to build a reusable suggestion pool.
 const MEALDB_CATEGORIES = ['Chicken', 'Beef', 'Seafood', 'Vegetarian', 'Pasta', 'Dessert'];
 const MEALDB_CACHE_TTL_MS = 10 * 60 * 1000;
 let mealDbCandidateCache = { items: [], expiresAt: 0 };
@@ -12,18 +23,19 @@ let mealDbCandidateCache = { items: [], expiresAt: 0 };
 /**
  * gatherCandidates()
  * ------------------
- * Fetches candidate foods from TWO sources:
- *   1. Community recipes (MongoDB) — all user-uploaded recipes
+ * Fetches candidate foods from two sources:
+ *   1. Community recipes (MongoDB) via Recipe.getRecipeSuggestionCandidates()
  *   2. TheMealDB /filter.php?c=<category> — returns ~20 meals per category
  *
  * Returns a flat array of { name, sourceType, sourceId } objects.
  * Each candidate is a "potential suggestion" — we don't know calories yet.
  *
- * WHY these two sources? The user constraint says suggestions must come
- * from real recipes, not GPT-invented food names.
+ * WHY these two sources? Suggestions must come
+ * from real recipes,
  */
 async function gatherCandidates() {
-  // 1. Community recipes from MongoDB
+  // Community recipes are intentionally capped by the model method so suggestion generation
+  // stays bounded even when the recipe collection grows.
   const userRecipes = await Recipe.getRecipeSuggestionCandidates();
   const recipeCandidates = userRecipes.map(r => ({
     name: r.title,
@@ -31,8 +43,8 @@ async function gatherCandidates() {
     sourceId: r._id.toString(),
   }));
 
-  // 2. TheMealDB — fetch multiple categories in parallel
-  //    Each category URL returns { meals: [{ strMeal, idMeal, ... }] }
+  // TheMealDB candidates are cached in memory because the source list changes slowly
+  // compared with the schedule page's request rate.
   const now = Date.now();
   if (mealDbCandidateCache.expiresAt > now) {
     return dedupeCandidates([...recipeCandidates, ...mealDbCandidateCache.items]);
@@ -145,7 +157,7 @@ function calcCaloriesForServing(nutritionDoc) {
  * 4. If we have 5+ cached suggestions => done! Zero GPT cost.
  * 5. If not enough => enrich uncached items one-by-one (calling GPT),
  *    stopping as soon as we have 5 total suggestions (adaptive enrichment)
- * 6. Rank by how well they fill the calorie gap (closest to remaining without exceeding)
+ * 6. Rank fitting items by highest calories first
  * 7. Return top 5
  *
  * COST LOGIC: On a fresh deployment, most items are uncached, so we'd need
@@ -220,12 +232,14 @@ async function getSuggestions(remainingCalories, { skipEnrichment = false } = {}
 // ── helpers ──────────────────────────────────────────────────────
 
 /**
- * Rank suggestions by how well they fill the remaining gap.
- * Best fit = calories closest to remainingCalories (fills the most without exceeding).
+ * Rank suggestions by calorie size among the items that already fit.
+ * Current behavior is simple: higher calories rank first, as long as they were
+ * already filtered to be <= remainingCalories.
  */
 function rankAndReturn(items, remainingCalories, count) {
   const sorted = [...items].sort((a, b) => {
-    // Closer to remainingCalories = better (descending by calories, since all are <= remaining)
+    // Because all items already fit the budget, descending calories approximates
+    // "fill the gap as much as possible" without computing an explicit distance.
     return b.calories - a.calories;
   });
   return sorted.slice(0, count);
@@ -250,6 +264,7 @@ function shuffleArray(arr) {
 function dedupeCandidates(candidates) {
   const seen = new Set();
   return candidates.filter((candidate) => {
+    // sourceType + sourceId is the stable identity for suggestions across sources.
     const key = `${candidate.sourceType}:${candidate.sourceId}`;
     if (seen.has(key)) return false;
     seen.add(key);

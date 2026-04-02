@@ -1,5 +1,17 @@
 'use strict';
 
+/**
+ * Food log controller
+ * -------------------
+ * This module owns the schedule feature end to end:
+ * 1. Load a day's FoodLog document (or create one if it does not exist yet)
+ * 2. Let the user search for food from community recipes and TheMealDB
+ * 3. Resolve nutrition through the shared nutrition cache / GPT fallback
+ * 4. Persist denormalized entries onto the FoodLog document
+ * 5. Render the schedule view with grouped entries, totals, and suggestions
+ *
+ * 
+ */
 const mongoose = require('mongoose');
 const FoodLog = require('../models/foodLog-model');
 const Recipe = require('../models/recipe-model');
@@ -12,6 +24,11 @@ const { getSuggestions } = require('../services/suggestionService');
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
+/**
+ * Normalize a date string into the schedule's expected YYYY-MM-DD format.
+ * Invalid or missing dates fall back to "today" so downstream code can safely
+ * build Date objects and query FoodLog by a single canonical day key.
+ */
 function normalizeDateString(input) {
   const today = new Date().toISOString().slice(0, 10);
   if (!input || typeof input !== 'string') return today;
@@ -20,17 +37,34 @@ function normalizeDateString(input) {
   return Number.isNaN(parsed) ? today : input;
 }
 
+/**
+ * Fetch meals from TheMealDB and normalize its "null when empty" response shape
+ * into a predictable array for callers in this controller.
+ */
 async function fetchFromMealDB(url) {
   const response = await fetch(url);
   const data = await response.json();
   return data.meals || [];
 }
 
+/**
+ * Read the user's calorie goal from the profile document.
+ * Schedule rendering and suggestion generation both use the same fallback of
+ * 3000 kcal when the user record or the specific field is missing.
+ */
 async function getUserCalorieGoal(userId) {
   const user = await User.findByUserId(userId);
   return user ? user.calorieGoal || 3000 : 3000;
 }
 
+/**
+ * Convert a FoodLog document into the exact shape expected by schedule.ejs.
+ * The view needs:
+ * - remaining calories for the header / suggestions area
+ * - a fixed meal order so empty sections still render consistently
+ * - grouped entries with per-meal calories for the timeline
+ * - previous / next date strings for navigation
+ */
 function buildScheduleViewModel(log, dateString, calorieGoal) {
   const totals = log.dailyTotals || { calories: 0, protein: 0, carbs: 0, fat: 0 };
   const remainingCalories = calorieGoal - (totals.calories || 0);
@@ -41,6 +75,7 @@ function buildScheduleViewModel(log, dateString, calorieGoal) {
     groupedEntries[mealType] = { entries: [], calories: 0 };
   });
 
+  // Group entries before rendering so the template stays simple and predictable.
   (log.entries || []).forEach((entry) => {
     const mealType = entry.mealType || 'Other';
     if (!groupedEntries[mealType]) {
@@ -70,6 +105,13 @@ function buildScheduleViewModel(log, dateString, calorieGoal) {
   };
 }
 
+/**
+ * Single render helper for the main schedule page.
+ * Controllers call this when they want to re-display the schedule after either:
+ * - a normal GET load
+ * - a recoverable form error
+ * - successful suggestion generation
+ */
 function renderSchedulePage(res, req, { log, dateString, calorieGoal, errors = [], suggestions = [] }) {
   const viewModel = buildScheduleViewModel(log, dateString, calorieGoal);
   return res.render('foodlog/schedule', {
@@ -88,6 +130,9 @@ function renderSchedulePage(res, req, { log, dateString, calorieGoal, errors = [
 /**
  * GET /schedule
  * GET /schedule/:dateString  (YYYY-MM-DD)
+ *
+ * Main schedule page. Ensures the user has a FoodLog document for the requested
+ * day, loads the user's calorie goal, then renders the timeline view.
  */
 const getSchedule = async (req, res) => {
   try {
@@ -104,6 +149,14 @@ const getSchedule = async (req, res) => {
   }
 };
 
+/**
+ * POST /schedule/generate-suggestions
+ * Body: { dateString }
+ *
+ * Loads the current day's log, computes remaining calories from the same
+ * view-model logic used by the page, then asks suggestionService for foods
+ * that fit within that remaining budget.
+ */
 const generateSuggestions = async (req, res) => {
   const dateString = normalizeDateString(req.body.dateString || req.params.dateString);
   const userId = req.session.userId;
@@ -125,6 +178,9 @@ const generateSuggestions = async (req, res) => {
 /**
  * GET /schedule/search?q=...
  * Returns JSON { userRecipes: [...], mealdb: [...] }
+ *
+ * Legacy JSON endpoint. It searches both local recipes and TheMealDB, then
+ * returns lightweight result objects for clients that want to build their own UI.
  */
 const searchFood = async (req, res) => {
   const query = (req.query.q || '').trim();
@@ -161,6 +217,12 @@ const searchFood = async (req, res) => {
 /**
  * POST /schedule/entry
  * Body: { dateString, sourceType, sourceId, foodName, context, servings, timeLabel, mealType }
+ *
+ * Legacy JSON endpoint for creating an entry directly.
+ * The important flow is:
+ * - try to resolve nutrition through the shared cache / GPT service
+ * - still save the entry if nutrition lookup fails
+ * - rely on FoodLog.addFoodEntry() to denormalize nutrition and recalculate totals
  */
 const addEntry = async (req, res) => {
   const {
@@ -182,7 +244,8 @@ const addEntry = async (req, res) => {
   const date = normalizeDateString(dateString);
 
   try {
-    // Nutrition lookup (cache-first, GPT fallback)
+    // getNutrition() first checks FoodNutrition cache and only calls GPT on a miss.
+    // If lookup fails, we still save the entry so the log is not blocked by an API error.
     let nutritionDoc = null;
     try {
       nutritionDoc = await getNutrition(sourceType || null, sourceId || null, foodName, context);
@@ -201,6 +264,9 @@ const addEntry = async (req, res) => {
 
 /**
  * DELETE /schedule/entry/:entryId
+ *
+ * Legacy JSON deletion endpoint. Finds the FoodLog that owns the entry
+ * subdocument, removes it, and returns the updated log as JSON.
  */
 const removeEntry = async (req, res) => {
   const userId = req.session.userId;
@@ -231,7 +297,8 @@ const removeEntry = async (req, res) => {
 
 /**
  * GET /schedule/nutrition/:sourceType/:sourceId
- * JSON endpoint — returns or fetches nutrition for a food item.
+ * JSON endpoint - returns nutrition from cache or fetches and stores it first.
+ * Useful when a client wants nutrition details without creating a FoodLog entry yet.
  */
 const getNutritionData = async (req, res) => {
   const { sourceType, sourceId } = req.params;
@@ -251,13 +318,20 @@ const getNutritionData = async (req, res) => {
 };
 
 /**
- * ── Form-based endpoints (backend-first, serves HTML) ──
+ * Form-based endpoints
+ * --------------------
+ * These power the current schedule UI. Instead of returning JSON and expecting
+ * client-side rendering, they return full EJS pages for each step in the flow:
+ * search -> select -> portion form -> add to log -> back to schedule.
  */
 
 /**
  * POST /schedule/search-food
- * Body: { query, mealType }
- * Renders search results form with matching foods
+ * Body: { query, mealType, dateString }
+ *
+ * First step of the backend-first add-food flow.
+ * Searches both local recipes and TheMealDB, then renders a page where the user
+ * picks exactly one result to continue with.
  */
 const searchFoodForm = async (req, res) => {
   const { query, mealType = 'Other', dateString: bodyDate } = req.body;
@@ -274,13 +348,13 @@ const searchFoodForm = async (req, res) => {
   }
 
   try {
-    // Search both user recipes and TheMealDB
+    // The search page merges internal recipes with external MealDB results into one list.
     const [userRecipes, mealdbMeals] = await Promise.all([
       Recipe.searchRecipeTitles(query.trim()),
       fetchFromMealDB(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`),
     ]);
 
-    // Build results array with all needed fields
+    // Each result carries enough metadata for the next form step to identify its source.
     const results = [
       ...userRecipes.map((r) => ({
         id: r._id.toString(),
@@ -298,7 +372,6 @@ const searchFoodForm = async (req, res) => {
       })),
     ];
 
-    // If no results, show message
     if (results.length === 0) {
       return res.render('foodlog/search-results', {
         results: [],
@@ -323,8 +396,11 @@ const searchFoodForm = async (req, res) => {
 
 /**
  * POST /schedule/select-food
- * Body: { results, selectedIndex, mealType }
- * Renders portion/nutrition form
+ * Body: { results, selectedIndex, mealType, dateString }
+ *
+ * Second step of the backend-first flow.
+ * Reads the selected search result back out of the submitted payload, fetches
+ * nutrition if possible, and renders the serving-size form for final confirmation.
  */
 const selectFoodForm = async (req, res) => {
   const { results, selectedIndex, mealType = 'Other', dateString: bodyDate } = req.body;
@@ -341,7 +417,9 @@ const selectFoodForm = async (req, res) => {
   }
 
   try {
-    // Parse the results array and get the selected food
+    // The previous page serializes the result list into a hidden input so this
+    // handler can reconstruct the exact selected item without re-running search.
+    // Results body is a json string so need to parse it back into an array.
     const resultsArray = typeof results === 'string' ? JSON.parse(results) : results;
     const selectedFood = resultsArray[parseInt(selectedIndex)];
 
@@ -349,7 +427,8 @@ const selectFoodForm = async (req, res) => {
       throw new Error('Food not found in results');
     }
 
-    // Get nutrition data
+    // Nutrition is optional at this stage. The UI can still proceed and show
+    // "Nutrition pending" if the shared lookup service fails.
     let nutrition = null;
     try {
       nutrition = await getNutrition(selectedFood.sourceType, selectedFood.sourceId, selectedFood.name, '');
@@ -357,7 +436,8 @@ const selectFoodForm = async (req, res) => {
       console.error('Nutrition fetch failed:', err);
     }
 
-    // Build nutrition preview (default serving is 100g for 1x)
+    // This preview uses the per-100g values stored in FoodNutrition, not the
+    // defaultServing amount that is later used for computed entry totals.
     const nutritionPreview = nutrition
       ? `~${Math.round(nutrition.nutrition?.calories || 0)} kcal · ${Math.round(nutrition.nutrition?.protein || 0)}g P`
       : 'Nutrition pending';
@@ -384,7 +464,10 @@ const selectFoodForm = async (req, res) => {
 /**
  * POST /schedule/add-food
  * Body: { foodId, foodName, sourceType, sourceId, servings, mealType, timeLabel }
- * Adds entry and redirects to schedule
+ *
+ * Final step of the backend-first add-food flow.
+ * Validates the submitted serving info, resolves nutrition if possible, writes
+ * a FoodLog entry, then redirects back to the schedule page for that date.
  */
 const addFoodPost = async (req, res) => {
   const { foodId, foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '', dateString: bodyDate } = req.body;
@@ -406,7 +489,8 @@ const addFoodPost = async (req, res) => {
   try {
     const log = await getOrCreateLog(userId, dateString);
 
-    // Fetch nutrition
+    // The entry can still be stored without nutrition; in that case the schedule
+    // shows a pending state because addFoodEntry() has no nutrition snapshot to copy.
     let nutritionDoc = null;
     try {
       nutritionDoc = await getNutrition(sourceType || null, sourceId || null, foodName.trim(), '');
@@ -438,7 +522,9 @@ const addFoodPost = async (req, res) => {
 
 /**
  * POST /schedule/delete-entry/:entryId
- * Deletes entry and redirects to schedule
+ *
+ * Form-based delete path used by the schedule UI. It removes the embedded entry
+ * subdocument and then redirects back to the same day's schedule page.
  */
 const deleteEntryPost = async (req, res) => {
   const userId = req.session.userId;
