@@ -24,6 +24,14 @@
 
   <div class="container container--xl">
 
+    <% if (errors && errors.length > 0) { %>
+      <div class="card card--space" style="margin-bottom: 16px; border-color: #e53e3e; background: #fff5f5;">
+        <% errors.forEach(error => { %>
+          <p style="margin: 0; color: #c53030;"><%= error %></p>
+        <% }); %>
+      </div>
+    <% } %>
+
     <!-- MACRO BAR -->
     <div id="macrobar-region">
       <%- include('./_macrobar', { dailyTotals: log.dailyTotals, calorieGoal: calorieGoal }) %>
