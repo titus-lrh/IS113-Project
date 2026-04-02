@@ -27,6 +27,7 @@
       <div class="profile-hero__meta">
         <span>✉️ <%= user.email %></span>
         <span>📅 Joined <%= user.createdAt.toDateString() %></span>
+        <span>🔥 Goal: <%= user.calorieGoal || 3000 %> kcal</span>
       </div>
       <% if (user.bio) { %>
         <p class="profile-hero__bio"><%= user.bio %></p>

@@ -2,6 +2,19 @@
 
 const FoodNutrition = require('../models/foodNutrition-model');
 
+/**
+ * Nutrition service
+ * -----------------
+ * This is the shared nutrition lookup layer used by both schedule entry creation
+ * and suggestion generation.
+ *
+ * Lookup contract:
+ * - If a food has a stable source identity (sourceType + sourceId), use that first.
+ * - Otherwise, use a normalized text key derived from the food name.
+ * - On a cache miss, call GPT, then store the normalized result in FoodNutrition.
+ * - Return the FoodNutrition document so callers can reuse both per-100g nutrition
+ *   and default serving metadata.
+ */
 const GPT_SYSTEM_PROMPT = `You are a precise nutrition database. Given a food item, return ONLY a JSON object with these exact fields:
 {
   "calories": <kcal per 100g>,
@@ -17,6 +30,9 @@ Base values on standard nutritional databases (USDA). No preamble, no markdown, 
  * Normalize a food name into a consistent cache key.
  * For keyed sources (themealdb, user_recipe), the key encodes the sourceType + sourceId.
  * For custom/text lookups, it's just the lowercased, trimmed food name.
+ *
+ * The returned key is only used for storage / lookup. Callers still keep the
+ * human-readable food name separately on FoodNutrition and FoodLog entries.
  */
 function buildFoodKey(sourceType, sourceId, foodName) {
   if (sourceType === 'themealdb' && sourceId) return `themealdb-${sourceId}`;
@@ -27,6 +43,7 @@ function buildFoodKey(sourceType, sourceId, foodName) {
 /**
  * Call GPT-4o-mini and parse the nutrition JSON.
  * Retries once if the first response cannot be parsed.
+ * The model is asked for values per 100g plus one default serving description.
  *
  * @param {string} foodName
  * @param {string} [context] - optional context hint (e.g. ingredient list)
@@ -83,6 +100,8 @@ async function fetchNutritionFromGPT(foodName, context = '') {
 /**
  * Main entry point — check FoodNutrition cache first, call GPT only on miss.
  * Saves new document to DB if GPT is called.
+ * Callers receive the stored FoodNutrition document either way, so downstream
+ * code has one consistent shape to read from.
  *
  * @param {string|null} sourceType - 'themealdb' | 'user_recipe' | 'custom' | null
  * @param {string|null} sourceId
@@ -93,13 +112,15 @@ async function fetchNutritionFromGPT(foodName, context = '') {
 async function getNutrition(sourceType, sourceId, foodName, context = '') {
   const foodKey = buildFoodKey(sourceType, sourceId, foodName);
 
-  // Keyed items use sourceType/sourceId, custom items use the normalized foodKey.
+  // Stable external IDs win because they let the app treat renamed but identical
+  // foods as the same cached record. Free-text foods fall back to foodKey matching.
   const existing = sourceId
     ? await FoodNutrition.findBySourceId(sourceType, sourceId)
     : await FoodNutrition.findByFoodKey(foodKey);
   if (existing) return existing;
 
-  // Not found — fetch from GPT and save
+  // Cache miss: fetch normalized nutrition once, then persist it for future reuse
+  // by both the schedule feature and the suggestion engine.
   const nutrition = await fetchNutritionFromGPT(foodName, context);
 
   const doc = await FoodNutrition.createNutrition({

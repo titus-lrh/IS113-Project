@@ -117,8 +117,8 @@ const updateProfile = async (req, res) => {
     if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
       return res.status(403).send('Forbidden');
     }
-    const { username, email, bio, calorieGoal } = req.body;
-    await User.updateProfile(req.params.id, { username, email, bio, calorieGoal });
+    const { firstName, lastName, username, email, bio, calorieGoal } = req.body;
+    await User.updateProfile(req.params.id, { firstName, lastName, username, email, bio, calorieGoal });
     res.redirect('/profile/' + req.params.id);
   } catch (error) {
     console.error('Update profile error:', error);

@@ -66,7 +66,11 @@
           %>
 
           <% if (!session || !session.userId) { %>
-          <p class="text-subtle text-sm mt-2">Login to rate</p>
+          <p class="text-subtle text-sm mt-2">
+            <a href="/auth/login" style="color:#667eea; text-decoration:none;">
+              Login to rate
+            </a>
+          </p>
           <% } else if (hasRated) { %>
           <p class="text-success text-sm mt-2">✔ Already rated</p>
           <% } else { %>
@@ -215,7 +219,11 @@
 
     <% } else { %>
 
-    <p>Login to comment</p>
+    <p>
+      <a href="/auth/login" style="color:#667eea; text-decoration:none;">
+        Login to comment
+      </a>
+    </p>
 
     <% } %>
 
