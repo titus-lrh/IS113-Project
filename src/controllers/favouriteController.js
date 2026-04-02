@@ -1,6 +1,6 @@
 const Favourite = require("../models/favourite-model");
 
-// CREATE - Add recipe to favorites
+// CREATE - Add recipe to favourites
 exports.addFavourite = async (req, res) => {
   try {
     const userId = req.session.userId;
@@ -28,7 +28,7 @@ exports.viewFavourites = async (req, res) => {
   try {
     const userId = req.session.userId;
 
-    // Get all favorites from database
+    // Get all favourites from database
     const favourites = await Favourite.getFavourites(userId);
 
     res.render("favourites/display-all", { favourites, session: req.session });
@@ -56,7 +56,7 @@ exports.getEditForm = async (req, res) => {
   }
 };
 
-// UPDATE - Update a favorite
+// UPDATE - Update a favourite
 exports.updateFavouriteName = async (req, res) => {
   try {
     const { favouriteId } = req.params;
@@ -76,7 +76,7 @@ exports.updateFavouriteName = async (req, res) => {
   }
 };
 
-// DELETE - Remove favorite by ID
+// DELETE - Remove favourite by ID
 exports.deleteFavouriteById = async (req, res) => {
   try {
     const { favouriteId } = req.params;

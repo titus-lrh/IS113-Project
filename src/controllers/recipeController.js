@@ -137,7 +137,7 @@ const getRecipe = async (req, res) => {
     const from = req.query.from;    
     const recipe = await Recipe.getRecipeById(req.params.id);    
     if (!recipe) {
-      return res.status(404).send('Recipe no longer exist');
+      return res.status(404).send('Recipe has been deleted by creator... Try another recipe!');
     }
     res.render('recipes/display-one', { 
     recipe,

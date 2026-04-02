@@ -54,17 +54,17 @@ exports.getFavouriteById = async (userId, favouriteId) => {
   return await Favourite.findOne({ _id: favouriteId, userId });
 }
 
-// UPDATE - Update a favorite (e.g., update recipeTitle)
+// UPDATE - Update a favourite (e.g. update recipeTitle)
 exports.updateFavourite = async (userId, favouriteId, updateData) => {
   return await Favourite.findOneAndUpdate({ _id: favouriteId, userId }, updateData, { new: true });
 };
 
-// DELETE - Remove favorite by ID
+// DELETE - Remove favourite by ID
 exports.removeFavouriteById = async (userId, favouriteId) => {
   return await Favourite.findOneAndDelete({ _id: favouriteId, userId });
 };
 
-// Check if already favorited
+// Check if already favourited
 exports.isFavourited = async (userId, recipeId) => {
   const result = await Favourite.findOne({ userId, recipeId });
   return result ? true : false;

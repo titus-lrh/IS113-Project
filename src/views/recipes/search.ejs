@@ -67,8 +67,8 @@
         </div>
         <div class="recipe-card__footer">
           <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View Recipe</a>
-          <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
-          <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
+          <% if (typeof session !== 'undefined' && session.userId) { %>
+            <button onclick='saveFavourite(`<%= recipe._id %>`, `<%= recipe.title %>`, `<%= recipe.author.username %>`, `<%= recipe.image %>`)' class="btn btn--ghost btn--sm">💚 Save</button>
           <% } %>
         </div>
       </div>
@@ -88,6 +88,9 @@
             <h3><%= meal.strMeal %></h3>
           </div>
           <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
+          <% if (typeof session !== 'undefined' && session.userId){ %>
+            <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb', '<%= meal.strMealThumb %>')" class="btn btn--ghost btn--sm">💚 Save</button>
+          <%}%>
         </div>
       </div>
       <% }); %>
@@ -104,6 +107,28 @@
     </div>
     <% } %>
   </div>
+    <script>
+      // Function to be reused to post recipes to save
+      function saveFavourite(recipeId, recipeTitle, recipeType, recipeImage) {
+        fetch('/favourites/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              recipeId,
+              recipeTitle,
+              recipeType,
+              recipeImage
+            })
+          })
+          .then(res => res.json()) // Handle response
+          .then(data => { 
+            alert(data.message); // Show success message
+          })
+          .catch(err => alert('Error saving favourite')); // Catch error
+      };
+    </script>
 </body>
 
 </html>

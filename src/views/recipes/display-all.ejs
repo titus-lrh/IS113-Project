@@ -93,13 +93,11 @@
           <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View Recipe</a>
           <% if (typeof session !== 'undefined' && session.userId) { %>
             <button onclick='saveFavourite(`<%= recipe._id %>`, `<%= recipe.title %>`, `<%= recipe.author.username %>`, `<%= recipe.image %>`)' class="btn btn--ghost btn--sm">💚 Save</button>
-          <% } if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId && currentPage == "my-recipes") { %>
-          <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
           <% } %>
           <% if (typeof session !== 'undefined' && session.role === 'admin') { %>
-          <form action="/recipes/<%= recipe._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
-            <button type="submit" class="btn btn--ghost btn--sm">🗑 Delete</button>
-          </form>
+            <form action="/recipes/<%= recipe._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
+              <button type="submit" class="btn btn--ghost btn--sm">🗑 Delete</button>
+            </form>
           <% } %>
         </div>
       </div>
@@ -136,7 +134,7 @@
             </div>
             <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View Recipe</a>
             <% if (typeof session !== 'undefined' && session.userId){ %>
-            <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb', '<%= meal.strMealThumb %>')" class="btn btn--ghost btn--sm">💚 Save</button>
+              <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb', '<%= meal.strMealThumb %>')" class="btn btn--ghost btn--sm">💚 Save</button>
             <%}%>
               </div>
             </div>
@@ -144,13 +142,14 @@
           </div>
         </div>
         <% } else { %>
-        <p class="text-subtle" style="margin-top:var(--sp-8)">No stock recipes available right now.</p>
+          <p class="text-subtle" style="margin-top:var(--sp-8)">No stock recipes available right now.</p>
         <% } %>
 
       </div>
 
       <script>
-function saveFavourite(recipeId, recipeTitle, recipeType, recipeImage) {
+        // Function to be reused to post recipes to save
+        function saveFavourite(recipeId, recipeTitle, recipeType, recipeImage) {
           fetch('/favourites/add', {
               method: 'POST',
               headers: {
@@ -163,11 +162,11 @@ function saveFavourite(recipeId, recipeTitle, recipeType, recipeImage) {
                 recipeImage
               })
             })
-            .then(res => res.json())
+            .then(res => res.json()) // Handle response
             .then(data => {
-              alert(data.message);
+              alert(data.message); // Show success message
             })
-            .catch(err => alert('Error saving favourite'));
+            .catch(err => alert('Error saving favourite')); // Catch error
         };
       </script>
 </body>
