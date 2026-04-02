@@ -32,3 +32,6 @@ A full-stack web application for viewing & sharing recipes, built with Express.j
 
 3. **Open your browser to begin**
     localhost:8000/index.html
+
+## AI usage
+- To generate UI template in Recipe Theme for CSS
