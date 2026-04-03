@@ -1,5 +1,5 @@
 const Recipe = require('../models/recipe-model');
-const FoodNutrition = require('../models/foodNutrition-model');
+const { deleteBySourceId } = require('../models/foodNutrition-model');
 const nutritionService = require('../services/nutritionService');
 
 // Validation helper
@@ -210,7 +210,7 @@ const updateRecipe = async (req, res) => {
       (async () => {
         try {
           // Delete old nutrition record for this recipe
-          await FoodNutrition.deleteBySourceId('user_recipe', updatedRecipe._id.toString());
+          await deleteBySourceId('user_recipe', updatedRecipe._id.toString());
           // Fetch fresh nutrition based on updated ingredients
           await nutritionService.getNutrition(
             'user_recipe',

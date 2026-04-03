@@ -1,6 +1,10 @@
 'use strict';
 
-const FoodNutrition = require('../models/foodNutrition-model');
+const {
+  findBySourceId,
+  findByFoodKey,
+  createNutrition,
+} = require('../models/foodNutrition-model');
 
 /**
  * Nutrition service
@@ -106,14 +110,14 @@ async function getNutrition(sourceType, sourceId, foodName, context = '') {
   // If the food comes from a known source, use that source ID first.
   // Otherwise fall back to the normalized text key.
   const existing = sourceId
-    ? await FoodNutrition.findBySourceId(sourceType, sourceId)
-    : await FoodNutrition.findByFoodKey(foodKey);
+    ? await findBySourceId(sourceType, sourceId)
+    : await findByFoodKey(foodKey);
   if (existing) return existing;
 
   // Not in the DB yet, so fetch it once and save it for later.
   const nutrition = await fetchNutritionFromGPT(foodName, context);
 
-  const doc = await FoodNutrition.createNutrition({
+  const doc = await createNutrition({
     foodKey,
     name: foodName.trim(),
     sourceType: sourceType || 'custom',

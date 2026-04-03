@@ -57,21 +57,22 @@ foodNutritionSchema.index({ foodKey: 1 }, { unique: true });
 // Lets us search by foodKey text if needed.
 foodNutritionSchema.index({ foodKey: 'text' });
 
-// Helper methods used by nutritionService.
-foodNutritionSchema.statics.findBySourceId = async function(sourceType, sourceId) {
-  return this.findOne({ sourceType, sourceId });
+const FoodNutritionModel = mongoose.model('FoodNutrition', foodNutritionSchema);
+
+exports.findBySourceId = async function (sourceType, sourceId) {
+  return FoodNutritionModel.findOne({ sourceType, sourceId });
 };
 
-foodNutritionSchema.statics.findByFoodKey = async function(foodKey) {
-  return this.findOne({ foodKey });
+exports.findByFoodKey = async function (foodKey) {
+  return FoodNutritionModel.findOne({ foodKey });
 };
 
-foodNutritionSchema.statics.deleteBySourceId = async function(sourceType, sourceId) {
-  return this.deleteOne({ sourceType, sourceId });
+exports.deleteBySourceId = async function (sourceType, sourceId) {
+  return FoodNutritionModel.deleteOne({ sourceType, sourceId });
 };
 
-foodNutritionSchema.statics.createNutrition = async function(data) {
-  return this.create(data);
+exports.createNutrition = async function (data) {
+  return FoodNutritionModel.create(data);
 };
 
-module.exports = mongoose.model('FoodNutrition', foodNutritionSchema);
+exports.FoodNutritionModel = FoodNutritionModel;

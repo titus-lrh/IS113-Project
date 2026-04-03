@@ -10,7 +10,12 @@
  * 5. Render the schedule view with grouped entries, totals, and suggestions
  */
 const mongoose = require('mongoose');
-const FoodLog = require('../models/foodLog-model');
+const {
+  FoodLogModel,
+  getOrCreateLog,
+  addFoodEntry,
+  removeFoodEntry,
+} = require('../models/foodLog-model');
 const Recipe = require('../models/recipe-model');
 const User = require('../models/user-model');
 const { getNutrition } = require('../services/nutritionService');
@@ -154,7 +159,7 @@ function renderSchedulePage(res, req, { log, dateString, calorieGoal, errors = [
 async function renderScheduleWithErrors(req, res, dateString, errors) {
   const userId = req.session.userId;
   const [log, calorieGoal] = await Promise.all([
-    FoodLog.getOrCreateLog(userId, dateString),
+    getOrCreateLog(userId, dateString),
     getUserCalorieGoal(userId),
   ]);
 
@@ -175,7 +180,7 @@ const getSchedule = async (req, res) => {
     const dateString = normalizeDateString(req.params.dateString);
     const userId = req.session.userId;
     const [log, calorieGoal] = await Promise.all([
-      FoodLog.getOrCreateLog(userId, dateString),
+      getOrCreateLog(userId, dateString),
       getUserCalorieGoal(userId),
     ]);
     renderSchedulePage(res, req, { log, dateString, calorieGoal });
@@ -199,7 +204,7 @@ const generateSuggestions = async (req, res) => {
 
   try {
     const [log, calorieGoal] = await Promise.all([
-      FoodLog.getOrCreateLog(userId, dateString),
+      getOrCreateLog(userId, dateString),
       getUserCalorieGoal(userId),
     ]);
     const totals = log.dailyTotals || { calories: 0 };
@@ -367,7 +372,7 @@ const addFoodPost = async (req, res) => {
   }
 
   try {
-    const log = await FoodLog.getOrCreateLog(userId, dateString);
+    const log = await getOrCreateLog(userId, dateString);
 
     // The entry can still be stored without nutrition; in that case the schedule
     // shows a pending state because addFoodEntry() has no nutrition snapshot to copy.
@@ -378,7 +383,7 @@ const addFoodPost = async (req, res) => {
       console.error('Nutrition fetch failed:', err);
     }
 
-    await FoodLog.addFoodEntry(log, {
+    await addFoodEntry(log, {
       foodName: normalizedFoodName,
       sourceType: sourceType || 'custom',
       sourceId: sourceId || '',
@@ -412,7 +417,7 @@ const deleteEntryPost = async (req, res) => {
   }
 
   try {
-    const log = await FoodLog.findOne({
+    const log = await FoodLogModel.findOne({
       userId,
       entries: { $elemMatch: { _id: new mongoose.Types.ObjectId(entryId) } },
     });
@@ -421,7 +426,7 @@ const deleteEntryPost = async (req, res) => {
       return res.status(404).send('Entry not found');
     }
 
-    await FoodLog.removeFoodEntry(log, entryId);
+    await removeFoodEntry(log, entryId);
     res.redirect(`/schedule/${dateString}`);
   } catch (error) {
     console.error('Error deleting entry:', error);
