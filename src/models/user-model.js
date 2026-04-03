@@ -59,7 +59,7 @@ userSchema.pre('save', async function() {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
-// Method to compare passwords
+// compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
@@ -67,7 +67,7 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 const User = mongoose.model('User', userSchema);
 
 
-// CREATE USER
+// create user
 exports.createUser = async (userData) => {
   const { username, email, password, firstName, lastName } = userData;
   const user = new User({ username, email, password, firstName, lastName });
@@ -75,22 +75,22 @@ exports.createUser = async (userData) => {
   return user;
 };
 
-// READ - FIND USER BY USERNAME
+// find by username
 exports.findByUsername = async (username) => {
   return await User.findOne({ username });
 };
 
-// READ - FIND USER BY USERNAME OR EMAIL
+// find by email or username
 exports.findByUsernameOrEmail = async (username, email) => {
   return await User.findOne({ $or: [{ username }, { email }] });
 };
 
-// READ - FIND USER BY ID
+// find by userid
 exports.findByUserId = async (userId) => {
   return await User.findById(userId);
 };
 
-// UPDATE - UPDATE PROFILE
+// update profile
 exports.updateProfile = async (userId, updateData) => {
   const { firstName, lastName, username, email, bio, calorieGoal } = updateData;
   const parsedGoal = Number(calorieGoal);
@@ -101,7 +101,7 @@ exports.updateProfile = async (userId, updateData) => {
   );
 };
 
-// DELETE - DELETE USER BY ID
+// delete
 exports.deleteUser = async (userId) => {
   return await User.findByIdAndDelete(userId);
 };

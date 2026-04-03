@@ -45,10 +45,7 @@ const register = async (req, res) => {
       return res.status(400).render('user/register', { errors: [{ msg: 'User already exists' }] });
     }
 
-    // Create new user using the model function
     const user = await User.createUser({ username, email, password, firstName, lastName });
-    
-    // Set a session
     req.session.userId = user._id;
     req.session.username = user.username;
     req.session.role = user.role;
