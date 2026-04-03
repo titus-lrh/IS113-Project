@@ -238,7 +238,7 @@ const deleteRecipe = async (req, res) => {
     if (!recipe) {
       return res.status(404).send('Recipe not found');
     }
-    const isOwner = recipe.author._id.toString() === req.session.userId;
+    const isOwner = recipe.author && recipe.author._id.toString() && recipe.author._id.toString() === req.session.userId;
     const isAdmin = req.session.role === 'admin';
     if (!isOwner && !isAdmin) {
       return res.status(403).send('Unauthorized');
