@@ -76,7 +76,7 @@
           <% } else { %>
           <div class="star-picker">
             <% for (let i = 1; i <= 5; i++) { %>
-            <form action="/recipes/<%= recipe._id %>/rate" method="POST" style="display:inline">
+            <form action="/recipes/<%= recipe._id %>/rate?from=<%= from %>" method="POST" style="display:inline">
               <input type="hidden" name="rating" value="<%= i %>">
               <button type="submit" style="background:none;border:none;cursor:pointer;font-size:1.4rem;">☆</button>
             </form>
