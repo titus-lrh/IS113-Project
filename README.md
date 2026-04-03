@@ -45,4 +45,3 @@ Password: Smuwadproj!
 ## AI usage
 - To generate UI template in Recipe Theme for CSS
 - To use as learning aid to support understanding of concepts such as regex pattern matching, input validation, data-normalisation, handling datetime formatting.
-- Clarify errors and provide reference examples during development
