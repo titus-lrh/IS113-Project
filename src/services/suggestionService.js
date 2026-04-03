@@ -1,6 +1,6 @@
 'use strict';
 
-const FoodNutrition = require('../models/foodNutrition-model');
+const { FoodNutritionModel } = require('../models/foodNutrition-model');
 
 /**
  * Pick foods that already exist in FoodNutrition and fit within the user's
@@ -23,7 +23,7 @@ async function getSuggestions(remainingCalories, _options = {}) {
     return [];
   }
 
-  const nutritionDocs = await FoodNutrition.find(
+  const nutritionDocs = await FoodNutritionModel.find(
     {},
     'name sourceType sourceId nutrition defaultServing'
   ).lean();

@@ -72,21 +72,61 @@ const foodLogSchema = new mongoose.Schema({
 // One user can only have one FoodLog per UTC day.
 foodLogSchema.index({ userId: 1, date: 1 }, { unique: true });
 
-// ── Static methods ─────────────────────────────────────────────────────────
+const FoodLogModel = mongoose.model('FoodLog', foodLogSchema);
+
+/**
+ * Recalculate per-entry computed values and the document's dailyTotals, then save.
+ *
+ * Formula:
+ *   (nutrition[field] / 100) * defaultServing.amount * servings
+ *
+ * Example:
+ * 130 calories per 100g, serving size 200g, servings 2
+ * => (130 / 100) * 200 * 2 = 520 calories
+ */
+async function calculateTotals(log) {
+  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
+
+  for (const entry of log.entries) {
+    const n = entry.nutrition || {};
+    const amount = (entry.defaultServing && entry.defaultServing.amount) || 100;
+    const servings = entry.servings || 1;
+
+    const entryComputed = {};
+    for (const field of ['calories', 'protein', 'carbs', 'fat']) {
+      const value = getComputedValue(n[field], amount, servings);
+      entryComputed[field] = value;
+      totals[field] += value;
+    }
+
+    // computed stores the actual values for this entry after serving math.
+    entry.computed = { ...entryComputed };
+  }
+
+  log.dailyTotals = { ...totals };
+  await log.save();
+  return log;
+}
 
 /**
  * Get or create a FoodLog for a given userId and date.
  * Convert the date to UTC midnight first so every request for the same day
  * points at the same FoodLog document.
  */
-foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
-  const d = date instanceof Date ? date : new Date(`${date}T00:00:00.000Z`);
-  d.setUTCHours(0, 0, 0, 0);
-  const midnight = d;
+exports.getOrCreateLog = async function (userId, date) {
+  let normalizedDate;
 
-  return await this.findOneAndUpdate(
-    { userId, date: midnight },
-    { $setOnInsert: { userId, date: midnight, entries: [] } },
+  if (date instanceof Date) {
+    normalizedDate = new Date(date);
+  } else {
+    normalizedDate = new Date(`${date}T00:00:00.000Z`);
+  }
+
+  normalizedDate.setUTCHours(0, 0, 0, 0);
+
+  return FoodLogModel.findOneAndUpdate(
+    { userId, date: normalizedDate },
+    { $setOnInsert: { userId, date: normalizedDate, entries: [] } },
     { returnDocument: 'after', upsert: true }
   );
 };
@@ -96,7 +136,7 @@ foodLogSchema.statics.getOrCreateLog = async function (userId, date) {
  * Build the entry object, copy nutrition onto it if we have it,
  * then recalculate the day's totals.
  */
-foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
+exports.addFoodEntry = async function (log, entryData) {
   const entry = {
     timeLabel: entryData.timeLabel,
     mealType: entryData.mealType,
@@ -115,8 +155,7 @@ foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
   }
 
   log.entries.push(entry);
-  await log.calculateTotals();
-  return log;
+  return exports.calculateTotals(log);
 };
 
 /**
@@ -124,44 +163,10 @@ foodLogSchema.statics.addFoodEntry = async function (log, entryData) {
  * The controller passes the embedded entry's _id here, not entryId.
  * After removal, totals are recomputed from the remaining entries.
  */
-foodLogSchema.statics.removeFoodEntry = async function (log, entryId) {
-  log.entries = log.entries.filter((e) => e._id.toString() !== entryId);
-  await log.calculateTotals();
-  return log;
+exports.removeFoodEntry = async function (log, entryId) {
+  log.entries = log.entries.filter((entry) => entry._id.toString() !== entryId);
+  return exports.calculateTotals(log);
 };
 
-/**
- * Recalculate per-entry computed values and the document's dailyTotals, then save.
- *
- * Formula:
- *   (nutrition[field] / 100) * defaultServing.amount * servings
- *
- * Example:
- * 130 calories per 100g, serving size 200g, servings 2
- * => (130 / 100) * 200 * 2 = 520 calories
- */
-foodLogSchema.methods.calculateTotals = async function () {
-  const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
-
-  for (const entry of this.entries) {
-    const n = entry.nutrition || {};
-    const amount = (entry.defaultServing && entry.defaultServing.amount) || 100;
-    const servings = entry.servings || 1;
-
-    const entryComputed = {};
-    for (const field of ['calories', 'protein', 'carbs', 'fat']) {
-      const value = getComputedValue(n[field], amount, servings);
-      entryComputed[field] = value;
-      totals[field] += value;
-    }
-
-    // computed stores the actual values for this entry after serving math.
-    entry.computed = { ...entryComputed };
-  }
-
-  this.dailyTotals = { ...totals };
-  await this.save();
-  return this;
-};
-
-module.exports = mongoose.model('FoodLog', foodLogSchema);
+exports.calculateTotals = calculateTotals;
+exports.FoodLogModel = FoodLogModel;
