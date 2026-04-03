@@ -49,7 +49,7 @@
           <br>
           <% } %>
           <h3><%= recipe.title %></h3>
-          <div class="recipe-card__meta">By <%= recipe.author.username %></div>
+          <div class="recipe-card__meta">By <%= recipe.author?.username || "Deleted User" %> </div>
         </div>
         <div class="recipe-card__body">
           <p class="recipe-card__desc"><%= recipe.description %></p>
