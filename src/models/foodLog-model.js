@@ -7,14 +7,14 @@ function getComputedValue(baseValue, amount, servings) {
 }
 
 /**
- * FoodLog model
- * -------------
- * A FoodLog stores one user's entries for one calendar day (UTC midnight).
- *
- * Nutrition is copied onto each entry instead of only storing a reference because:
- * - the schedule page needs fast read-time totals without extra joins
- * - totals should stay stable even if the shared FoodNutrition cache changes later
- * - each entry remains self-contained for rendering and recalculation
+  FoodLog model
+
+  A FoodLog stores one user's entries for one calendar day (UTC midnight).
+
+  Nutrition is copied onto each entry instead of only storing a reference because:
+  - the schedule page needs fast read-time totals without extra joins
+  - totals should stay stable even if the shared FoodNutrition cache changes later
+  - each entry remains self-contained for rendering and recalculation
  */
 const entrySchema = new mongoose.Schema({
   timeLabel: String,
@@ -82,7 +82,7 @@ const FoodLogModel = mongoose.model('FoodLog', foodLogSchema);
  *
  * Example:
  * 130 calories per 100g, serving size 200g, servings 2
- * => (130 / 100) * 200 * 2 = 520 calories
+ * = (130 / 100) * 200 * 2 = 520 calories
  */
 async function calculateTotals(log) {
   const totals = { calories: 0, protein: 0, carbs: 0, fat: 0 };
@@ -109,9 +109,9 @@ async function calculateTotals(log) {
 }
 
 /**
- * Get or create a FoodLog for a given userId and date.
- * Convert the date to UTC midnight first so every request for the same day
- * points at the same FoodLog document.
+  Get or create a FoodLog for a given userId and date.
+  Convert the date to UTC midnight first so every request for the same day
+  points at the same FoodLog document.
  */
 exports.getOrCreateLog = async function (userId, date) {
   let normalizedDate;
@@ -132,9 +132,9 @@ exports.getOrCreateLog = async function (userId, date) {
 };
 
 /**
- * Add a food entry to a log.
- * Build the entry object, copy nutrition onto it if we have it,
- * then recalculate the day's totals.
+  Add a food entry to a log.
+  Build the entry object, copy nutrition onto it if we have it,
+  then recalculate the day's totals.
  */
 exports.addFoodEntry = async function (log, entryData) {
   const entry = {

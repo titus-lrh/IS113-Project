@@ -300,12 +300,12 @@ const searchFoodForm = async (req, res) => {
 };
 
 /**
- * POST /schedule/select-food
- * Body: { results, selectedIndex, mealType, dateString }
- *
- * Second step of the backend-first flow.
- * Reads the selected search result back out of the submitted payload, fetches
- * nutrition if possible, and renders the serving-size form for final confirmation.
+  POST /schedule/select-food
+  Body: { results, selectedIndex, mealType, dateString }
+
+  Second step of the backend-first flow.
+  Reads the selected search result back out of the submitted payload, fetches
+  nutrition if possible, and renders the serving-size form for final confirmation.
  */
 const selectFoodForm = async (req, res) => {
   const { results, selectedIndex, mealType = 'Other', dateString: bodyDate } = req.body;
@@ -353,12 +353,12 @@ const selectFoodForm = async (req, res) => {
 };
 
 /**
- * POST /schedule/add-food
- * Body: { foodName, sourceType, sourceId, servings, mealType, timeLabel }
- *
- * Final step of the backend-first add-food flow.
- * Validates the submitted serving info, resolves nutrition if possible, writes
- * a FoodLog entry, then redirects back to the schedule page for that date.
+  POST /schedule/add-food
+  Body: { foodName, sourceType, sourceId, servings, mealType, timeLabel }
+
+  Final step of the backend-first add-food flow.
+  Validates the submitted serving info, resolves nutrition if possible, writes
+  a FoodLog entry, then redirects back to the schedule page for that date.
  */
 const addFoodPost = async (req, res) => {
   const { foodName, sourceType, sourceId, servings = 1, mealType = 'Other', timeLabel = '', dateString: bodyDate } = req.body;
@@ -384,7 +384,7 @@ const addFoodPost = async (req, res) => {
     const log = await getOrCreateLog(userId, dateString);
 
     // The entry can still be stored without nutrition; in that case the schedule
-    // shows a pending state because addFoodEntry() has no nutrition snapshot to copy.
+    // shows a pending state because addFoodEntry() has no nutrition to copy.
     let nutritionDoc = null;
     try {
       nutritionDoc = await getNutrition(sourceType || null, sourceId || null, normalizedFoodName, '');
@@ -411,10 +411,9 @@ const addFoodPost = async (req, res) => {
 };
 
 /**
- * POST /schedule/delete-entry/:entryId
- *
- * Form-based delete path used by the schedule UI. It removes the embedded entry
- * subdocument and then redirects back to the same day's schedule page.
+  POST /schedule/delete-entry/:entryId
+
+  delete path used by the schedule UI. 
  */
 const deleteEntryPost = async (req, res) => {
   const userId = req.session.userId;

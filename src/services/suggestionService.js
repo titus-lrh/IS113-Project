@@ -3,8 +3,8 @@
 const { FoodNutritionModel } = require('../models/foodNutrition-model');
 
 /**
- * Pick foods that already exist in FoodNutrition and fit within the user's
- * remaining calories.
+  Pick foods that already exist in FoodNutrition and fit within the user's
+  remaining calories.
  */
 
 function calcCaloriesForServing(nutritionDoc) {

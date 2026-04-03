@@ -7,14 +7,12 @@ const {
 } = require('../models/foodNutrition-model');
 
 /**
- * Nutrition service
- * -----------------
- * This file handles nutrition lookup for the app.
- *
- * Simple rule:
- * - try FoodNutrition first
- * - if nothing is there, call GPT
- * - save the result so the next request is faster
+  Nutrition service
+
+  rule:
+  - try FoodNutrition first
+  - if nothing is there, call GPT
+  - save the result so the next request is faster
  */
 const GPT_SYSTEM_PROMPT = `You are a precise nutrition database. Given a food item, return ONLY a JSON object with these exact fields:
 {
@@ -28,8 +26,8 @@ const GPT_SYSTEM_PROMPT = `You are a precise nutrition database. Given a food it
 Base values on standard nutritional databases (USDA). No preamble, no markdown, JSON only.`;
 
 /**
- * Build the key we use when a food does not already come with a reliable source ID.
- * For custom text searches, this turns small name differences into one lookup key.
+  Build the key we use when a food does not already come with a source ID.
+  For custom text searches, this turns small name differences into one lookup key.
  */
 function buildFoodKey(sourceType, sourceId, foodName) {
   if (sourceType === 'themealdb' && sourceId) return `themealdb-${sourceId}`;
@@ -38,13 +36,13 @@ function buildFoodKey(sourceType, sourceId, foodName) {
 }
 
 /**
- * Ask GPT for nutrition and parse the JSON it returns.
- * Retries once if the first response cannot be parsed.
- * We ask for values per 100g plus one default serving description.
- *
- * @param {string} foodName
- * @param {string} [context] - optional context hint (e.g. ingredient list)
- * @returns {{ calories, protein, carbs, fat, fiber, defaultServing: { amount, unit } }}
+  Ask GPT for nutrition and parse the JSON it returns.
+  Retries once if the first response cannot be parsed.
+  We ask for values per 100g plus one default serving description.
+ 
+  @param {string} foodName
+  @param {string} [context] - optional context hint (e.g. ingredient list)
+  @returns {{ calories, protein, carbs, fat, fiber, defaultServing: { amount, unit } }}
  */
 async function fetchNutritionFromGPT(foodName, context = '') {
   const userContent = context ? `${foodName}. ${context}` : foodName;
@@ -95,14 +93,15 @@ async function fetchNutritionFromGPT(foodName, context = '') {
 }
 
 /**
- * Main entry point.
- * Return a FoodNutrition document whether it came from the DB or from a fresh GPT lookup.
- *
- * @param {string|null} sourceType - 'themealdb' | 'user_recipe' | 'custom' | null
- * @param {string|null} sourceId
- * @param {string} foodName
- * @param {string} [context]
- * @returns {Promise<import('../models/FoodNutrition').Document>}
+  Main entry point.
+  Return a FoodNutrition document whether it came from the DB or from a fresh GPT lookup.
+
+  @param {string|null} sourceType - 'themealdb' | 'user_recipe' | 'custom' | null
+  @param {string|null} sourceId
+  @param {string} foodName
+  @param {string} [context]
+  // returns instance of FoodNutritionModel.Document (specific day)
+  @returns {Promise<import('../models/FoodNutrition').Document>}
  */
 async function getNutrition(sourceType, sourceId, foodName, context = '') {
   const foodKey = buildFoodKey(sourceType, sourceId, foodName);
