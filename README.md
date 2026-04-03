@@ -2,7 +2,7 @@
 
 A full-stack web application for viewing & sharing recipes, built with Express.js, MongoDB and EJS template using MVC architecture.
 
-Login Creds
+Login Creds for MongoDB
 Gmail user: wadproj2025@gmail.com
 Password: Smuwadproj!
 
