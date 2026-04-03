@@ -14,6 +14,9 @@ A full-stack web application for viewing & sharing recipes, built with Express.j
 ## Additional Features
 - Fetching of recipes from MealDB
 - Using AI to summarise each recipe
+- Admin Privilege (Delete any recipe / Delete any comment)
+    - Username: admin
+    - Password: admin1
 
 ## Tech Stack
 - **Backend**: Express.js with MVC architecture
