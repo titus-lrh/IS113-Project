@@ -1,41 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= recipe.title %> — Everyday Cooks</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
       <% if (typeof session !== 'undefined' && session.userId) { %>
-        <span class="nav__user"><%= session.username %></span>
-        <a href="/recipes" class="nav__link">Recipes</a>
-        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-        <a href="/auth/logout" class="nav__link">Logout</a>
+      <a href="/recipes/new" class="nav__link nav__link--active">+ Create</a>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
       <% } else { %>
-        <a href="/auth/login" class="nav__link">Login</a>
+      <a href="/auth/login" class="nav__link">Login</a>
       <% } %>
     </div>
   </nav>
 
   <div class="container container--lg">
-    <a href="javascript:history.back()" class="back-link">← Back</a>
+    <% if(typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "favourites") { %>
+    <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
+    <% } else { %>
+
+    <a href="javascript:history.back()" class="back-link">← Back to Recipes</a>
+    <% } %>
 
     <div class="recipe-hero">
       <% if (recipe.thumbnail) { %>
-        <img class="recipe-hero__img" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
+      <img class="recipe-hero__img" src="<%= recipe.thumbnail %>" alt="<%= recipe.title %>">
       <% } %>
 
       <div class="recipe-hero__badges">
         <span class="badge badge--source">Stock Recipe — TheMealDB</span>
         <% if (recipe.category) { %>
-          <span class="badge badge--category"><%= recipe.category %></span>
+        <span class="badge badge--category"><%= recipe.category %></span>
         <% } %>
         <% if (recipe.area) { %>
-          <span class="badge badge--category"><%= recipe.area %> cuisine</span>
+        <span class="badge badge--category"><%= recipe.area %> cuisine</span>
         <% } %>
       </div>
 
@@ -46,14 +55,16 @@
       <h3>About this recipe</h3>
       <p>A <%= recipe.area ? recipe.area + ' ' : '' %>classic<%= recipe.category ? ' from the ' + recipe.category + ' category' : '' %>.</p>
       <div style="margin-top: var(--sp-5);">
-        <button id="summarize-btn" class="btn btn--ghost btn--sm" onclick="summarizeRecipe()">
-          ✨ AI Summary
-        </button>
+        <form method="POST" action="/recipes/mealdb/<%= recipe.id %>/summarize" style="display:inline;">
+          <button class="btn btn--ghost btn--sm" type="submit">Summary</button>
+        </form>
       </div>
-      <div id="summary-panel" style="display:none; margin-top:var(--sp-4); padding:var(--sp-4); background:var(--color-bg-light); border:1px solid var(--color-border); border-radius:var(--radius-md);">
+      <% if (typeof summary !== 'undefined' && summary) { %>
+      <div style="margin-top:var(--sp-4); padding:var(--sp-4); background:var(--color-bg-light); border:1px solid var(--color-border); border-radius:var(--radius-md);">
         <p style="font-size:var(--text-xs); font-weight:600; color:var(--color-primary-dark); letter-spacing:1px; text-transform:uppercase; margin-bottom:var(--sp-2);">AI Summary</p>
-        <p id="summary-text" style="font-size:var(--text-sm); color:var(--color-text-gray); line-height:1.7;"></p>
+        <p style="font-size:var(--text-sm); color:var(--color-text-gray); line-height:1.7;"><%= summary %></p>
       </div>
+      <% } %>
     </div>
 
     <div class="recipe-content-grid">
@@ -61,7 +72,7 @@
         <h2>Ingredients</h2>
         <ul class="ingredients-list">
           <% recipe.ingredients.forEach(ingredient => { %>
-            <li><%= ingredient %></li>
+          <li><%= ingredient %></li>
           <% }); %>
         </ul>
       </div>
@@ -73,42 +84,7 @@
     </div>
   </div>
 
-  <script>
-    async function summarizeRecipe() {
-      const btn = document.getElementById('summarize-btn');
-      const panel = document.getElementById('summary-panel');
-      const text = document.getElementById('summary-text');
 
-      btn.disabled = true;
-      btn.textContent = '⏳ Summarizing…';
-
-      try {
-        const res = await fetch('/recipes/<%= recipe.id %>/summarize', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: '<%= recipe.title.replace(/'/g, "\\'") %>',
-            ingredients: <%- JSON.stringify(recipe.ingredients) %>,
-            instructions: <%- JSON.stringify(recipe.instructions) %>,
-          }),
-        });
-
-        const data = await res.json();
-        if (data.error) {
-          text.textContent = 'Could not generate summary. Please try again.';
-        } else {
-          text.textContent = data.summary;
-          btn.textContent = '✨ Regenerate Summary';
-          btn.disabled = false;
-        }
-        panel.style.display = 'block';
-      } catch (err) {
-        text.textContent = 'Something went wrong. Please try again.';
-        panel.style.display = 'block';
-        btn.textContent = '✨ AI Summary';
-        btn.disabled = false;
-      }
-    }
-  </script>
 </body>
+
 </html>

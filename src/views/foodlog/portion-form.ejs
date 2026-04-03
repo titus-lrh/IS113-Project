@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Food — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+       <% if (typeof session !== 'undefined' && session.userId) { %>
+        <a href="/recipes/new" class="nav__link nav__link--active">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--md">
+    <h2><%= selectedFood.name %></h2>
+    <p class="text-muted"><%= selectedFood.source || selectedFood.sourceType %></p>
+
+    <div class="card card--space">
+      <p><strong><%= nutritionPreview %></strong></p>
+    </div>
+
+    <form method="POST" action="/schedule/add-food" class="form form--space">
+      <!-- Hidden fields for food info -->
+      <input type="hidden" name="foodId" value="<%= selectedFood.id %>">
+      <input type="hidden" name="foodName" value="<%= selectedFood.name %>">
+      <input type="hidden" name="sourceType" value="<%= selectedFood.sourceType %>">
+      <input type="hidden" name="sourceId" value="<%= selectedFood.sourceId %>">
+      <input type="hidden" name="dateString" value="<%= dateString %>">
+
+      <!-- Servings -->
+      <div class="form__field">
+        <label for="servings" class="form__label">Servings</label>
+        <input
+          type="number"
+          id="servings"
+          name="servings"
+          class="input"
+          value="1"
+          min="0.25"
+          step="0.25"
+          required
+        >
+        <small class="text-muted">You can use decimals like 0.5</small>
+      </div>
+
+      <!-- Meal Type -->
+      <div class="form__field">
+        <label for="mealType" class="form__label">Meal Type</label>
+        <select id="mealType" name="mealType" class="input" required>
+          <option value="Breakfast" <%= mealType === 'Breakfast' ? 'selected' : '' %>>Breakfast</option>
+          <option value="Morning Snack" <%= mealType === 'Morning Snack' ? 'selected' : '' %>>Morning Snack</option>
+          <option value="Lunch" <%= mealType === 'Lunch' ? 'selected' : '' %>>Lunch</option>
+          <option value="Afternoon Snack" <%= mealType === 'Afternoon Snack' ? 'selected' : '' %>>Afternoon Snack</option>
+          <option value="Dinner" <%= mealType === 'Dinner' ? 'selected' : '' %>>Dinner</option>
+          <option value="Evening Snack" <%= mealType === 'Evening Snack' ? 'selected' : '' %>>Evening Snack</option>
+          <option value="Other" <%= mealType === 'Other' || !mealType ? 'selected' : '' %>>Other</option>
+        </select>
+      </div>
+
+      <!-- Time (optional) -->
+      <div class="form__field">
+        <label for="timeLabel" class="form__label">Time (optional)</label>
+        <input
+          type="text"
+          id="timeLabel"
+          name="timeLabel"
+          class="input"
+          placeholder="e.g. 08:30"
+        >
+        <small class="text-muted">Examples: 08:30, 12:00</small>
+      </div>
+
+      <!-- Actions -->
+      <div class="form__actions">
+        <button type="submit" class="btn btn--primary">Add to Log</button>
+        <a href="/schedule" class="btn btn--ghost">Cancel</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

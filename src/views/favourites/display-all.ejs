@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Favourites - Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <!-- HEADER and FAVOURITE COUNT-->
+  <div class="container container--2xl">
+    <div class="page-header page-header--flex">
+      <div>
+        <h1>My Favourite Recipes</h1>
+        <% if (favourites.length> 0) { %>
+          <p>Total: <%= favourites.length %> saved <%= favourites.length===1 ? 'recipe' : 'recipes' %>
+          </p>
+          <% } else { %>
+            <p>Your saved recipes collection</p>
+            <% } %>
+      </div>
+    </div>
+
+
+    <!-- NO FAVOURITES ADDED -->
+    <% if (favourites.length===0) { %>
+      <div class="empty-state">
+        <div class="empty-state__icon">❤️</div>
+        <h2>No favourites yet</h2>
+        <p>Start saving recipes you love and they'll appear here!</p>
+        <a href="/recipes" class="btn btn--primary">Browse Recipes</a>
+      </div>
+
+      <!-- FAVOURITES EXIST -->
+      <% } else { %>
+        <div class="recipes-grid">
+          <% favourites.forEach(fav=> { %>
+            <div class="recipe-card">
+              <div class="recipe-card__header">
+                <% if(fav.recipeImage) { %>
+                  <img class="mealdb-card__thumb" src="<%= fav.recipeImage %>" alt="<%= fav.recipeTitle %>">
+                  <br>
+                <% } %>
+                <h3><%= fav.recipeTitle %></h3>
+                <div class="recipe-card__meta">
+                  By: <%= fav.recipeType==='mealdb' ? 'TheMealDB' : fav.recipeType %>
+                </div>
+              </div>
+              <div class="recipe-card__body">
+                <p class="recipe-card__desc">Saved on <%= fav.savedAt.toLocaleDateString('en-GB') %>
+                </p>
+              </div>
+              <div class="recipe-card__footer">
+                <!-- DIFFERENT ROUTES FOR MEALDB RECIPES AND USER CREATED RECIPES -->
+                <% if (fav.recipeType==='mealdb' ) { %>
+                  <a href="/recipes/mealdb/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View</a>
+                  <% } else { %>
+                    <a href="/recipes/<%= fav.recipeId %>?from=favourites" class="btn btn--primary btn--sm">View</a>
+                    <% } %>
+                      <a href="/favourites/<%= fav._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
+                      <a href="/favourites/<%= fav._id %>/delete" class="btn btn--danger btn--sm">Remove</a>
+              </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+  </div>
+</body>
+
+</html>

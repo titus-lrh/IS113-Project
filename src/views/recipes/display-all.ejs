@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recipes — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="nav__link">+ Create</a>
+      <a href="/recipes" class="nav__link nav__link--active">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } else { %>
+      <a href="/auth/login" class="nav__link">Login</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="index-hero animate-fade-up">
+    <p class="index-hero__eyebrow">Community · Recipes · Inspiration</p>
+    <h1 class="index-hero__title">Every meal<br>has a story.</h1>
+    <p class="index-hero__sub">Discover home-cooked dishes shared by real cooks — or find your next inspiration from a world of recipes.</p>
+    <form class="search-bar" action="/recipes/search" method="GET">
+      <input type="text" name="q" placeholder="Search by recipe name...">
+      <button type="submit" class="btn btn--primary">Search</button>
+    </form>
+  </div>
+
+  <div class="container container--2xl">
+
+    <!-- COMMUNITY RECIPES -->
+    <% if (typeof recipes !== 'undefined' && recipes.length > 0) { %>
+    <%
+        const categoryEmojis = {
+          Breakfast: '🥞', Lunch: '🥗', Dinner: '🍝', Dessert: '🍰',
+          Snack: '🥨', Vegan: '🌿', Vegetarian: '🥦', Default: '🍽️'
+        };
+        function getEmoji(cats) {
+          if (!cats || !cats.length) return '🍽️';
+          return categoryEmojis[cats[0]] || '🍽️';
+        }
+      %>
+    <h4>
+      Jump to section: <a href="#community">Community Recipes</a> | 
+      <a href="#stock">TheMealDB Recipes</a>
+    </h4>
+    <div class="section-header animate-fade-up">
+      <h2 class="section-header__title" id="community">Community Recipes</h2>
+      <span class="section-header__count"><%= recipes.length %> dish<%= recipes.length !== 1 ? 'es' : '' %></span>
+    </div>
+
+
+    <div class="recipes-grid">
+      <% recipes.reverse().forEach((recipe, i) => { %>
+      <div class="recipe-card animate-fade-up" style=`transition-delay: <%= (i % 3) * 80 %>ms`>
+        <div class="recipe-card__header">
+          <% if(recipe.image) { %>
+            <img class="mealdb-card__thumb" src="<%= recipe.image %>" alt="<%= recipe.title %>">
+            <br>
+          <% } %>
+          <h3><%= recipe.title %></h3>
+          <div class="recipe-card__meta">By <%= recipe.author?.username || "Deleted User" %></div>
+        </div>
+        <div class="recipe-card__body">
+          <p class="recipe-card__desc"><%= recipe.description %></p>
+          <div class="recipe-card__badges">
+            <% if (recipe.category) { (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(c => { %>
+            <span class="badge badge--category"><%= c %></span>
+            <% }); } %>
+          </div>
+        </div>
+        <div class="recipe-card__stats">
+          <div class="stat-item">
+            <strong><%= recipe.cookingTime %></strong>
+            <small>min</small>
+          </div>
+          <div class="stat-item">
+            <strong><%= recipe.servings %></strong>
+            <small>servings</small>
+          </div>
+        </div>
+        <div class="recipe-card__footer">
+          <a href="/recipes/<%= recipe._id %>" class="btn btn--primary btn--sm">View</a>
+          <% if (typeof session !== 'undefined' && session.userId) { %>
+            <button onclick='saveFavourite(`<%= recipe._id %>`, `<%= recipe.title %>`, `<%= recipe.author?.username || "Deleted User" %>`, `<%= recipe.image %>`)' class="btn btn--ghost btn--sm">💚 Save</button>
+          <% } %>
+          <% if (typeof session !== 'undefined' && session.role === 'admin') { %>
+            <form action="/recipes/<%= recipe._id %>/delete" method="POST" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
+              <button type="submit" class="btn btn--ghost btn--sm" style="height: 38px;"> Delete</button>
+            </form>
+          <% } %>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+    <% } else { %>
+    <div class="empty-state animate-fade-up">
+      <div class="empty-state__icon">🍽️</div>
+      <h2>No community recipes yet</h2>
+      <p>Be the first to share a recipe with everyone!</p>
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="btn btn--primary">Create the First Recipe</a>
+      <% } else { %>
+      <a href="/auth/register" class="btn btn--primary">Join to Create a Recipe</a>
+      <% } %>
+    </div>
+    <% } %>
+
+    <!-- MEALDB SECTION -->
+    <% if (typeof mealdbRecipes !== 'undefined' && mealdbRecipes.length > 0) { %>
+    <div class="mealdb-section animate-fade-up">
+      <div class="section-header" style="margin:0 0 var(--sp-2);">
+        <h2 class="section-header__title" id="stock">Stock Recipes</h2>
+        <span class="badge badge--source">TheMealDB</span>
+      </div>
+      <p style="font-size:var(--text-sm);color:var(--color-text-gray);margin-bottom:var(--sp-6);">Curated from around the world</p>
+      <div class="mealdb-grid">
+        <% mealdbRecipes.forEach((meal, i) => { %>
+        <div class="mealdb-card animate-fade-up" style=`transition-delay: <%= (i % 4) * 60 %>ms`>
+          <img class="mealdb-card__thumb" src="<%= meal.strMealThumb %>" alt="<%= meal.strMeal %>">
+          <div class="mealdb-card__body">
+            <div>
+              <h3><%= meal.strMeal %></h3>
+            </div>
+            <a href="/recipes/mealdb/<%= meal.idMeal %>" class="btn btn--ghost btn--sm">View</a>
+            <% if (typeof session !== 'undefined' && session.userId){ %>
+              <button onclick="saveFavourite('<%= meal.idMeal %>', '<%= meal.strMeal %>', 'mealdb', '<%= meal.strMealThumb %>')" class="btn btn--ghost btn--sm">💚 Save</button>
+            <%}%>
+              </div>
+            </div>
+          <% }); %>
+          </div>
+        </div>
+        <% } else { %>
+          <p class="text-subtle" style="margin-top:var(--sp-8)">No stock recipes available right now.</p>
+        <% } %>
+
+      </div>
+
+      <script>
+        // Function to be reused to post recipes to save
+        function saveFavourite(recipeId, recipeTitle, recipeType, recipeImage) {
+          fetch('/favourites/add', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                recipeId,
+                recipeTitle,
+                recipeType,
+                recipeImage
+              })
+            })
+            .then(res => res.json()) // Handle response
+            .then(data => {
+              alert(data.message); // Show success message
+            })
+            .catch(err => alert('Error saving favourite')); // Catch error
+        };
+      </script>
+</body>
+
+</html>

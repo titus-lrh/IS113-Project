@@ -3,14 +3,14 @@
 
 const express = require('express');
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
 const path = require('path');
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/auth-routes');
 const recipeRoutes = require('./routes/recipes-routes');
 const profileRoutes = require("./routes/profile-routes");
-const foodlogRoutes = require('./routes/foodlog');
-
+const foodlogRoutes = require('./routes/foodlog-routes');
+const favouriteRoutes = require('./routes/favourite-routes');
+const groceryRoutes = require('./routes/grocery-routes');
 
 require('dotenv').config();
 
@@ -36,7 +36,7 @@ const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'your_secret_key',
   resave: false,
   saveUninitialized: false,
-  store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+  rolling: true,
   cookie: {
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
@@ -51,11 +51,13 @@ app.use(session(sessionConfig));
 
 // Landing Page
 app.get('/', (_req, res) => res.redirect('/recipes'));
+app.get('/index.html', (_req, res) => res.redirect('/recipes'));
 app.use('/auth', authRoutes);
 app.use("/profile", profileRoutes);
 app.use("/recipes", recipeRoutes);
 app.use("/schedule", foodlogRoutes);
-
+app.use("/favourites", favouriteRoutes);
+app.use("/groceries", groceryRoutes);
 
 
 // ============================================

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Favourite - Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="nav__link">+ Create</a>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--2xl">
+    <h2>Edit Favourite Name</h2>
+    
+    <form method="POST" action="/favourites/<%= favourite._id %>/edit">
+      <div class="form-group">
+        <label for="recipeTitle">Recipe Name:</label>
+        <input type="text" id="recipeTitle" name="recipeTitle" value="<%= favourite.recipeTitle %>" required>
+      </div>
+      
+      <div class="button-group">
+        <a href="/favourites/my-favourites" class="btn btn--secondary">Cancel</a>
+        <button type="submit" class="btn btn--primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

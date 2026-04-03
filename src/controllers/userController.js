@@ -3,12 +3,12 @@ const Recipe = require('../models/recipe-model');
 
 // GET login form
 const getLoginForm = (req, res) => {
-  res.render('login');
+  res.render('user/login');
 };
 
 // GET register form
 const getRegisterForm = (req, res) => {
-  res.render('register');
+  res.render('user/register');
 };
 
 // GET dashboard
@@ -16,7 +16,7 @@ const getDashboard = (req, res) => {
   if (!req.session.userId) {
     return res.redirect('/auth/login');
   }
-  res.render('dashboard', { user: req.session });
+  res.render('dashboard', {session: req.session });
 };
 
 // POST register
@@ -36,27 +36,27 @@ const register = async (req, res) => {
     errors.push({ msg: 'Last name is required' });
 
   if (errors.length > 0) {
-    return res.status(400).render('register', { errors });
+    return res.status(400).render('user/register', { errors });
   }
 
   try {
-    const { username, email, password, firstName, lastName } = req.body;
-
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    const existingUser = await User.findByUsernameOrEmail(username, email);
     if (existingUser) {
-      return res.status(400).render('register', { errors: [{ msg: 'User already exists' }] });
+      return res.status(400).render('user/register', { errors: [{ msg: 'User already exists' }] });
     }
 
-    const user = new User({ username, email, password, firstName, lastName });
-    await user.save();
-
+    // Create new user using the model function
+    const user = await User.createUser({ username, email, password, firstName, lastName });
+    
+    // Set a session
     req.session.userId = user._id;
     req.session.username = user.username;
+    req.session.role = user.role;
 
     res.redirect('/auth/dashboard');
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).render('register', { errors: [{ msg: 'Server error' }] });
+    res.status(500).render('user/register', { errors: [{ msg: 'Server error' }] });
   }
 };
 
@@ -65,29 +65,30 @@ const login = async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).render('login', { errors: [{ msg: 'Username and password required' }] });
+    return res.status(400).render('user/login', { errors: [{ msg: 'Username and password required' }] });
   }
 
   try {
-    const user = await User.findOne({ username });
+    const user = await User.findByUsername(username);
     if (!user) {
-      return res.status(401).render('login', { errors: [{ msg: 'Invalid credentials' }] });
+      return res.status(401).render('user/login', { errors: [{ msg: 'Invalid credentials' }] });
     }
 
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return res.status(401).render('login', { errors: [{ msg: 'Invalid credentials' }] });
+      return res.status(401).render('user/login', { errors: [{ msg: 'Invalid credentials' }] });
     }
 
     req.session.userId = user._id;
     req.session.username = user.username;
+    req.session.role = user.role;
 
     const redirectTo = req.session.returnTo || '/auth/dashboard';
     delete req.session.returnTo;
     res.redirect(redirectTo);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).render('login', { errors: [{ msg: 'Server error' }] });
+    res.status(500).render('user/login', { errors: [{ msg: 'Server error' }] });
   }
 };
 
@@ -103,36 +104,41 @@ const logout = (req, res) => {
 
 // GET edit profile form
 const getEditProfileForm = async (req, res) => {
-  const user = await User.findById(req.params.id);
-  res.render('editProfile', { user });
+  if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+    return res.status(403).send('Forbidden');
+  }
+  const user = await User.findByUserId(req.params.id);
+  res.render('user/edit-profile', { user });
 };
 
 // POST update profile
 const updateProfile = async (req, res) => {
-  const { username, email, bio } = req.body;
-  await User.findByIdAndUpdate(
-    req.params.id,
-    { $set: { username, email, bio } },
-    { new: true }
-  );
-  res.redirect('/profile/' + req.params.id);
+  try {
+    if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+      return res.status(403).send('Forbidden');
+    }
+    const { firstName, lastName, username, email, bio, calorieGoal } = req.body;
+    await User.updateProfile(req.params.id, { firstName, lastName, username, email, bio, calorieGoal });
+    res.redirect('/profile/' + req.params.id);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).send('Server error');
+  }
 };
 
 // GET profile
 const getProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    console.log('Fetching profile for userId:', userId);
 
-    const user = await User.findById(userId);
+    const user = await User.findByUserId(userId);
     if (!user) {
       return res.status(404).send('User not found');
     }
 
     const recipes = await Recipe.getRecipesByUser(userId);
-    console.log('Found recipes:', recipes.length);
 
-    res.render('profile', { user, recipes });
+    res.render('user/display-profile', { user, recipes, session: req.session });
   } catch (err) {
     console.error('Profile error:', err);
     res.status(500).send('Server error');
@@ -141,8 +147,25 @@ const getProfile = async (req, res) => {
 
 // POST delete profile
 const deleteProfile = async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.redirect('/');
+  try {
+    if (!req.session.userId || req.session.userId.toString() !== req.params.id) {
+      return res.status(403).send('Forbidden');
+    }
+    const userId = req.params.id;
+    await User.deleteUser(userId);
+
+    req.session.destroy((err) => {
+      res.clearCookie('connect.sid');
+      if (err) {
+        console.error("Error clearing session:", err);
+        return res.redirect('/profile');
+      }
+      res.redirect('/');
+    });
+  } catch (error) {
+    console.error("Delete Error:", error);
+    res.status(500).send("Could not delete profile.");
+  }
 };
 
 module.exports = {

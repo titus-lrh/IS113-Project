@@ -1,0 +1,43 @@
+<%
+  // _suggestions.ejs — food suggestions that fit remaining calorie budget
+  // Expects: suggestions = [{ name, sourceType, sourceId, calories }]
+  //          remainingCalories = number
+  const items = suggestions || [];
+%>
+
+<div class="suggestions">
+  <div class="suggestions__header">
+    <h3 class="suggestions__title">Suggested for you</h3>
+    <span class="suggestions__subtitle"><%= Math.round(remainingCalories) %> kcal remaining</span>
+  </div>
+
+  <% if (items.length > 0) { %>
+    <div class="suggestions__grid">
+      <% items.forEach(item => { %>
+        <div class="suggestion-card">
+          <div class="suggestion-card__info">
+            <span class="suggestion-card__name"><%= item.name %></span>
+            <span class="suggestion-card__cal"><%= item.calories %> kcal</span>
+            <span class="suggestion-card__source">
+              <%= item.sourceType === 'user_recipe' ? 'Community' : 'MealDB' %>
+            </span>
+          </div>
+          <form method="POST" action="/schedule/add-food" class="suggestion-card__form">
+            <input type="hidden" name="foodName" value="<%= item.name %>">
+            <input type="hidden" name="sourceType" value="<%= item.sourceType %>">
+            <input type="hidden" name="sourceId" value="<%= item.sourceId %>">
+            <input type="hidden" name="servings" value="1">
+            <input type="hidden" name="mealType" value="Other">
+            <input type="hidden" name="dateString" value="<%= dateString %>">
+            <button type="submit" class="btn btn--ghost btn--sm">+ Add</button>
+          </form>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <form method="POST" action="/schedule/generate-suggestions" class="form">
+      <input type="hidden" name="dateString" value="<%= dateString %>">
+      <button type="submit" class="btn btn--ghost btn--sm">Generate Suggestions</button>
+    </form>
+  <% } %>
+</div>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= user.username %>'s Profile — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+        <a href="/recipes/new" class="nav__link">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link nav__link--active">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+        <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--xl">
+    <div class="profile-hero">
+      <div class="profile-hero__name"><%= user.username %></div>
+      <div class="profile-hero__meta">
+        <span>✉️ <%= user.email %></span>
+        <span>📅 Joined <%= user.createdAt.toDateString() %></span>
+        <span>🔥 Goal: <%= user.calorieGoal || 3000 %> kcal</span>
+      </div>
+      <% if (user.bio) { %>
+        <p class="profile-hero__bio"><%= user.bio %></p>
+      <% } %>
+    </div>
+
+    <div class="actions">
+      <a href="/profile/edit/<%= user._id %>" class="btn btn--secondary btn--sm">
+        ✏️ Edit Profile
+      </a>
+
+      <form action="/profile/delete/<%= user._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete your account? This cannot be undone.');">
+        <button type="submit" class="btn btn--danger btn--sm" style="height: 37px;">
+          🗑 Delete Account
+        </button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

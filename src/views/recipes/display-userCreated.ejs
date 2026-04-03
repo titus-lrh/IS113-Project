@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Recipes — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="nav__link">+ Create</a>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--2xl">
+    <div class="page-header page-header--flex">
+      <div>
+        <h1>My Recipes</h1>
+        <p>Your personal recipe collection</p>
+      </div>
+      <a href="/recipes/new" class="btn btn--primary">+ New Recipe</a>
+    </div>
+
+    <% if (typeof recipes !== 'undefined' && recipes.length > 0) { %>
+    <div class="recipes-grid">
+      <% recipes.reverse().forEach(recipe => { %>
+      <div class="recipe-card">
+        <div class="recipe-card__header">
+          <% if(recipe.image) { %>
+          <img class="mealdb-card__thumb" src="<%= recipe.image %>" alt="<%= recipe.title %>">
+          <br>
+          <% } %>
+          <h3><%= recipe.title %></h3>
+          <div class="recipe-card__meta">By <%= recipe.author.username %></div>
+        </div>
+        <div class="recipe-card__body">
+          <p class="recipe-card__desc"><%= recipe.description.substring(0, 100) %></p>
+          <div class="recipe-card__badges">
+            <% if (recipe.category) { %>
+            <% (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(subCategory => { %>
+            <span class="badge badge--category"><%= subCategory %></span>
+            <% }) %>
+            <% } %>
+          </div>
+        </div>
+        <div class="recipe-card__stats">
+          <div class="stat-item"><strong><%= recipe.cookingTime %></strong><small>min</small></div>
+          <div class="stat-item"><strong><%= recipe.servings %></strong><small>servings</small></div>
+        </div>
+        <div class="recipe-card__footer">
+          <a href="/recipes/<%= recipe._id %>?from=my-recipes" class="btn btn--primary btn--sm">View</a>
+          <% if (typeof session !== 'undefined' && session.userId && recipe.author._id == session.userId) { %>
+          <a href="/recipes/<%= recipe._id %>/edit" class="btn btn--secondary btn--sm">Edit</a>
+          <form action="/recipes/<%= recipe.id %>/delete" method="POST">
+            <button class="btn btn--danger btn--sm" style="height: 37px;">Delete</button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+      <% }); %>
+    </div>
+    <% } else { %>
+    <div class="empty-state">
+      <div class="empty-state__icon">🍽️</div>
+      <h2>No recipes yet</h2>
+      <p>You haven't created any recipes. Start sharing your favourite dishes!</p>
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="btn btn--primary">Create First Recipe</a>
+      <% } else { %>
+      <a href="/auth/register" class="btn btn--primary">Join to Create</a>
+      <% } %>
+    </div>
+    <% } %>
+  </div>
+
+</body>
+
+</html>

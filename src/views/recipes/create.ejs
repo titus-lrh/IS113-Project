@@ -10,9 +10,14 @@
   <nav class="nav">
     <a href="/" class="nav__brand">Everyday Cooks</a>
     <div class="nav__links">
-      <a href="/recipes" class="nav__link">Recipes</a>
-      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
-      <a href="/auth/logout" class="nav__link">Logout</a>
+       <% if (typeof session !== 'undefined' && session.userId) { %>
+       <a href="/recipes/new" class="nav__link nav__link--active">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
     </div>
   </nav>
 
@@ -25,22 +30,23 @@
         <p class="text-muted text-sm mt-2">Share your favourite dish with the community</p>
       </div>
 
-      <div class="alert alert--info">
-        <span>💡</span>
-        <span>Be detailed in your instructions — the more specific, the better the recipe!</span>
-      </div>
-
       <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
         <% errors.forEach(error => { %>
           <div class="alert alert--error"><%= error.msg %></div>
         <% }); %>
       <% } %>
-
       <form method="POST" action="/recipes">
+         <div class="form-group">
+          <label for="image">Reference Image</label>
+          <input type="text" id="image" name="image"
+            placeholder="e.g. https:XXXX.jpg"
+            value="<%= typeof body !== 'undefined' ? body.image || '' : '' %>" required>
+        </div>
+
         <div class="form-group">
           <label for="title">Recipe Title</label>
           <input type="text" id="title" name="title"
-            placeholder="e.g., Classic Chocolate Chip Cookies"
+            placeholder="e.g. Classic Chocolate Chip Cookies"
             value="<%= typeof body !== 'undefined' ? body.title || '' : '' %>" required>
           <div class="form-hint">Give your recipe a clear, descriptive name</div>
         </div>
@@ -71,19 +77,22 @@
           <label>Category <span class="text-subtle">(select up to 3)</span></label>
           <% const cats = ['Appetisers/Sides','Breakfast','Lunch','Dinner','Dessert','Healthy','Vegan','20 Minutes or less']; %>
           <% const catVals = ['Appetisers','Breakfast','Lunch','Dinner','Dessert','Healthy','Vegan','20 Minutes']; %>
+          <% const selected = body && body.category 
+            ? (Array.isArray(body.category) ? body.category : [body.category]) 
+          : [] %>
           <% catVals.forEach((val, i) => { %>
             <label class="check-group">
-              <input type="checkbox" name="category" value="<%= val %>">
+              <input type="checkbox" name="category" value="<%= val %>"  <%= selected.includes(val) ? 'checked' : '' %> >
               <%= cats[i] %>
             </label>
           <% }) %>
         </div>
 
         <div class="form-group">
-          <label for="ingredients">Ingredients</label>
+          <label for="ingredients">Ingredients <span class="text-subtle">(Separate using semicolon ;)</span></label>
           <textarea id="ingredients" name="ingredients"
-            placeholder="e.g., 2 cups flour, 1 cup sugar, 3 eggs, 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
-          <div class="form-hint">List each ingredient separated by commas. Include quantities!</div>
+            placeholder="e.g. 2 cups flour; 1 cup sugar; 3 eggs; 1 tsp vanilla extract" required><%= typeof body !== 'undefined' ? body.ingredients || '' : '' %></textarea>
+          <div class="form-hint">List each ingredient separated by semicolon. Include quantities!</div>
         </div>
 
         <div class="form-group">

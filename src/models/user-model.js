@@ -2,7 +2,7 @@
 // Define user schema and authentication logic
 
 const mongoose = require('mongoose');
-const bcryptjs = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -31,35 +31,77 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  calorieGoal: {
+    type: Number,
+    default: 3000,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
   },
-  // bio: {
-  //   type:String,
-  //   required:false
-  // }
-  
+  bio: {
+    type: String,
+    required: false,
+    maxlength: 200,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
+
 });
 
 // Hash password before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next();
-  }
+userSchema.pre('save', async function() {
+  if (!this.isModified('password')) return;
 
-  try {
-    const salt = await bcryptjs.genSalt(10);
-    this.password = await bcryptjs.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
-
 // Method to compare passwords
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  return await bcryptjs.compare(candidatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-module.exports = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
+
+
+// CREATE USER
+exports.createUser = async (userData) => {
+  const { username, email, password, firstName, lastName } = userData;
+  const user = new User({ username, email, password, firstName, lastName });
+  await user.save();
+  return user;
+};
+
+// READ - FIND USER BY USERNAME
+exports.findByUsername = async (username) => {
+  return await User.findOne({ username });
+};
+
+// READ - FIND USER BY USERNAME OR EMAIL
+exports.findByUsernameOrEmail = async (username, email) => {
+  return await User.findOne({ $or: [{ username }, { email }] });
+};
+
+// READ - FIND USER BY ID
+exports.findByUserId = async (userId) => {
+  return await User.findById(userId);
+};
+
+// UPDATE - UPDATE PROFILE
+exports.updateProfile = async (userId, updateData) => {
+  const { firstName, lastName, username, email, bio, calorieGoal } = updateData;
+  const parsedGoal = Number(calorieGoal);
+  return await User.findByIdAndUpdate(
+    userId,
+    { $set: { firstName, lastName, username, email, bio, calorieGoal: Number.isNaN(parsedGoal) ? 3000 : parsedGoal }},
+    { new: true }
+  );
+};
+
+// DELETE - DELETE USER BY ID
+exports.deleteUser = async (userId) => {
+  return await User.findByIdAndDelete(userId);
+};

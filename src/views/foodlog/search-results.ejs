@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Food — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (session && session.userId) { %>
+        <a href="/recipes/new" class="nav__link nav__link--active">+ Create</a>
+        <a href="/recipes" class="nav__link">Recipes</a>
+        <a href="/schedule" class="nav__link">Schedule</a>
+        <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+        <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+        <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--md">
+    <h2>Search Results for "<%= query %>"</h2>
+
+    <% if (results.length === 0) { %>
+      <p class="text-muted">No results found. Try a different search term.</p>
+      <a href="/schedule" class="btn btn--ghost">Back to Schedule</a>
+    <% } else { %>
+      <form method="POST" action="/schedule/select-food" class="form form--space">
+        <fieldset style="border: 1px solid #ddd; padding: 16px; border-radius: 4px;">
+          <legend>Select a food:</legend>
+
+          <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; padding: 12px; border-radius: 4px;">
+            <% results.forEach((food, index) => { %>
+              <label class="radio-label" style="display: block; padding: 12px; margin-bottom: 8px; border-bottom: 1px solid #f0f0f0; cursor: pointer;">
+                <input
+                  type="radio"
+                  name="selectedIndex"
+                  value="<%= index %>"
+                  required
+                  style="margin-right: 8px;"
+                >
+                <strong><%= food.name %></strong>
+                <span class="badge" style="margin-left: 8px;"><%= food.source %></span>
+              </label>
+            <% }); %>
+          </div>
+
+        </fieldset>
+
+        <input type="hidden" name="mealType" value="<%= mealType %>">
+        <input type="hidden" name="dateString" value="<%= dateString %>">
+        <input type="hidden" name="results" value='<%= JSON.stringify(results) %>'>
+
+        <div class="form__actions">
+          <button type="submit" class="btn btn--primary">Next</button>
+          <a href="/schedule" class="btn btn--ghost">Cancel</a>
+        </div>
+      </form>
+    <% } %>
+  </div>
+</body>
+</html>

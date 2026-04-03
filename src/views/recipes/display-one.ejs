@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= recipe.title %> — Everyday Cooks</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <nav class="nav">
+    <a href="/" class="nav__brand">Everyday Cooks</a>
+    <div class="nav__links">
+      <% if (typeof session !== 'undefined' && session.userId) { %>
+      <a href="/recipes/new" class="nav__link">+ Create</a>
+      <a href="/recipes" class="nav__link">Recipes</a>
+      <a href="/schedule" class="nav__link">Schedule</a>
+      <a href="/profile/<%= session.userId %>" class="nav__link">My Profile</a>
+      <a href="/auth/dashboard" class="nav__link">Dashboard</a>
+      <a href="/auth/logout" class="nav__link">Logout</a>
+      <% } else { %>
+      <a href="/auth/login" class="nav__link">Login</a>
+      <% } %>
+    </div>
+  </nav>
+
+  <div class="container container--lg">
+    <% if (typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "my-recipes")  { %>
+    <a href="/recipes/my-recipes/<%= session.userId %>" class="back-link">← Back to My Recipes</a>
+    <% } else if(typeof session !== 'undefined' && session.userId && typeof from !== 'undefined' && from == "favourites") { %>
+    <a href="/favourites/my-favourites" class="back-link">← Back to My Favourites</a>
+    <% } else {%>
+    <a href="/recipes" class="back-link">← Back to Recipes</a>
+    <% } %>
+
+    <div class="recipe-hero">
+      <div class="recipe-hero__top">
+        <div>
+          <% if (recipe.image) { %>
+          <img class="recipe-hero__img" src="<%= recipe.image %>" alt="<%= recipe.title %>">
+          <% } %>
+          <div class="recipe-hero__badges">
+            <% if (recipe.category) { %>
+            <% (Array.isArray(recipe.category) ? recipe.category : [recipe.category]).forEach(subCategory => { %>
+            <span class="badge badge--category"><%= subCategory %></span>
+            <% }) %>
+            <% } %>
+          </div>
+          <h1><%= recipe.title %></h1>
+          <p class="recipe-hero__author">
+            By <strong><%= recipe.author?.username || "Deleted User" %></strong> &middot;
+            <span class="text-subtle"><%= new Date(recipe.createdAt).toLocaleDateString('en-GB') %></span>
+          </p>
+        </div>
+
+        <div class="rating-box">
+          <div class="rating-value">⭐ <%= recipe.rating ? recipe.rating.toFixed(1) : '0.0' %></div>
+          <div class="rating-count text-subtle"><%= recipe.ratingCount || 0 %> ratings</div>
+
+          <%
+            let hasRated = false;
+            if (session && session.userId && recipe.ratedUsers) {
+              hasRated = recipe.ratedUsers.some(u => u.toString() === session.userId);
+            }
+          %>
+
+          <% if (!session || !session.userId) { %>
+          <p class="text-subtle text-sm mt-2">
+            <a href="/auth/login" style="color:#667eea; text-decoration:none;">
+              Login to rate
+            </a>
+          </p>
+          <% } else if (hasRated) { %>
+          <p class="text-success text-sm mt-2">✔ Already rated</p>
+          <% } else { %>
+          <div class="star-picker">
+            <% for (let i = 1; i <= 5; i++) { %>
+            <form action="/recipes/<%= recipe._id %>/rate?from=<%= from %>" method="POST" style="display:inline">
+              <input type="hidden" name="rating" value="<%= i %>">
+              <button type="submit" style="background:none;border:none;cursor:pointer;font-size:1.4rem;">☆</button>
+            </form>
+            <% } %>
+          </div>
+          <% } %>
+        </div>
+      </div>
+
+      <div class="recipe-stats-row">
+        <div class="stat-item">
+          <strong><%= recipe.cookingTime %></strong>
+          <small>Minutes</small>
+        </div>
+        <div class="stat-item">
+          <strong><%= recipe.servings %></strong>
+          <small>Servings</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-card">
+      <h3>About this recipe</h3>
+      <p><%= recipe.description %></p>
+      <div style="margin-top: var(--sp-5);">
+        <form method="POST" action="/recipes/<%= recipe._id %>/summarize" style="display:inline;">
+          <button class="btn btn--ghost btn--sm" type="submit">Summary</button>
+        </form>
+        <% if (typeof session !== 'undefined' && session.role === 'admin') { %>
+        <form method="POST" action="/recipes/<%= recipe._id %>/delete" style="display:inline;" onsubmit="return confirm('Delete this recipe?');">
+          <button type="submit" class="btn btn--ghost btn--sm" style="color:var(--color-error, #e53e3e);">🗑 Delete</button>
+        </form>
+        <% } %>
+      </div>
+      <% if (typeof summary !== 'undefined' && summary) { %>
+      <div style="margin-top:var(--sp-4); padding:var(--sp-4); background:var(--color-bg-light); border:1px solid var(--color-border); border-radius:var(--radius-md);">
+        <p style="font-size:var(--text-xs); font-weight:600; color:var(--color-primary-dark); letter-spacing:1px; text-transform:uppercase; margin-bottom:var(--sp-2);">AI Summary</p>
+        <p style="font-size:var(--text-sm); color:var(--color-text-gray); line-height:1.7;"><%= summary %></p>
+      </div>
+      <% } %>
+    </div>
+
+    <div class="recipe-content-grid">
+      <div class="recipe-section">
+        <h2>Ingredients</h2>
+        <ul class="ingredients-list">
+          <% recipe.ingredients.forEach(ingredient => { %>
+          <li><%= ingredient %></li>
+          <% }); %>
+        </ul>
+      </div>
+
+      <div class="recipe-section">
+        <h2>Instructions</h2>
+        <div class="instructions"><%= recipe.instructions %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top:2rem;">
+
+    <h2>Comments</h2>
+
+    <% if (recipe.comments && recipe.comments.length > 0) { %>
+
+    <% recipe.comments.forEach(comment => { %>
+
+    <div style="padding:16px; border-bottom:1px solid #eee;">
+
+      <!-- Username -->
+      <strong style="display:block; margin-bottom:4px;">
+        <%= comment.username %>
+      </strong>
+
+      <!-- Comment -->
+      <p id="text-<%= comment._id %>" style="margin-bottom:6px;">
+        <%= comment.text %>
+      </p>
+
+      <!-- Timestamp -->
+      <small style="color:#999; display:block; margin-bottom:10px;">
+        <%= new Date(comment.createdAt).toLocaleString('en-GB') %>
+      </small>
+
+      <!-- Buttons -->
+      <div style="display:flex; gap:10px; align-items:center;">
+
+        <!-- LIKE -->
+        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/like" method="POST">
+          <button class="btn btn--primary btn--sm" style="background:#f4b183;">
+            ❤️ <%= comment.likes || 0 %>
+          </button>
+        </form>
+
+        <% if (session && session.userId && (comment.user.toString() === session.userId ||  session.role === 'admin')) { %>
+
+        <!-- EDIT -->
+        <button onclick="toggleEdit('<%= comment._id %>')" class="btn btn--primary btn--sm" style="background:#d6a86c;">
+          Edit
+        </button>
+
+        <!-- DELETE -->
+        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/delete" method="POST">
+          <button class="btn btn--primary btn--sm" style="background:#dc3545;">
+            Delete
+          </button>
+        </form>
+
+        <% } %>
+
+      </div>
+
+      <!-- EDIT FORM -->
+      <form id="edit-form-<%= comment._id %>" action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/edit" method="POST" style="display:none; margin-top:10px;">
+        <input type="text" name="text" value="<%= comment.text %>" style="width:100%; padding:6px;">
+        <button class="btn btn--primary btn--sm" style="margin-top:6px;">
+          Save
+        </button>
+      </form>
+
+    </div>
+
+    <% }) %>
+
+    <% } else { %>
+
+    <p>No comments yet.</p>
+
+    <% } %>
+
+    <!-- Add Comment -->
+    <% if (session && session.userId) { %>
+
+    <form action="/recipes/<%= recipe._id %>/comment" method="POST" style="margin-top:15px;">
+      <textarea name="text" required style="width:100%; padding:8px;"></textarea>
+      <button class="btn btn--primary" style="margin-top:8px;">
+        Post Comment
+      </button>
+    </form>
+
+    <% } else { %>
+
+    <p>
+      <a href="/auth/login" style="color:#667eea; text-decoration:none;">
+        Login to comment
+      </a>
+    </p>
+
+    <% } %>
+
+  </div>
+
+  <script>
+    function toggleEdit(id) {
+      const text = document.getElementById("text-" + id);
+      const form = document.getElementById("edit-form-" + id);
+
+      form.style.display = form.style.display === "none" ? "block" : "none";
+      text.style.display = text.style.display === "none" ? "block" : "none";
+    }
+  </script>
+</body>
+
+</html>
