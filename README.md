@@ -7,7 +7,6 @@ Gmail user: wadproj2025@gmail.com
 Password: Smuwadproj!
 
 
-
 ## Features
 - View Recipes
 - Upload Recipe
@@ -22,6 +21,7 @@ Password: Smuwadproj!
 - Admin Privilege (Delete any recipe / Delete any comment)
     - Username: admin
     - Password: admin1
+- Search for recipe
 
 ## Tech Stack
 - **Backend**: Express.js with MVC architecture
