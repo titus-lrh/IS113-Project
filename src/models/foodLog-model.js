@@ -2,6 +2,10 @@
 
 const mongoose = require('mongoose');
 
+function getComputedValue(baseValue, amount, servings) {
+  return ((baseValue || 0) / 100) * amount * servings;
+}
+
 /**
  * FoodLog model
  * -------------
@@ -13,12 +17,6 @@ const mongoose = require('mongoose');
  * - each entry remains self-contained for rendering and recalculation
  */
 const entrySchema = new mongoose.Schema({
-  // Mongo already gives each embedded entry its own _id.
-  // This extra entryId is separate, but current controller code does not use it.
-  entryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: () => new mongoose.Types.ObjectId(),
-  },
   timeLabel: String,
   mealType: {
     type: String,
@@ -38,8 +36,7 @@ const entrySchema = new mongoose.Schema({
     carbs: Number,
     fat: Number,
   },
-  // Copy the nutrition onto the entry at save time.
-  // calculateTotals() reads from this copy later.
+  // nutrition stores the copied base values from FoodNutrition.
   nutrition: {
     calories: Number,
     protein: Number,
@@ -153,11 +150,12 @@ foodLogSchema.methods.calculateTotals = async function () {
 
     const entryComputed = {};
     for (const field of ['calories', 'protein', 'carbs', 'fat']) {
-      const value = ((n[field] || 0) / 100) * amount * servings;
+      const value = getComputedValue(n[field], amount, servings);
       entryComputed[field] = value;
       totals[field] += value;
     }
 
+    // computed stores the actual values for this entry after serving math.
     entry.computed = { ...entryComputed };
   }
 
