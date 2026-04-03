@@ -165,7 +165,7 @@
       <div style="display:flex; gap:10px; align-items:center;">
 
         <!-- LIKE -->
-        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/like" method="POST">
+        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/like?from=<%= from %>" method="POST">
           <button class="btn btn--primary btn--sm" style="background:#f4b183;">
             ❤️ <%= comment.likes || 0 %>
           </button>
@@ -179,7 +179,7 @@
         </button>
 
         <!-- DELETE -->
-        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/delete" method="POST">
+        <form action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/delete?from=<%= from %>" method="POST">
           <button class="btn btn--primary btn--sm" style="background:#dc3545;">
             Delete
           </button>
@@ -190,7 +190,7 @@
       </div>
 
       <!-- EDIT FORM -->
-      <form id="edit-form-<%= comment._id %>" action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/edit" method="POST" style="display:none; margin-top:10px;">
+      <form id="edit-form-<%= comment._id %>" action="/recipes/<%= recipe._id %>/comment/<%= comment._id %>/edit?from=<%= from %>" method="POST" style="display:none; margin-top:10px;">
         <input type="text" name="text" value="<%= comment.text %>" style="width:100%; padding:6px;">
         <button class="btn btn--primary btn--sm" style="margin-top:6px;">
           Save
@@ -210,7 +210,7 @@
     <!-- Add Comment -->
     <% if (session && session.userId) { %>
 
-    <form action="/recipes/<%= recipe._id %>/comment" method="POST" style="margin-top:15px;">
+    <form action="/recipes/<%= recipe._id %>/comment?from=<%= from %>" method="POST" style="margin-top:15px;">
       <textarea name="text" required style="width:100%; padding:8px;"></textarea>
       <button class="btn btn--primary" style="margin-top:8px;">
         Post Comment

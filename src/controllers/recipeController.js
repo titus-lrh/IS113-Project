@@ -411,6 +411,7 @@ const rateRecipe = async (req, res) => {
 
 // Add comment using logged-in user info and save it to recipe
 const addComment = async (req, res) => {
+  const from = req.query.from;
   const { id } = req.params;
   const { text } = req.body;
 
@@ -424,11 +425,12 @@ const addComment = async (req, res) => {
     return res.status(400).send("Comment text required");
   }
   await Recipe.addComment(id, comment);
-  res.redirect(`/recipes/${id}`);
+  res.redirect(`/recipes/${id}?from=${from}`);
 };
 
 // Delete comment from recipe using comment ID
 const deleteComment = async (req, res) => {
+  const from = req.query.from;
   const { id, commentId } = req.params;
   const recipe = await Recipe.getRecipeById(id);
   if (!recipe) return res.status(404).send('Recipe not found');
@@ -438,11 +440,12 @@ const deleteComment = async (req, res) => {
   const isAdmin = req.session.role === 'admin';
   if (!isOwner && !isAdmin) return res.status(403).send('Unauthorized');
   await Recipe.deleteComment(id, commentId);
-  res.redirect(`/recipes/${id}`);
+  res.redirect(`/recipes/${id}?from=${from}`);
 };
 
 // Edit comment- updates exisiting comments text
 const editComment = async (req, res) => {
+  const from = req.query.from;
   const { id, commentId } = req.params;
   const { text } = req.body;
 
@@ -457,11 +460,12 @@ const editComment = async (req, res) => {
   const isAdmin = req.session.role === 'admin';
   if (!isOwner && !isAdmin) return res.status(403).send('Unauthorized');
   await Recipe.editComment(id, commentId, text);
-  res.redirect(`/recipes/${id}`);
+  res.redirect(`/recipes/${id}?from=${from}`);
 };
 
 // Like comment- allow a user to like a comment once
 const likeComment = async (req, res) => {
+  const from = req.query.from;
   const { id, commentId } = req.params;
   const userId = req.session.userId;
 
@@ -470,7 +474,7 @@ const likeComment = async (req, res) => {
   const comment = recipe.comments.id(commentId);
   if (!comment) return res.status(404).send('Comment not found');
   await Recipe.likeComment(id, commentId, userId);
-  res.redirect(`/recipes/${id}`);
+  res.redirect(`/recipes/${id}?from=${from}`);
 };
 
 const getFavourite = async (req, res) => {
