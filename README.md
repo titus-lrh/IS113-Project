@@ -38,3 +38,4 @@ A full-stack web application for viewing & sharing recipes, built with Express.j
 
 ## AI usage
 - To generate UI template in Recipe Theme for CSS
+- To use as learning aid to support understanding of concepts such as regex pattern matching, input validation, data-normalisation, handling datetime formatting.
