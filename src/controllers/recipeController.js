@@ -359,7 +359,7 @@ const summarizeMealDBRecipe = async (req, res) => {
 //Get rating of recipe
 const rateRecipe = async (req, res) => {
   try {
-
+    const from = req.query.from
     const recipeId = req.params.id;
     const userId = req.session.userId;
     const rating = parseInt(req.body.rating, 10);
@@ -396,7 +396,8 @@ const rateRecipe = async (req, res) => {
 
     res.render('recipes/display-one', {
       recipe: updatedRecipe,
-      session: req.session
+      session: req.session,
+      from
     });
 
   } catch (error) {
