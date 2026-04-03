@@ -14,6 +14,7 @@ Password: Smuwadproj!
 - Add to Favourites
 - Scheduling based on calorie intake
 - Shopping List
+- Profile
 
 ## Additional Features
 - Fetching of recipes from MealDB
