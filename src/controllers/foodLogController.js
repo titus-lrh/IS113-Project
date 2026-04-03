@@ -1,13 +1,13 @@
 'use strict';
 
 /**
- * Food log controller
- * This file runs the schedule feature from start to finish:
- * 1. Load a day's FoodLog document (or create one if it does not exist yet)
- * 2. Let the user search for food from community recipes and TheMealDB
- * 3. Resolve nutrition through the shared nutrition service
- * 4. Save entries onto the FoodLog document
- * 5. Render the schedule view with grouped entries, totals, and suggestions
+  Food log controller
+  This file runs the schedule feature from start to finish:
+  1. Load a day's FoodLog document (or create one if it does not exist yet)
+  2. Let the user search for food from community recipes and TheMealDB
+  3. Resolve nutrition through the shared nutrition service
+  4. Save entries onto the FoodLog document
+  5. Render the schedule view with grouped entries, totals, and suggestions
  */
 const mongoose = require('mongoose');
 const {
@@ -56,10 +56,25 @@ function isValidServings(servings) {
   return !Number.isNaN(servingsNumber) && servingsNumber > 0;
 }
 
+function getPerServingNutritionPreview(nutritionDoc) {
+  if (!nutritionDoc) {
+    return 'Nutrition pending';
+  }
+
+  const nutrition = nutritionDoc.nutrition || {};
+  const defaultServing = nutritionDoc.defaultServing || {};
+  const servingAmount = defaultServing.amount || 100;
+  const servingUnit = defaultServing.unit || 'g';
+  const calories = ((nutrition.calories || 0) / 100) * servingAmount;
+  const protein = ((nutrition.protein || 0) / 100) * servingAmount;
+
+  return `~${Math.round(calories)} kcal · ${Math.round(protein)}g P per serving (${servingAmount}${servingUnit})`;
+}
+
 /**
- * Normalize a date string into the schedule's expected YYYY-MM-DD format.
- * Invalid or missing dates fall back to "today" so the rest of the code
- * always works with one predictable date format.
+  - Normalize a date string into the schedule's expected YYYY-MM-DD format.
+  Invalid or missing dates fall back to "today" so the rest of the code
+  always works with one predictable date format.
  */
 function normalizeDateString(input) {
   const today = getTodayDateString();
@@ -73,8 +88,8 @@ function normalizeDateString(input) {
 }
 
 /**
- * TheMealDB returns `null` when there are no meals.
- * This helper always gives the controller an array instead.
+  - TheMealDB returns `null` when there are no meals.
+  This helper always gives the controller an array instead.
  */
 async function fetchFromMealDB(url) {
   const response = await fetch(url);
@@ -83,9 +98,9 @@ async function fetchFromMealDB(url) {
 }
 
 /**
- * Read the user's calorie goal from the profile document.
- * Schedule rendering and suggestion generation both use the same fallback of
- * 3000 kcal when the user record or the specific field is missing.
+  - Read the user's calorie goal from the profile document.
+  Schedule rendering and suggestion generation both use the same fallback of
+  3000 kcal when the user record or the specific field is missing.
  */
 async function getUserCalorieGoal(userId) {
   const user = await User.findByUserId(userId);
@@ -169,12 +184,12 @@ async function renderScheduleWithErrors(req, res, dateString, errors) {
 // ── controllers ────────────────────────────────────────────────────────────
 
 /**
- * GET /schedule
- * GET /schedule/:dateString  (YYYY-MM-DD)
- *
- * Main schedule page. Ensures the user has a FoodLog document for the requested
- * day, loads the user's calorie goal, then renders the timeline view.
- */
+  GET /schedule
+  GET /schedule/:dateString  (YYYY-MM-DD)
+
+  Main schedule page. Ensures the user has a FoodLog document for the requested
+  day, loads the user's calorie goal, then renders the timeline view.
+*/
 const getSchedule = async (req, res) => {
   try {
     const dateString = normalizeDateString(req.params.dateString);
@@ -191,12 +206,12 @@ const getSchedule = async (req, res) => {
 };
 
 /**
- * POST /schedule/generate-suggestions
- * Body: { dateString }
- *
- * Loads the current day's log, computes remaining calories from the same
- * helper used by the page, then asks suggestionService for foods
- * that fit within that remaining budget.
+  POST /schedule/generate-suggestions
+  Body: { dateString }
+
+  Loads the current day's log, computes remaining calories from the same
+  helper used by the page, then asks suggestionService for foods
+  that fit within that remaining budget.
  */
 const generateSuggestions = async (req, res) => {
   const dateString = normalizeDateString(req.body.dateString || req.params.dateString);
@@ -218,19 +233,17 @@ const generateSuggestions = async (req, res) => {
 };
 
 /**
- * Schedule form flow
- * ------------------
- * These handlers power the current schedule UI:
- * search -> select -> portion form -> add to log -> back to schedule.
+  Schedule form flow
+  search - select - portion form - add to log - back to schedule.
  */
 
 /**
- * POST /schedule/search-food
- * Body: { query, mealType, dateString }
- *
- * First step of the backend-first add-food flow.
- * Searches both local recipes and TheMealDB, then renders a page where the user
- * picks exactly one result to continue with.
+  POST /schedule/search-food
+  Body: { query, mealType, dateString }
+
+  First step of the backend-first add-food flow.
+  Searches both local recipes and TheMealDB, then renders a page where the user
+  picks exactly one result to continue with.
  */
 const searchFoodForm = async (req, res) => {
   const { query, mealType = 'Other', dateString: bodyDate } = req.body;
@@ -322,11 +335,7 @@ const selectFoodForm = async (req, res) => {
       console.error('Nutrition fetch failed:', err);
     }
 
-    // This preview uses the per-100g values stored in FoodNutrition, not the
-    // defaultServing amount that is later used for computed entry totals.
-    const nutritionPreview = nutrition
-      ? `~${Math.round(nutrition.nutrition?.calories || 0)} kcal · ${Math.round(nutrition.nutrition?.protein || 0)}g P`
-      : 'Nutrition pending';
+    const nutritionPreview = getPerServingNutritionPreview(nutrition);
 
     res.render('foodlog/portion-form', {
       selectedFood,

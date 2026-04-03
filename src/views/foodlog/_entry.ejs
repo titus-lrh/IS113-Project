@@ -6,6 +6,8 @@
   const carb = entry.computed && entry.computed.carbs    != null ? Math.round(entry.computed.carbs)    : null;
   const fat  = entry.computed && entry.computed.fat      != null ? Math.round(entry.computed.fat)      : null;
   const hasNutrition = cal !== null;
+  const servingAmount = entry.defaultServing && entry.defaultServing.amount ? entry.defaultServing.amount : null;
+  const servingUnit = entry.defaultServing && entry.defaultServing.unit ? entry.defaultServing.unit : '';
 %>
 <div class="log-entry" data-entry-id="<%= entry._id %>">
   <div class="log-entry__left">
@@ -13,7 +15,12 @@
       <span class="log-entry__time"><%= entry.timeLabel %></span>
     <% } %>
     <span class="log-entry__name"><%= entry.food && entry.food.name ? entry.food.name : 'Unknown food' %></span>
-    <span class="log-entry__servings"><%= entry.servings %>&times; serving</span>
+    <span class="log-entry__servings">
+      <%= entry.servings %>&times; serving
+      <% if (servingAmount) { %>
+        (<%= servingAmount %><%= servingUnit %>)
+      <% } %>
+    </span>
   </div>
   <div class="log-entry__right">
     <% if (hasNutrition) { %>
