@@ -333,10 +333,11 @@ Instructions: ${recipeData.instructions}`;
 // POST /recipes/:id/summarize — community recipes
 const summarizeRecipe = async (req, res) => {
   try {
+    const from = req.query.from;
     const recipe = await Recipe.getRecipeById(req.params.id);
     if (!recipe) return res.status(404).send('Recipe not found');
     const summary = await generateSummary(recipe);
-    res.render('recipes/display-one', { recipe, session: req.session, summary });
+    res.render('recipes/display-one', { recipe, session: req.session, summary, from });
   } catch (error) {
     console.error('Error summarizing recipe:', error);
     res.status(500).send('Error summarizing recipe');
